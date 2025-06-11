@@ -278,18 +278,79 @@ export class EventsParser {
     const today = new Date();
     const events: JinrEvent[] = [];
 
-    for (let i = 0; i < 10; i++) {
+    const demoEventsData = [
+      {
+        title: "Семинар по ядерной физике",
+        location: "Конференц-зал ЛЯР",
+        description:
+          "Обсуждение новых результатов исследований в области ядерной физики и ядерных реакций",
+        category: "seminar",
+      },
+      {
+        title: "Международная конференция по физике высоких энергий",
+        location: "Актовый зал",
+        description:
+          "Международная конференция с участием ведущих специалистов из разных стран",
+        category: "conference",
+      },
+      {
+        title: "Лекция: Квантовые вычисления и их применение",
+        location: "Лекционный зал ЛТФ",
+        description:
+          "Лекция о современных достижениях в области квантовых вычислений",
+        category: "lecture",
+      },
+      {
+        title: "Защита диссертации",
+        location: "Учёный совет",
+        description:
+          "Защита кандидатской диссертации по теме физики элементарных частиц",
+        category: "defense",
+      },
+      {
+        title: "Рабочее совещание лаборатории",
+        location: "ЛВЭ",
+        description:
+          "Планерное совещание сотрудников лаборатории высоких энергий",
+        category: "meeting",
+      },
+      {
+        title: "Семинар по теоретической физике",
+        location: "ЛТФ, конференц-зал",
+        description: "Еженедельный семинар лаборатории теоретической физики",
+        category: "seminar",
+      },
+      {
+        title: "Презентация научных результатов",
+        location: "Зал заседаний дирекции",
+        description: "Презентация результатов исследований молодых учёных",
+        category: "other",
+      },
+      {
+        title: "Методический семинар",
+        location: "ЛНФ",
+        description:
+          "Семинар по новым методам детектирования в физике нейтронов",
+        category: "seminar",
+      },
+    ];
+
+    for (let i = 0; i < Math.min(demoEventsData.length, 15); i++) {
       const eventDate = new Date(today);
-      eventDate.setDate(today.getDate() + i);
+      eventDate.setDate(today.getDate() + i * 2); // События через день
+
+      const demoData = demoEventsData[i % demoEventsData.length];
+      const timeHour = 10 + (i % 6); // Время с 10:00 до 15:00
 
       events.push({
         id: `demo_event_${i}`,
-        title: `Научный семинар ${i + 1}`,
+        title: demoData.title,
         date: eventDate.toISOString().split("T")[0],
-        time: `${10 + (i % 8)}:00`,
-        location: `Конференц-зал ${(i % 3) + 1}`,
-        description: `Описание научного мероприятия ${i + 1}. Обсуждение актуальных вопросов ядерной физики.`,
-        category: ["conference", "seminar", "lecture"][i % 3],
+        time: `${timeHour}:00`,
+        location: demoData.location,
+        description: demoData.description,
+        category: demoData.category,
+        url: `https://www.jinr.ru/agenda/event/${i + 1}`,
       });
     }
 
