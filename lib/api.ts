@@ -452,3 +452,210 @@ function getFallbackRoute(
     duration: distance / ROUTE_CONFIG.WALKING_SPEED,
   };
 }
+
+// API для работы с RSS лентами
+export async function fetchRssFeeds(): Promise<RssFeed[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    // Получаем RSS ленты из localStorage
+    const stored = localStorage.getItem("rss_feeds");
+    if (stored) {
+      return JSON.parse(stored);
+    }
+
+    // Возвращаем дефолтные RSS ленты
+    const defaultFeeds: RssFeed[] = [
+      {
+        id: "1",
+        name: "JINR News",
+        url: "https://www.jinr.ru/news/rss/",
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "2",
+        name: "Science News",
+        url: "https://www.science.org/rss/news_current.xml",
+        active: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
+    localStorage.setItem("rss_feeds", JSON.stringify(defaultFeeds));
+    return defaultFeeds;
+  } catch (error) {
+    console.error("Error fetching RSS feeds:", error);
+    return [];
+  }
+}
+
+export async function createRssFeed(feed: {
+  name: string;
+  url: string;
+  active: boolean;
+}): Promise<RssFeed> {
+  if (!isBrowser) {
+    throw new Error("Browser API not available");
+  }
+
+  try {
+    const feeds = await fetchRssFeeds();
+    const newFeed: RssFeed = {
+      id: Date.now().toString(),
+      name: feed.name,
+      url: feed.url,
+      active: feed.active,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedFeeds = [...feeds, newFeed];
+    localStorage.setItem("rss_feeds", JSON.stringify(updatedFeeds));
+    return newFeed;
+  } catch (error) {
+    console.error("Error creating RSS feed:", error);
+    throw error;
+  }
+}
+
+export async function removeRssFeed(id: string): Promise<boolean> {
+  if (!isBrowser) {
+    return false;
+  }
+
+  try {
+    const feeds = await fetchRssFeeds();
+    const filteredFeeds = feeds.filter((feed) => feed.id !== id);
+    localStorage.setItem("rss_feeds", JSON.stringify(filteredFeeds));
+    return true;
+  } catch (error) {
+    console.error("Error removing RSS feed:", error);
+    throw error;
+  }
+}
+
+// API для работы с иконками
+export async function fetchIcons(): Promise<Icon[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    // Получаем иконки из localStorage
+    const stored = localStorage.getItem("custom_icons");
+    if (stored) {
+      return JSON.parse(stored);
+    }
+
+    // Возвращаем дефолтные иконки
+    const defaultIcons: Icon[] = [
+      {
+        id: "1",
+        name: "Building",
+        category: "poi",
+        url: "/icons/building.svg",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "2",
+        name: "Food",
+        category: "poi",
+        url: "/icons/food.svg",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
+    localStorage.setItem("custom_icons", JSON.stringify(defaultIcons));
+    return defaultIcons;
+  } catch (error) {
+    console.error("Error fetching icons:", error);
+    return [];
+  }
+}
+
+export async function createIcon(
+  icon: { name: string; category: string },
+  file: File,
+): Promise<Icon> {
+  if (!isBrowser) {
+    throw new Error("Browser API not available");
+  }
+
+  try {
+    const icons = await fetchIcons();
+
+    // Конвертируем файл в data URL
+    const fileData = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    const newIcon: Icon = {
+      id: Date.now().toString(),
+      name: icon.name,
+      category: icon.category,
+      url: fileData,
+      fileData: fileData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedIcons = [...icons, newIcon];
+    localStorage.setItem("custom_icons", JSON.stringify(updatedIcons));
+    return newIcon;
+  } catch (error) {
+    console.error("Error creating icon:", error);
+    throw error;
+  }
+}
+
+export async function removeIcon(id: string): Promise<boolean> {
+  if (!isBrowser) {
+    return false;
+  }
+
+  try {
+    const icons = await fetchIcons();
+    const filteredIcons = icons.filter((icon) => icon.id !== id);
+    localStorage.setItem("custom_icons", JSON.stringify(filteredIcons));
+    return true;
+  } catch (error) {
+    console.error("Error removing icon:", error);
+    throw error;
+  }
+}
+
+// API для загрузки файлов
+export async function uploadMediaFile(file: File): Promise<string> {
+  if (!isBrowser) {
+    throw new Error("Browser API not available");
+  }
+
+  try {
+    // Для демонстрации создаем data URL из файла
+    // В реальном приложении здесь был бы запрос к серверу для загрузки файла
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = () => {
+        reject(new Error("Failed to read file"));
+      };
+      reader.readAsDataURL(file);
+    });
+  } catch (error) {
+    console.error("Error uploading media file:", error);
+    throw error;
+  }
+}
