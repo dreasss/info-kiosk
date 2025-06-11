@@ -6,8 +6,8 @@ export const YANDEX_LOCATOR_API_KEY = "a5e23d99-b078-4df8-9e37-42ae3b91156b"
 
 // Настройки карты
 export const MAP_CONFIG = {
-  // Координаты информационного киоска (Жолио-Кюри 20, Дубна)
-  KIOSK_LOCATION: [56.7417, 37.189] as [number, number],
+  // Координаты информационного киоска (обновленные координаты)
+  KIOSK_LOCATION: [56.742278, 37.191899] as [number, number],
   DEFAULT_ZOOM: 16,
   // Стили маркеров
   MARKER_STYLES: {
@@ -34,6 +34,7 @@ export const ROUTE_CONFIG = {
 export const SYSTEM_CONFIG = {
   IDLE_TIMEOUT: 5 * 60 * 1000, // 5 минут в миллисекундах
   LOADING_ANIMATION_DURATION: 4000, // 4 секунды
+  RSS_FEED_URL: "https://elementy.ru/rss/news", // Новый RSS канал
 }
 
 // Настройки организации по умолчанию

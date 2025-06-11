@@ -18,6 +18,12 @@ import dynamic from "next/dynamic"
 import { YANDEX_MAPS_API_KEY, MAP_CONFIG } from "@/lib/config"
 import { createEnhancedBalloonContent } from "./enhanced-balloon"
 import { CategoryFilter } from "@/components/ui/category-filter"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { TouchButton } from "@/components/ui/touch-button"
+import { useLanguage } from "@/lib/language-context"
+import { CATEGORIES } from "@/types/poi"
+import { Home } from "lucide-react"
+import Link from "next/link"
 
 export default function YandexMap() {
   const [pois, setPois] = useState<POI[]>([])
@@ -30,6 +36,7 @@ export default function YandexMap() {
   const [activeCategory, setActiveCategory] = useState<POICategory | "all">("all")
   const mapRef = useRef<any>(null)
   const { toast } = useToast()
+  const { t, language } = useLanguage()
 
   // Load POIs on component mount
   useEffect(() => {
@@ -65,24 +72,24 @@ export default function YandexMap() {
     }
   }
 
-  // Load route when showing route
-  useEffect(() => {
-    if (showRoute && selectedPoi) {
-      loadRoute()
-    } else {
-      setRouteData(null)
-    }
-  }, [showRoute, selectedPoi])
-
-  const loadRoute = async () => {
-    if (!selectedPoi) return
-
+  const handleShowRoute = async (poi: POI) => {
+    console.log("🗺️ Построение маршрута для:", poi.name)
+    setSelectedPoi(poi)
     setLoadingRoute(true)
-    try {
-      const route = await getRoute(MAP_CONFIG.KIOSK_LOCATION, selectedPoi.coordinates)
-      setRouteData(route)
 
-      // Автоматически масштабируем карту для показа всего маршрута
+    try {
+      // Получаем маршрут с учетом пешеходных дорог
+      const route = await getRoute([56.742278, 37.191899], poi.coordinates)
+      setRouteData(route)
+      setShowRoute(true)
+
+      // Показываем уведомление
+      toast({
+        title: "✅ Маршрут построен",
+        description: `Расстояние: ${(route.distance / 1000).toFixed(1)} км, Время: ${Math.round(route.duration / 60)} мин`,
+      })
+
+      // Масштабируем карту для показа маршрута
       if (mapRef.current && route.coordinates.length > 0) {
         const bounds = route.coordinates.reduce(
           (bounds, coord) => {
@@ -97,8 +104,7 @@ export default function YandexMap() {
           ],
         )
 
-        // Добавляем небольшой отступ
-        const padding = 0.001
+        const padding = 0.002
         const extendedBounds = [
           [bounds[0][0] - padding, bounds[0][1] - padding],
           [bounds[1][0] + padding, bounds[1][1] + padding],
@@ -107,7 +113,7 @@ export default function YandexMap() {
         mapRef.current.setBounds(extendedBounds, { checkZoomRange: true })
       }
     } catch (error) {
-      console.error("Error loading route:", error)
+      console.error("❌ Ошибка построения маршрута:", error)
       toast({
         title: "Ошибка маршрута",
         description: "Не удалось построить маршрут",
@@ -118,23 +124,18 @@ export default function YandexMap() {
     }
   }
 
-  const handleShowRoute = (poi: POI) => {
-    setSelectedPoi(poi)
-    setShowRoute(true)
-  }
-
   const handleCloseRoute = () => {
     setShowRoute(false)
     setSelectedPoi(null)
     setRouteData(null)
 
-    // Возвращаем карту к исходному масштабу
     if (mapRef.current) {
-      mapRef.current.setCenter(MAP_CONFIG.KIOSK_LOCATION, MAP_CONFIG.DEFAULT_ZOOM)
+      mapRef.current.setCenter([56.742278, 37.191899], MAP_CONFIG.DEFAULT_ZOOM)
     }
   }
 
   const handleShowDetail = (poi: POI) => {
+    console.log("ℹ️ Показать детали для:", poi.name)
     setSelectedPoi(poi)
     setShowDetail(true)
   }
@@ -143,25 +144,21 @@ export default function YandexMap() {
     setShowDetail(false)
   }
 
-  // Dynamically import the RouteModal component to avoid SSR issues
-  const RouteModal = dynamic(() => import("./route-modal"), {
-    ssr: false,
-  })
-
-  // Dynamically import the POIDetail component
-  const POIDetail = dynamic(() => import("./poi-detail"), {
-    ssr: false,
-  })
+  // Dynamically import components
+  const RouteModal = dynamic(() => import("./route-modal"), { ssr: false })
+  const POIDetail = dynamic(() => import("./poi-detail"), { ssr: false })
 
   // Глобальные обработчики для кнопок в балунах
   useEffect(() => {
     ;(window as any).handleRouteClick = (poiId: string) => {
+      console.log("🔄 Глобальный обработчик маршрута для POI:", poiId)
       const poi = pois.find((p) => p.id === poiId)
       if (poi) {
         handleShowRoute(poi)
       }
     }
     ;(window as any).handleDetailClick = (poiId: string) => {
+      console.log("🔄 Глобальный обработчик деталей для POI:", poiId)
       const poi = pois.find((p) => p.id === poiId)
       if (poi) {
         handleShowDetail(poi)
@@ -175,7 +172,7 @@ export default function YandexMap() {
   }, [pois])
 
   return (
-    <div className="w-full h-screen relative" style={{ height: "100vh", width: "100%" }}>
+    <div className="w-full h-screen relative">
       <YMaps
         query={{
           apikey: YANDEX_MAPS_API_KEY,
@@ -184,7 +181,7 @@ export default function YandexMap() {
       >
         <Map
           defaultState={{
-            center: MAP_CONFIG.KIOSK_LOCATION,
+            center: [56.742278, 37.191899],
             zoom: MAP_CONFIG.DEFAULT_ZOOM,
             controls: [],
           }}
@@ -204,27 +201,35 @@ export default function YandexMap() {
             }
           }}
           options={{
-            balloonMaxWidth: 300,
-            balloonMaxHeight: 350,
+            balloonMaxWidth: 320,
+            balloonMaxHeight: 400,
+            balloonPanelMaxMapArea: 0,
           }}
         >
           {/* Маркер киоска */}
           <Placemark
-            geometry={MAP_CONFIG.KIOSK_LOCATION}
+            geometry={[56.742278, 37.191899]}
             properties={{
-              iconCaption: "Вы здесь",
-              balloonContentHeader: "🏢 Информационный киоск",
+              iconCaption: "Вы находитесь здесь",
+              balloonContentHeader: "📍 Вы находитесь здесь",
               balloonContentBody: `
-                <div style="text-align: center; padding: 10px;">
-                  <p style="margin: 0; font-size: 14px;">Вы находитесь здесь</p>
-                  <p style="margin: 5px 0 0; font-size: 12px; color: #666;">ул. Жолио-Кюри, 20, Дубна</p>
+                <div style="text-align: center; padding: 20px; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; margin: -8px;">
+                  <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
+                    <span style="color: white; font-size: 32px;">📍</span>
+                  </div>
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #dc2626;">Вы находитесь здесь</h3>
+                  <p style="margin: 0 0 4px 0; font-size: 14px; color: #7f1d1d; font-weight: 600;">Информационный киоск ОИЯИ</p>
+                  <p style="margin: 0; font-size: 12px; color: #991b1b;">ул. Жолио-Кюри, 6, Дубна</p>
+                  <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
+                    <p style="margin: 0; font-size: 11px; color: #7f1d1d;">Выберите объект на карте для построения маршрута</p>
+                  </div>
                 </div>
               `,
-              hintContent: "Информационный киоск",
+              hintContent: "Информационный киоск - ваше местоположение",
             }}
             options={{
               preset: MAP_CONFIG.MARKER_STYLES.KIOSK,
-              iconCaptionMaxWidth: "100",
+              iconCaptionMaxWidth: "120",
             }}
           />
 
@@ -235,7 +240,7 @@ export default function YandexMap() {
               geometry={poi.coordinates}
               properties={{
                 balloonContent: createEnhancedBalloonContent(poi, poi.id),
-                hintContent: poi.name,
+                hintContent: `${poi.name} - ${CATEGORIES[poi.category].name}`,
                 iconCaption: poi.name,
               }}
               options={{
@@ -254,14 +259,14 @@ export default function YandexMap() {
             />
           ))}
 
-          {/* Маршрут по дорогам */}
+          {/* Маршрут */}
           {showRoute && routeData && routeData.coordinates.length > 0 && (
             <Polyline
               geometry={routeData.coordinates}
               options={{
                 strokeColor: "#3b82f6",
-                strokeWidth: 6,
-                strokeOpacity: 0.8,
+                strokeWidth: 8,
+                strokeOpacity: 0.9,
                 strokeStyle: "solid",
               }}
             />
@@ -275,6 +280,21 @@ export default function YandexMap() {
         </Map>
       </YMaps>
 
+      {/* Кнопка домой и переключатель языка */}
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
+        <TouchButton
+          asChild
+          touchSize="lg"
+          className="bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 text-gray-800 hover:bg-white hover:text-gray-900"
+        >
+          <Link href="/">
+            <Home className="h-6 w-6 mr-2 text-blue-600" />
+            <span className="font-semibold">На главную</span>
+          </Link>
+        </TouchButton>
+        <LanguageSwitcher />
+      </div>
+
       {/* Фильтр категорий */}
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10 w-auto">
         <CategoryFilter onFilterChange={handleFilterChange} />
@@ -282,38 +302,64 @@ export default function YandexMap() {
 
       {/* Индикатор загрузки маршрута */}
       {loadingRoute && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-white px-4 py-2 rounded-lg shadow-lg z-10">
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-            <span className="text-sm">Построение маршрута...</span>
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm px-6 py-4 rounded-xl shadow-xl z-10 border border-white/20">
+          <div className="flex items-center gap-3">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800">🗺️ Построение маршрута...</p>
+              <p className="text-xs text-gray-600">Расчет пешеходного пути с учетом дорог</p>
+            </div>
           </div>
         </div>
       )}
 
       {/* Кнопка сброса маршрута */}
       {showRoute && (
-        <div className="absolute top-4 left-4 z-10">
-          <button
+        <div className="absolute top-4 right-4 z-10">
+          <TouchButton
             onClick={handleCloseRoute}
-            className="bg-white px-3 py-2 rounded-lg shadow-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            touchSize="lg"
+            className="bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 text-gray-700 hover:text-gray-900"
           >
-            ← Сбросить маршрут
-          </button>
+            <span className="text-lg mr-2">←</span>
+            Сбросить маршрут
+          </TouchButton>
         </div>
       )}
 
-      {/* Route modal */}
+      {/* Информация о маршруте */}
+      {showRoute && routeData && (
+        <div className="absolute bottom-4 left-4 right-4 z-10">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-800">✅ Маршрут построен</h3>
+                <p className="text-sm text-gray-600">
+                  Расстояние: <span className="font-medium">{(routeData.distance / 1000).toFixed(1)} км</span> • Время:{" "}
+                  <span className="font-medium">{Math.round(routeData.duration / 60)} мин</span>
+                </p>
+              </div>
+              <TouchButton
+                onClick={() => setShowRoute(true)}
+                touchSize="sm"
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                QR-код
+              </TouchButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Route modal с QR-кодом */}
       {showRoute && selectedPoi && (
-        <RouteModal
-          poi={selectedPoi}
-          start={MAP_CONFIG.KIOSK_LOCATION}
-          onClose={handleCloseRoute}
-          routeData={routeData}
-        />
+        <RouteModal poi={selectedPoi} start={[56.742278, 37.191899]} onClose={handleCloseRoute} routeData={routeData} />
       )}
 
       {/* POI detail modal */}
-      {showDetail && selectedPoi && <POIDetail poi={selectedPoi} onClose={handleCloseDetail} />}
+      {showDetail && selectedPoi && (
+        <POIDetail poi={selectedPoi} onClose={handleCloseDetail} onShowRoute={handleShowRoute} />
+      )}
     </div>
   )
 }

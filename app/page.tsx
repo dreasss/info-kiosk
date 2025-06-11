@@ -1,277 +1,216 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { fetchNews, fetchSettings } from "@/lib/api"
-import type { NewsItem } from "@/types/news"
-import type { SystemSettings } from "@/types/settings"
-import { Map, Building, Camera, Info, Clock } from "lucide-react"
-import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import Image from "next/image"
+import { Card, CardContent } from "@/components/ui/card"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { RSSTicker } from "@/components/ui/rss-ticker"
+import { ClockDate } from "@/components/ui/clock-date"
+import { TouchButton } from "@/components/ui/touch-button"
+import { useLanguage } from "@/lib/language-context"
+import { Map, Building2, Newspaper, Users, Phone, Mail, Globe, Settings } from "lucide-react"
+import { fetchSettings } from "@/lib/api"
+import type { SystemSettings } from "@/types/settings"
 
 export default function HomePage() {
-  const [news, setNews] = useState<NewsItem[]>([])
-  const [currentNewsIndex, setCurrentNewsIndex] = useState(0)
+  const { t, language } = useLanguage()
   const [settings, setSettings] = useState<SystemSettings | null>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadSettings = async () => {
       try {
-        const [newsData, settingsData] = await Promise.all([fetchNews(), fetchSettings()])
-        setNews(newsData)
-        setSettings(settingsData)
+        const systemSettings = await fetchSettings()
+        setSettings(systemSettings)
       } catch (error) {
-        console.error("Error loading data:", error)
-      } finally {
-        setLoading(false)
+        console.error("Error loading settings:", error)
       }
     }
 
-    loadData()
+    loadSettings()
   }, [])
 
-  // Автоматическая смена новостей каждую минуту
-  useEffect(() => {
-    if (news.length === 0) return
-
-    const interval = setInterval(() => {
-      setCurrentNewsIndex((prev) => (prev + 1) % news.length)
-    }, 60000) // 60 секунд
-
-    return () => clearInterval(interval)
-  }, [news.length])
-
-  const navigationItems = [
-    {
-      title: "Интерактивная карта",
-      description: "Навигация по территории ОИЯИ",
-      icon: Map,
-      href: "/map",
-      color: "from-blue-500 to-blue-600",
-      iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    {
-      title: "О ОИЯИ",
-      description: "История и информация об институте",
-      icon: Info,
-      href: "/about",
-      color: "from-green-500 to-green-600",
-      iconBg: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    {
-      title: "Инфраструктура",
-      description: "Объекты и сооружения института",
-      icon: Building,
-      href: "/infrastructure",
-      color: "from-purple-500 to-purple-600",
-      iconBg: "bg-purple-100",
-      iconColor: "text-purple-600",
-    },
-    {
-      title: "Фото и Видео",
-      description: "Галерея изображений и видеоматериалов",
-      icon: Camera,
-      href: "/gallery",
-      color: "from-orange-500 to-orange-600",
-      iconBg: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-  ]
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
-        </div>
-      </div>
-    )
-  }
-
-  const currentNews = news[currentNewsIndex]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+      {/* Шапка с логотипом, часами и переключателем языка */}
+      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-2xl">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl flex items-center justify-center">
+            {/* Логотип и название */}
+            <div className="flex items-center space-x-6">
+              <div className="relative">
                 <Image
-                  src={settings?.organizationInfo.logo || "/placeholder.svg?height=48&width=48"}
-                  alt="ОИЯИ"
-                  width={48}
-                  height={48}
-                  className="rounded-lg"
+                  src="/images/jinr-logo.png"
+                  alt="JINR Logo"
+                  width={120}
+                  height={120}
+                  className="rounded-full border-4 border-white/20 shadow-xl bg-white/10 p-2"
                 />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{settings?.organizationInfo.name || "ОИЯИ"}</h1>
-                <p className="text-sm text-gray-600">
-                  {settings?.organizationInfo.fullName || "Объединенный институт ядерных исследований"}
+                <h1
+                  className="text-3xl font-bold mb-2 text-white"
+                  style={{
+                    textShadow: "2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)",
+                  }}
+                >
+                  Объединенный Институт Ядерных Исследований
+                </h1>
+                <p className="text-blue-100 text-lg font-medium">
+                  {language === "ru" ? "Международный научно-исследовательский центр" : "International Research Center"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="h-5 w-5 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                {new Date().toLocaleTimeString("ru-RU", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
+
+            {/* Часы и дата по центру */}
+            <div className="flex-1 flex justify-center">
+              <ClockDate />
+            </div>
+
+            {/* Переключатель языка и кнопка настроек */}
+            <div className="flex items-center gap-4">
+              <LanguageSwitcher />
+              <TouchButton asChild variant="ghost" className="text-white hover:bg-white/20">
+                <Link href="/admin/login">
+                  <Settings className="h-6 w-6" />
+                </Link>
+              </TouchButton>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Navigation Cards */}
-          <div className="lg:col-span-2">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              Добро пожаловать в информационную систему ОИЯИ
-            </h2>
+      {/* RSS бегущая строка */}
+      <RSSTicker />
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {navigationItems.map((item, index) => {
-                const Icon = item.icon
-                return (
-                  <Card
-                    key={item.href}
-                    className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 overflow-hidden"
-                    onClick={() => router.push(item.href)}
-                  >
-                    <CardContent className="p-0">
-                      <div className={cn("h-32 bg-gradient-to-br", item.color, "relative overflow-hidden")}>
-                        <div className="absolute inset-0 bg-black/10"></div>
-                        <div className="absolute top-4 right-4">
-                          <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", item.iconBg)}>
-                            <Icon className={cn("h-6 w-6", item.iconColor)} />
-                          </div>
-                        </div>
-                        <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                          <h3 className="text-xl font-bold mb-1">{item.title}</h3>
-                          <p className="text-sm opacity-90">{item.description}</p>
-                        </div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
+      {/* Основной контент */}
+      <main className="container mx-auto px-6 py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold text-gray-800 mb-4">
+            {language === "ru" ? "Информационная система" : "Information System"}
+          </h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            {language === "ru"
+              ? "Добро пожаловать в интерактивную информационную систему. Выберите нужный раздел для получения информации."
+              : "Welcome to the interactive information system. Select the desired section to get information."}
+          </p>
+        </div>
 
-          {/* News Section */}
-          <div className="lg:col-span-1">
-            <Card className="h-fit sticky top-24">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-gray-900">Новости</h3>
-                  <div className="flex space-x-1">
-                    {news.map((_, index) => (
-                      <button
-                        key={index}
-                        className={cn(
-                          "w-2 h-2 rounded-full transition-all duration-300",
-                          index === currentNewsIndex ? "bg-blue-600 w-6" : "bg-gray-300",
-                        )}
-                        onClick={() => setCurrentNewsIndex(index)}
-                      />
-                    ))}
+        {/* Основные разделы */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+          <TouchButton asChild touchSize="xl" className="h-auto p-0">
+            <Link href="/map">
+              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
+                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Map className="h-10 w-10 text-white" />
                   </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {language === "ru" ? "Интерактивная карта" : "Interactive Map"}
+                  </h3>
+                  <p className="text-gray-600 text-lg">
+                    {language === "ru"
+                      ? "Навигация по территории с построением маршрутов"
+                      : "Territory navigation with route building"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </TouchButton>
+
+          <TouchButton asChild touchSize="xl" className="h-auto p-0">
+            <Link href="/infrastructure">
+              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
+                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Building2 className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {language === "ru" ? "Инфраструктура" : "Infrastructure"}
+                  </h3>
+                  <p className="text-gray-600 text-lg">
+                    {language === "ru"
+                      ? "Информация об объектах и сооружениях"
+                      : "Information about objects and structures"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </TouchButton>
+
+          <TouchButton asChild touchSize="xl" className="h-auto p-0">
+            <Link href="/news">
+              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
+                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Newspaper className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">{language === "ru" ? "Новости" : "News"}</h3>
+                  <p className="text-gray-600 text-lg">
+                    {language === "ru" ? "Актуальные новости и события" : "Current news and events"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </TouchButton>
+
+          <TouchButton asChild touchSize="xl" className="h-auto p-0">
+            <Link href="/about">
+              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200">
+                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
+                  <div className="w-20 h-20 mx-auto mb-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                    <Users className="h-10 w-10 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                    {language === "ru" ? "Об ОИЯИ" : "About JINR"}
+                  </h3>
+                  <p className="text-gray-600 text-lg">
+                    {language === "ru" ? "История и деятельность института" : "History and activities of the institute"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </TouchButton>
+        </div>
+
+        {/* Контактная информация */}
+        <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
+          <CardContent className="p-8">
+            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+              {language === "ru" ? "Контактная информация" : "Contact Information"}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <Phone className="h-6 w-6 text-white" />
                 </div>
-
-                {currentNews && (
-                  <div className="space-y-4">
-                    {currentNews.image && (
-                      <div className="relative h-48 rounded-lg overflow-hidden">
-                        <Image
-                          src={currentNews.image || "/placeholder.svg"}
-                          alt={currentNews.title}
-                          fill
-                          className="object-cover transition-transform duration-300 hover:scale-105"
-                        />
-                      </div>
-                    )}
-
-                    <div>
-                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">{currentNews.title}</h4>
-                      <p className="text-sm text-gray-600 line-clamp-3 mb-3">{currentNews.content}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          {new Date(currentNews.date).toLocaleDateString("ru-RU")}
-                        </span>
-                        {currentNews.url && (
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={currentNews.url} target="_blank" rel="noopener noreferrer">
-                              Читать далее
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {news.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>Новости не найдены</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+                <div>
+                  <p className="font-semibold text-gray-800">{language === "ru" ? "Телефон" : "Phone"}</p>
+                  <p className="text-gray-600">+7 (496) 216-50-59</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
+                  <Mail className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">Email</p>
+                  <p className="text-gray-600">post@jinr.ru</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                  <Globe className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-800">{language === "ru" ? "Веб-сайт" : "Website"}</p>
+                  <p className="text-gray-600">www.jinr.ru</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-8 mt-16">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h4 className="font-bold mb-4">Контакты</h4>
-              <p className="text-sm text-gray-300 mb-2">{settings?.organizationInfo.address}</p>
-              <p className="text-sm text-gray-300 mb-2">Тел: {settings?.organizationInfo.phone}</p>
-              <p className="text-sm text-gray-300">Email: {settings?.organizationInfo.email}</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Полезные ссылки</h4>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li>
-                  <a href={settings?.organizationInfo.website} className="hover:text-white transition-colors">
-                    Официальный сайт
-                  </a>
-                </li>
-                <li>
-                  <Link href="/admin" className="hover:text-white transition-colors">
-                    Панель администратора
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">О системе</h4>
-              <p className="text-sm text-gray-300">
-                Интерактивная информационная система для посетителей и сотрудников ОИЯИ
-              </p>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 ОИЯИ. Все права защищены.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
