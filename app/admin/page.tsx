@@ -147,8 +147,10 @@ export default function AdminPage() {
   }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated");
-    localStorage.removeItem("admin_login_time");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admin_authenticated");
+      localStorage.removeItem("admin_login_time");
+    }
     router.push("/admin/login");
   };
 
