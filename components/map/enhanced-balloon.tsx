@@ -19,7 +19,7 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
       <div style="
         width: 100%;
         height: 160px;
-        background-image: url('${poi.images[0] || "https://cdn.builder.io/api/v1/image/assets%2F0968c4d4542442209a8c7e4e9ccf912f%2Fb50b65203f04446e9adf87ea91b11619"}');
+        background-image: url('${poi.images[0] || "https://cdn.builder.io/api/v1/image/assets%2F0968c4d4542442209a8c7e4e9ccf912f%2F2b1b389a9e0d42b1b44fead0b8aa3338"}');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
