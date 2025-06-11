@@ -1,8 +1,8 @@
-import type { POI } from "@/types/poi"
-import { CATEGORIES } from "@/types/poi"
+import type { POI } from "@/types/poi";
+import { CATEGORIES } from "@/types/poi";
 
 export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
-  const category = CATEGORIES[poi.category]
+  const category = CATEGORIES[poi.category];
 
   return `
     <div style="
@@ -19,9 +19,10 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
       <div style="
         width: 100%;
         height: 160px;
-        background-image: url('${poi.images[0] || "/placeholder.svg?height=160&width=300"}');
+        background-image: url('${poi.images[0] || "https://cdn.builder.io/api/v1/image/assets%2F0968c4d4542442209a8c7e4e9ccf912f%2Fb50b65203f04446e9adf87ea91b11619"}');
         background-size: cover;
         background-position: center;
+        background-repeat: no-repeat;
         position: relative;
       ">
         <div style="
@@ -36,7 +37,7 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
           font-weight: 600;
         ">${category.name}</div>
       </div>
-      
+
       <!-- Контент -->
       <div style="padding: 16px;">
         <h3 style="
@@ -46,14 +47,14 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
           color: #1f2937;
           line-height: 1.2;
         ">${poi.name}</h3>
-        
+
         <p style="
           margin: 0 0 12px 0;
           font-size: 13px;
           color: #6b7280;
           line-height: 1.4;
         ">${poi.shortDescription}</p>
-        
+
         <div style="
           display: flex;
           align-items: center;
@@ -64,13 +65,13 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
           <span style="margin-right: 4px;">📍</span>
           <span>${poi.address}</span>
         </div>
-        
+
         <!-- Кнопки -->
         <div style="
           display: flex;
           gap: 8px;
         ">
-          <button 
+          <button
             onclick="handleRouteClick('${poiId}')"
             style="
               flex: 1;
@@ -90,8 +91,8 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
           >
             🗺️ Маршрут
           </button>
-          
-          <button 
+
+          <button
             onclick="handleDetailClick('${poiId}')"
             style="
               flex: 1;
@@ -114,5 +115,5 @@ export function createEnhancedBalloonContent(poi: POI, poiId: string): string {
         </div>
       </div>
     </div>
-  `
+  `;
 }
