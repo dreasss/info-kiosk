@@ -360,40 +360,67 @@ export class EventsParser {
 
 // Функция для получения событий с кэшированием
 export async function getJinrEvents(): Promise<JinrEvent[]> {
+  // Проверяем, что мы в браузере
+  const isBrowser = typeof window !== "undefined";
+
   const cacheKey = "jinr_events_cache";
   const cacheTimeKey = "jinr_events_cache_time";
   const cacheTimeout = 60 * 60 * 1000; // 1 час
 
   try {
-    // Проверяем кэш
-    const cachedEvents = localStorage.getItem(cacheKey);
-    const cacheTime = localStorage.getItem(cacheTimeKey);
+    // Проверяем кэш только в браузере
+    if (isBrowser) {
+      try {
+        const cachedEvents = localStorage.getItem(cacheKey);
+        const cacheTime = localStorage.getItem(cacheTimeKey);
 
-    if (cachedEvents && cacheTime) {
-      const timeDiff = Date.now() - Number.parseInt(cacheTime);
-      if (timeDiff < cacheTimeout) {
-        return JSON.parse(cachedEvents);
+        if (cachedEvents && cacheTime) {
+          const timeDiff = Date.now() - Number.parseInt(cacheTime);
+          if (timeDiff < cacheTimeout) {
+            console.log("Returning cached events");
+            return JSON.parse(cachedEvents);
+          }
+        }
+      } catch (cacheError) {
+        console.warn("Error reading from cache:", cacheError);
       }
     }
+
+    console.log("Fetching fresh events data...");
 
     // Загружаем новые события
     const events = await EventsParser.fetchEvents();
 
-    // Сохраняем в кэш
-    localStorage.setItem(cacheKey, JSON.stringify(events));
-    localStorage.setItem(cacheTimeKey, Date.now().toString());
+    // Сохраняем в кэш только в браузере
+    if (isBrowser) {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(events));
+        localStorage.setItem(cacheTimeKey, Date.now().toString());
+        console.log("Events cached successfully");
+      } catch (cacheError) {
+        console.warn("Error saving to cache:", cacheError);
+      }
+    }
 
     return events;
   } catch (error) {
     console.error("Error getting JINR events:", error);
 
-    // Возвращаем кэшированные данные в случае ошибки
-    const cachedEvents = localStorage.getItem(cacheKey);
-    if (cachedEvents) {
-      return JSON.parse(cachedEvents);
+    // Возвращаем кэшированные данные в случае ошибки (только в браузере)
+    if (isBrowser) {
+      try {
+        const cachedEvents = localStorage.getItem(cacheKey);
+        if (cachedEvents) {
+          console.log("Returning cached events due to fetch error");
+          return JSON.parse(cachedEvents);
+        }
+      } catch (cacheError) {
+        console.warn("Error reading cached events:", cacheError);
+      }
     }
 
     // Возвращаем демо-данные как последний вариант
+    console.log("Returning demo events as fallback");
     return EventsParser.getDemoEvents();
   }
 }
