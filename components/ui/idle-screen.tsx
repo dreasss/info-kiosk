@@ -121,23 +121,27 @@ export function IdleScreen({ children }: IdleScreenProps) {
               <div className="flex items-center gap-3">
                 <Clock className="h-8 w-8 text-blue-200" />
                 <span className="text-4xl font-mono font-bold">
-                  {currentTime.toLocaleTimeString("ru-RU", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
+                  {mounted && currentTime
+                    ? currentTime.toLocaleTimeString("ru-RU", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                      })
+                    : "--:--:--"}
                 </span>
               </div>
             </div>
             <div className="flex items-center justify-center gap-3">
               <Calendar className="h-6 w-6 text-blue-200" />
               <span className="text-xl">
-                {currentTime.toLocaleDateString("ru-RU", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {mounted && currentTime
+                  ? currentTime.toLocaleDateString("ru-RU", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : "Загрузка..."}
               </span>
             </div>
           </div>
