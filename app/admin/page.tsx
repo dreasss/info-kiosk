@@ -1,21 +1,34 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useToast } from "@/hooks/use-toast"
-import { useLanguage } from "@/lib/language-context"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/lib/language-context";
 import {
   Home,
   Save,
@@ -29,14 +42,14 @@ import {
   Info,
   Rss,
   LogOut,
-} from "lucide-react"
-import Link from "next/link"
-import { TouchButton } from "@/components/ui/touch-button"
-import type { POI } from "@/types/poi"
-import type { NewsItem } from "@/types/news"
-import type { MediaItem } from "@/types/media"
-import type { SystemSettings, OrganizationInfo } from "@/types/settings"
-import { CATEGORIES } from "@/types/poi"
+} from "lucide-react";
+import Link from "next/link";
+import { TouchButton } from "@/components/ui/touch-button";
+import type { POI } from "@/types/poi";
+import type { NewsItem } from "@/types/news";
+import type { MediaItem } from "@/types/media";
+import type { SystemSettings, OrganizationInfo } from "@/types/settings";
+import { CATEGORIES } from "@/types/poi";
 import {
   fetchPOIs,
   fetchNews,
@@ -54,18 +67,18 @@ import {
   createIcon,
   removeIcon,
   uploadMediaFile,
-} from "@/lib/api"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
+} from "@/lib/api";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("pois")
-  const [pois, setPois] = useState<POI[]>([])
-  const [news, setNews] = useState<NewsItem[]>([])
-  const [media, setMedia] = useState<MediaItem[]>([])
-  const [settings, setSettings] = useState<SystemSettings | null>(null)
-  const [rssFeeds, setRssFeeds] = useState<any[]>([])
-  const [icons, setIcons] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState("pois");
+  const [pois, setPois] = useState<POI[]>([]);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const [rssFeeds, setRssFeeds] = useState<any[]>([]);
+  const [icons, setIcons] = useState<any[]>([]);
 
   // Состояния форм
   const [currentPoi, setCurrentPoi] = useState<Partial<POI>>({
@@ -76,14 +89,14 @@ export default function AdminPage() {
     images: [],
     address: "",
     category: "building",
-  })
+  });
 
   const [currentNews, setCurrentNews] = useState<Partial<NewsItem>>({
     title: "",
     content: "",
     image: "",
     date: new Date().toISOString(),
-  })
+  });
 
   const [currentMedia, setCurrentMedia] = useState<Partial<MediaItem>>({
     title: "",
@@ -92,111 +105,123 @@ export default function AdminPage() {
     url: "",
     category: "photo",
     date: new Date().toISOString(),
-  })
+  });
 
-  const [rssUrl, setRssUrl] = useState("")
-  const [rssName, setRssName] = useState("")
-  const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo | null>(null)
-  const [idleTimeout, setIdleTimeout] = useState(5)
-  const [isLoading, setIsLoading] = useState(false)
-  const [iconName, setIconName] = useState("")
-  const [iconCategory, setIconCategory] = useState("building")
+  const [rssUrl, setRssUrl] = useState("");
+  const [rssName, setRssName] = useState("");
+  const [organizationInfo, setOrganizationInfo] =
+    useState<OrganizationInfo | null>(null);
+  const [idleTimeout, setIdleTimeout] = useState(5);
+  const [isLoading, setIsLoading] = useState(false);
+  const [iconName, setIconName] = useState("");
+  const [iconCategory, setIconCategory] = useState("building");
 
-  const { toast } = useToast()
-  const { language } = useLanguage()
-  const router = useRouter()
+  const { toast } = useToast();
+  const { language } = useLanguage();
+  const router = useRouter();
 
   // Загрузка данных при монтировании
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("admin_authenticated")
-    const loginTime = localStorage.getItem("admin_login_time")
+    // Проверяем, что мы в браузере
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const isAuthenticated = localStorage.getItem("admin_authenticated");
+    const loginTime = localStorage.getItem("admin_login_time");
 
     if (!isAuthenticated || !loginTime) {
-      router.push("/admin/login")
-      return
+      router.push("/admin/login");
+      return;
     }
 
-    const sessionDuration = 24 * 60 * 60 * 1000
+    const sessionDuration = 24 * 60 * 60 * 1000;
     if (Date.now() - Number.parseInt(loginTime) > sessionDuration) {
-      localStorage.removeItem("admin_authenticated")
-      localStorage.removeItem("admin_login_time")
-      router.push("/admin/login")
-      return
+      localStorage.removeItem("admin_authenticated");
+      localStorage.removeItem("admin_login_time");
+      router.push("/admin/login");
+      return;
     }
 
-    loadData()
-  }, [router])
+    loadData();
+  }, [router]);
 
   const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated")
-    localStorage.removeItem("admin_login_time")
-    router.push("/admin/login")
-  }
+    localStorage.removeItem("admin_authenticated");
+    localStorage.removeItem("admin_login_time");
+    router.push("/admin/login");
+  };
 
   const loadData = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const [poisData, newsData, settingsData, mediaData, rssData, iconsData] = await Promise.all([
-        fetchPOIs(),
-        fetchNews(),
-        fetchSettings(),
-        fetchMedia(),
-        fetchRssFeeds(),
-        fetchIcons(),
-      ])
+      const [poisData, newsData, settingsData, mediaData, rssData, iconsData] =
+        await Promise.all([
+          fetchPOIs(),
+          fetchNews(),
+          fetchSettings(),
+          fetchMedia(),
+          fetchRssFeeds(),
+          fetchIcons(),
+        ]);
 
-      setPois(poisData)
-      setNews(newsData)
-      setSettings(settingsData)
-      setMedia(mediaData)
-      setRssFeeds(rssData)
-      setIcons(iconsData)
-      setOrganizationInfo(settingsData.organizationInfo)
-      setIdleTimeout(settingsData.idleTimeout / (60 * 1000))
+      setPois(poisData);
+      setNews(newsData);
+      setSettings(settingsData);
+      setMedia(mediaData);
+      setRssFeeds(rssData);
+      setIcons(iconsData);
+      setOrganizationInfo(settingsData.organizationInfo);
+      setIdleTimeout(settingsData.idleTimeout / (60 * 1000));
     } catch (error) {
-      console.error("Error loading data:", error)
+      console.error("Error loading data:", error);
       toast({
         title: "Ошибка загрузки",
         description: "Не удалось загрузить данные",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для POI
-  const handlePoiInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setCurrentPoi((prev) => ({ ...prev, [name]: value }))
-  }
+  const handlePoiInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setCurrentPoi((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handlePoiCategoryChange = (value: string) => {
-    setCurrentPoi((prev) => ({ ...prev, category: value }))
-  }
+    setCurrentPoi((prev) => ({ ...prev, category: value }));
+  };
 
-  const handleCoordinatesChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const value = Number.parseFloat(e.target.value)
+  const handleCoordinatesChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+  ) => {
+    const value = Number.parseFloat(e.target.value);
     setCurrentPoi((prev) => {
-      const newCoordinates = [...(prev.coordinates || [56.7417, 37.189])]
-      newCoordinates[index] = value
-      return { ...prev, coordinates: newCoordinates as [number, number] }
-    })
-  }
+      const newCoordinates = [...(prev.coordinates || [56.7417, 37.189])];
+      newCoordinates[index] = value;
+      return { ...prev, coordinates: newCoordinates as [number, number] };
+    });
+  };
 
   const handleAddImage = () => {
     setCurrentPoi((prev) => ({
       ...prev,
       images: [...(prev.images || []), `/placeholder.svg?height=200&width=300`],
-    }))
-  }
+    }));
+  };
 
   const handleRemoveImage = (index: number) => {
     setCurrentPoi((prev) => ({
       ...prev,
       images: prev.images?.filter((_, i) => i !== index),
-    }))
-  }
+    }));
+  };
 
   const handleSavePoi = async () => {
     if (!currentPoi.name || !currentPoi.coordinates) {
@@ -204,12 +229,12 @@ export default function AdminPage() {
         title: "Ошибка",
         description: "Название и координаты обязательны!",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const newPoi = await createPOI({
         name: currentPoi.name,
         shortDescription: currentPoi.shortDescription || "",
@@ -218,9 +243,9 @@ export default function AdminPage() {
         images: currentPoi.images || [],
         address: currentPoi.address || "",
         category: currentPoi.category || "building",
-      })
+      });
 
-      setPois((prev) => [...prev, newPoi])
+      setPois((prev) => [...prev, newPoi]);
 
       // Сброс формы
       setCurrentPoi({
@@ -231,29 +256,31 @@ export default function AdminPage() {
         images: [],
         address: "",
         category: "building",
-      })
+      });
 
       toast({
         title: "Успешно",
         description: "Объект сохранен в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error saving POI:", error)
+      console.error("Error saving POI:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось сохранить объект",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для новостей
-  const handleNewsInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setCurrentNews((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleNewsInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setCurrentNews((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSaveNews = async () => {
     if (!currentNews.title || !currentNews.content) {
@@ -261,21 +288,21 @@ export default function AdminPage() {
         title: "Ошибка",
         description: "Заголовок и содержание обязательны!",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const newNews = await createNews({
         title: currentNews.title,
         content: currentNews.content,
         image: currentNews.image || "/placeholder.svg?height=200&width=300",
         date: currentNews.date || new Date().toISOString(),
         url: currentNews.url,
-      })
+      });
 
-      setNews((prev) => [newNews, ...prev])
+      setNews((prev) => [newNews, ...prev]);
 
       // Сброс формы
       setCurrentNews({
@@ -283,54 +310,58 @@ export default function AdminPage() {
         content: "",
         image: "",
         date: new Date().toISOString(),
-      })
+      });
 
       toast({
         title: "Успешно",
         description: "Новость сохранена в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error saving news:", error)
+      console.error("Error saving news:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось сохранить новость",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для медиафайлов
-  const handleMediaInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setCurrentMedia((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleMediaInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setCurrentMedia((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleMediaFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleMediaFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
     try {
-      setIsLoading(true)
-      const url = await uploadMediaFile(file)
-      setCurrentMedia((prev) => ({ ...prev, url }))
+      setIsLoading(true);
+      const url = await uploadMediaFile(file);
+      setCurrentMedia((prev) => ({ ...prev, url }));
 
       toast({
         title: "Успешно",
         description: "Файл загружен!",
-      })
+      });
     } catch (error) {
-      console.error("Error uploading file:", error)
+      console.error("Error uploading file:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить файл",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSaveMedia = async () => {
     if (!currentMedia.title || !currentMedia.url) {
@@ -338,12 +369,12 @@ export default function AdminPage() {
         title: "Ошибка",
         description: "Название и файл обязательны!",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const newMedia = await createMedia({
         title: currentMedia.title,
         description: currentMedia.description || "",
@@ -351,9 +382,9 @@ export default function AdminPage() {
         url: currentMedia.url,
         category: currentMedia.category || "photo",
         date: new Date().toISOString(),
-      })
+      });
 
-      setMedia((prev) => [...prev, newMedia])
+      setMedia((prev) => [...prev, newMedia]);
 
       // Сброс формы
       setCurrentMedia({
@@ -363,80 +394,82 @@ export default function AdminPage() {
         url: "",
         category: "photo",
         date: new Date().toISOString(),
-      })
+      });
 
       toast({
         title: "Успешно",
         description: "Медиафайл сохранен в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error saving media:", error)
+      console.error("Error saving media:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось сохранить медиафайл",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteMedia = async (id: string) => {
     try {
-      setIsLoading(true)
-      await removeMedia(id)
-      setMedia((prev) => prev.filter((m) => m.id !== id))
+      setIsLoading(true);
+      await removeMedia(id);
+      setMedia((prev) => prev.filter((m) => m.id !== id));
 
       toast({
         title: "Успешно",
         description: "Медиафайл удален!",
-      })
+      });
     } catch (error) {
-      console.error("Error deleting media:", error)
+      console.error("Error deleting media:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось удалить медиафайл",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для настроек
-  const handleOrganizationInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setOrganizationInfo((prev) => (prev ? { ...prev, [name]: value } : null))
-  }
+  const handleOrganizationInfoChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setOrganizationInfo((prev) => (prev ? { ...prev, [name]: value } : null));
+  };
 
   const handleSaveSettings = async () => {
-    if (!settings || !organizationInfo) return
+    if (!settings || !organizationInfo) return;
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const updatedSettings = await updateSettings({
         ...settings,
         idleTimeout: idleTimeout * 60 * 1000,
         organizationInfo,
-      })
+      });
 
-      setSettings(updatedSettings)
+      setSettings(updatedSettings);
 
       toast({
         title: "Успешно",
         description: "Настройки сохранены в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error saving settings:", error)
+      console.error("Error saving settings:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось сохранить настройки",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для RSS
   const handleSaveRssUrl = async () => {
@@ -445,74 +478,76 @@ export default function AdminPage() {
         title: "Ошибка",
         description: "Название и URL RSS-ленты обязательны",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const newFeed = await createRssFeed({
         name: rssName,
         url: rssUrl,
         active: true,
-      })
+      });
 
-      setRssFeeds((prev) => [...prev, newFeed])
-      setRssUrl("")
-      setRssName("")
+      setRssFeeds((prev) => [...prev, newFeed]);
+      setRssUrl("");
+      setRssName("");
 
       toast({
         title: "Успешно",
         description: "RSS-лента добавлена в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error saving RSS feed:", error)
+      console.error("Error saving RSS feed:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось сохранить RSS-ленту",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteRssFeed = async (id: string) => {
     try {
-      setIsLoading(true)
-      await removeRssFeed(id)
-      setRssFeeds((prev) => prev.filter((f) => f.id !== id))
+      setIsLoading(true);
+      await removeRssFeed(id);
+      setRssFeeds((prev) => prev.filter((f) => f.id !== id));
 
       toast({
         title: "Успешно",
         description: "RSS-лента удалена!",
-      })
+      });
     } catch (error) {
-      console.error("Error deleting RSS feed:", error)
+      console.error("Error deleting RSS feed:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось удалить RSS-ленту",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Обработчики для иконок
-  const handleIconFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleIconFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
     if (!file || !iconName) {
       toast({
         title: "Ошибка",
         description: "Выберите файл и введите название иконки",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const newIcon = await createIcon(
         {
           name: iconName,
@@ -520,48 +555,48 @@ export default function AdminPage() {
           url: "",
         },
         file,
-      )
+      );
 
-      setIcons((prev) => [...prev, newIcon])
-      setIconName("")
+      setIcons((prev) => [...prev, newIcon]);
+      setIconName("");
 
       toast({
         title: "Успешно",
         description: "Иконка загружена в базу данных!",
-      })
+      });
     } catch (error) {
-      console.error("Error uploading icon:", error)
+      console.error("Error uploading icon:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось загрузить иконку",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteIcon = async (id: string) => {
     try {
-      setIsLoading(true)
-      await removeIcon(id)
-      setIcons((prev) => prev.filter((i) => i.id !== id))
+      setIsLoading(true);
+      await removeIcon(id);
+      setIcons((prev) => prev.filter((i) => i.id !== id));
 
       toast({
         title: "Успешно",
         description: "Иконка удалена!",
-      })
+      });
     } catch (error) {
-      console.error("Error deleting icon:", error)
+      console.error("Error deleting icon:", error);
       toast({
         title: "Ошибка",
         description: "Не удалось удалить иконку",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto py-8">
@@ -574,7 +609,11 @@ export default function AdminPage() {
               На главную
             </Link>
           </TouchButton>
-          <TouchButton onClick={handleLogout} touchSize="lg" variant="destructive">
+          <TouchButton
+            onClick={handleLogout}
+            touchSize="lg"
+            variant="destructive"
+          >
             <LogOut className="h-5 w-5 mr-2" />
             Выйти
           </TouchButton>
@@ -611,7 +650,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Добавить новый объект</CardTitle>
-                <CardDescription>Заполните информацию о новом объекте на карте</CardDescription>
+                <CardDescription>
+                  Заполните информацию о новом объекте на карте
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -628,7 +669,10 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Категория</Label>
-                  <Select value={currentPoi.category} onValueChange={handlePoiCategoryChange}>
+                  <Select
+                    value={currentPoi.category}
+                    onValueChange={handlePoiCategoryChange}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите категорию" />
                     </SelectTrigger>
@@ -636,7 +680,10 @@ export default function AdminPage() {
                       {Object.entries(CATEGORIES).map(([key, category]) => (
                         <SelectItem key={key} value={key}>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }}></div>
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            ></div>
                             <span>{category.name}</span>
                           </div>
                         </SelectItem>
@@ -715,7 +762,11 @@ export default function AdminPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label>Изображения</Label>
-                    <Button variant="outline" size="sm" onClick={handleAddImage}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddImage}
+                    >
                       <Plus className="h-4 w-4 mr-1" /> Добавить
                     </Button>
                   </div>
@@ -723,7 +774,10 @@ export default function AdminPage() {
                   {currentPoi.images && currentPoi.images.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
                       {currentPoi.images.map((image, index) => (
-                        <div key={index} className="relative border rounded p-2">
+                        <div
+                          key={index}
+                          className="relative border rounded p-2"
+                        >
                           <div className="flex justify-between items-center mb-1">
                             <span className="text-xs truncate">{image}</span>
                             <Button
@@ -739,12 +793,18 @@ export default function AdminPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">Нет добавленных изображений</p>
+                    <p className="text-sm text-muted-foreground">
+                      Нет добавленных изображений
+                    </p>
                   )}
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSavePoi} className="w-full" disabled={isLoading}>
+                <Button
+                  onClick={handleSavePoi}
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {isLoading ? "Сохранение..." : "Сохранить объект"}
                 </Button>
@@ -766,7 +826,9 @@ export default function AdminPage() {
                             <h3 className="font-bold">{poi.name}</h3>
                             <div
                               className="px-2 py-1 text-xs rounded-full text-white"
-                              style={{ backgroundColor: CATEGORIES[poi.category].color }}
+                              style={{
+                                backgroundColor: CATEGORIES[poi.category].color,
+                              }}
                             >
                               {CATEGORIES[poi.category].name}
                             </div>
@@ -774,7 +836,8 @@ export default function AdminPage() {
                           <div className="flex items-center text-sm text-muted-foreground mt-1">
                             <MapPin className="h-3 w-3 mr-1" />
                             <span>
-                              {poi.coordinates[0].toFixed(4)}, {poi.coordinates[1].toFixed(4)}
+                              {poi.coordinates[0].toFixed(4)},{" "}
+                              {poi.coordinates[1].toFixed(4)}
                             </span>
                           </div>
                           <p className="text-sm mt-2">{poi.shortDescription}</p>
@@ -782,7 +845,9 @@ export default function AdminPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Нет сохраненных объектов</p>
+                    <p className="text-muted-foreground">
+                      Нет сохраненных объектов
+                    </p>
                   )}
                 </ScrollArea>
               </CardContent>
@@ -796,7 +861,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Добавить новость</CardTitle>
-                <CardDescription>Создайте новую новость для отображения на сайте</CardDescription>
+                <CardDescription>
+                  Создайте новую новость для отображения на сайте
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -847,7 +914,11 @@ export default function AdminPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveNews} className="w-full" disabled={isLoading}>
+                <Button
+                  onClick={handleSaveNews}
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {isLoading ? "Сохранение..." : "Сохранить новость"}
                 </Button>
@@ -871,12 +942,16 @@ export default function AdminPage() {
                               {new Date(item.date).toLocaleDateString()}
                             </span>
                           </div>
-                          <p className="text-sm mt-2 line-clamp-3">{item.content}</p>
+                          <p className="text-sm mt-2 line-clamp-3">
+                            {item.content}
+                          </p>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Нет сохраненных новостей</p>
+                    <p className="text-muted-foreground">
+                      Нет сохраненных новостей
+                    </p>
                   )}
                 </ScrollArea>
               </CardContent>
@@ -885,12 +960,22 @@ export default function AdminPage() {
             <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle>Настройки RSS-ленты</CardTitle>
-                <CardDescription>Добавьте внешние источники новостей</CardDescription>
+                <CardDescription>
+                  Добавьте внешние источники новостей
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <Input value={rssName} onChange={(e) => setRssName(e.target.value)} placeholder="Название ленты" />
-                  <Input value={rssUrl} onChange={(e) => setRssUrl(e.target.value)} placeholder="URL RSS-ленты" />
+                  <Input
+                    value={rssName}
+                    onChange={(e) => setRssName(e.target.value)}
+                    placeholder="Название ленты"
+                  />
+                  <Input
+                    value={rssUrl}
+                    onChange={(e) => setRssUrl(e.target.value)}
+                    placeholder="URL RSS-ленты"
+                  />
                   <Button onClick={handleSaveRssUrl} disabled={isLoading}>
                     <Rss className="h-4 w-4 mr-2" />
                     {isLoading ? "Добавление..." : "Добавить"}
@@ -898,14 +983,21 @@ export default function AdminPage() {
                 </div>
 
                 <div className="border rounded-lg p-4">
-                  <h4 className="font-medium mb-2">Добавленные RSS-ленты ({rssFeeds.length}):</h4>
+                  <h4 className="font-medium mb-2">
+                    Добавленные RSS-ленты ({rssFeeds.length}):
+                  </h4>
                   <div className="space-y-2">
                     {rssFeeds.map((feed) => (
-                      <div key={feed.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div
+                        key={feed.id}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      >
                         <div className="flex items-center gap-2">
                           <Rss className="h-4 w-4 text-orange-500" />
                           <span className="font-medium">{feed.name}</span>
-                          <span className="text-sm text-gray-500">({feed.url})</span>
+                          <span className="text-sm text-gray-500">
+                            ({feed.url})
+                          </span>
                         </div>
                         <Button
                           variant="ghost"
@@ -917,7 +1009,11 @@ export default function AdminPage() {
                         </Button>
                       </div>
                     ))}
-                    {rssFeeds.length === 0 && <p className="text-sm text-gray-500">Нет добавленных RSS-лент</p>}
+                    {rssFeeds.length === 0 && (
+                      <p className="text-sm text-gray-500">
+                        Нет добавленных RSS-лент
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -931,7 +1027,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Управление медиафайлами</CardTitle>
-                <CardDescription>Загрузка фото, видео и GIF для галереи</CardDescription>
+                <CardDescription>
+                  Загрузка фото, видео и GIF для галереи
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -962,7 +1060,9 @@ export default function AdminPage() {
                   <Label>Тип медиафайла</Label>
                   <Select
                     value={currentMedia.type}
-                    onValueChange={(value) => setCurrentMedia((prev) => ({ ...prev, type: value }))}
+                    onValueChange={(value) =>
+                      setCurrentMedia((prev) => ({ ...prev, type: value }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите тип" />
@@ -978,7 +1078,9 @@ export default function AdminPage() {
                   <Label>Категория</Label>
                   <Select
                     value={currentMedia.category}
-                    onValueChange={(value) => setCurrentMedia((prev) => ({ ...prev, category: value }))}
+                    onValueChange={(value) =>
+                      setCurrentMedia((prev) => ({ ...prev, category: value }))
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите категорию" />
@@ -999,10 +1101,18 @@ export default function AdminPage() {
                     onChange={handleMediaFileUpload}
                     required
                   />
-                  {currentMedia.url && <p className="text-sm text-green-600">Файл загружен: {currentMedia.url}</p>}
+                  {currentMedia.url && (
+                    <p className="text-sm text-green-600">
+                      Файл загружен: {currentMedia.url}
+                    </p>
+                  )}
                 </div>
 
-                <Button onClick={handleSaveMedia} className="w-full" disabled={isLoading || !currentMedia.url}>
+                <Button
+                  onClick={handleSaveMedia}
+                  className="w-full"
+                  disabled={isLoading || !currentMedia.url}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {isLoading ? "Сохранение..." : "Добавить медиафайл"}
                 </Button>
@@ -1012,7 +1122,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Загруженные медиафайлы ({media.length})</CardTitle>
-                <CardDescription>Управление загруженными медиафайлами</CardDescription>
+                <CardDescription>
+                  Управление загруженными медиафайлами
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px] pr-4">
@@ -1022,21 +1134,29 @@ export default function AdminPage() {
                         <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
                           {item.type === "image" ? (
                             <Image
-                              src={item.url || "/placeholder.svg?height=200&width=300"}
+                              src={
+                                item.url ||
+                                "/placeholder.svg?height=200&width=300"
+                              }
                               alt={item.title}
                               width={200}
                               height={150}
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <video className="w-full h-full object-cover" controls>
+                            <video
+                              className="w-full h-full object-cover"
+                              controls
+                            >
                               <source src={item.url} type="video/mp4" />
                             </video>
                           )}
                         </div>
                         <h4 className="font-medium text-sm">{item.title}</h4>
                         <div className="flex justify-between items-center mt-2">
-                          <span className="text-xs text-muted-foreground capitalize">{item.type}</span>
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {item.type}
+                          </span>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -1050,7 +1170,9 @@ export default function AdminPage() {
                     ))}
                     {media.length === 0 && (
                       <div className="col-span-2 text-center py-8">
-                        <p className="text-muted-foreground">Нет загруженных медиафайлов</p>
+                        <p className="text-muted-foreground">
+                          Нет загруженных медиафайлов
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1066,7 +1188,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Настройки брендинга</CardTitle>
-                <CardDescription>Настройте информацию об организации</CardDescription>
+                <CardDescription>
+                  Настройте информацию об организации
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {organizationInfo && (
@@ -1165,9 +1289,15 @@ export default function AdminPage() {
                 )}
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="w-full" disabled={isLoading}>
+                <Button
+                  onClick={handleSaveSettings}
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Сохранение..." : "Сохранить настройки брендинга"}
+                  {isLoading
+                    ? "Сохранение..."
+                    : "Сохранить настройки брендинга"}
                 </Button>
               </CardFooter>
             </Card>
@@ -1175,7 +1305,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Предварительный просмотр</CardTitle>
-                <CardDescription>Как будет выглядеть информация на сайте</CardDescription>
+                <CardDescription>
+                  Как будет выглядеть информация на сайте
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {organizationInfo && (
@@ -1190,13 +1322,17 @@ export default function AdminPage() {
                       />
                       <div>
                         <h3 className="font-bold">{organizationInfo.name}</h3>
-                        <p className="text-sm opacity-90">{organizationInfo.fullName}</p>
+                        <p className="text-sm opacity-90">
+                          {organizationInfo.fullName}
+                        </p>
                       </div>
                     </div>
 
                     <div className="p-4 bg-gray-50 rounded-lg">
                       <h4 className="font-semibold mb-2">Описание:</h4>
-                      <p className="text-sm text-gray-600">{organizationInfo.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {organizationInfo.description}
+                      </p>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-sm">
@@ -1218,11 +1354,15 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Общие настройки</CardTitle>
-                <CardDescription>Настройте основные параметры системы</CardDescription>
+                <CardDescription>
+                  Настройте основные параметры системы
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="idleTimeout">Время бездействия (минуты)</Label>
+                  <Label htmlFor="idleTimeout">
+                    Время бездействия (минуты)
+                  </Label>
                   <div className="flex items-center gap-4">
                     <Input
                       id="idleTimeout"
@@ -1230,12 +1370,17 @@ export default function AdminPage() {
                       min="1"
                       max="60"
                       value={idleTimeout}
-                      onChange={(e) => setIdleTimeout(Number.parseInt(e.target.value))}
+                      onChange={(e) =>
+                        setIdleTimeout(Number.parseInt(e.target.value))
+                      }
                     />
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">минут</span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
+                      минут
+                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Время бездействия, после которого система автоматически вернется на главный экран
+                    Время бездействия, после которого система автоматически
+                    вернется на главный экран
                   </p>
                 </div>
 
@@ -1243,7 +1388,9 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="enableScreensaver">Включить скринсейвер</Label>
+                    <Label htmlFor="enableScreensaver">
+                      Включить скринсейвер
+                    </Label>
                     <Switch id="enableScreensaver" defaultChecked />
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -1256,7 +1403,9 @@ export default function AdminPage() {
                     <Label htmlFor="enableTouchSounds">Звуки при нажатии</Label>
                     <Switch id="enableTouchSounds" />
                   </div>
-                  <p className="text-xs text-muted-foreground">Воспроизводить звук при нажатии на кнопки</p>
+                  <p className="text-xs text-muted-foreground">
+                    Воспроизводить звук при нажатии на кнопки
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -1265,12 +1414,17 @@ export default function AdminPage() {
                     <Switch id="enableAnalytics" defaultChecked />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Собирать анонимную статистику использования для улучшения системы
+                    Собирать анонимную статистику использования для улучшения
+                    системы
                   </p>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveSettings} className="w-full" disabled={isLoading}>
+                <Button
+                  onClick={handleSaveSettings}
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   <Save className="h-4 w-4 mr-2" />
                   {isLoading ? "Сохранение..." : "Сохранить настройки"}
                 </Button>
@@ -1280,7 +1434,9 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Пользовательские иконки маркеров</CardTitle>
-                <CardDescription>Загрузка собственных иконок для маркеров на карте</CardDescription>
+                <CardDescription>
+                  Загрузка собственных иконок для маркеров на карте
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -1303,7 +1459,10 @@ export default function AdminPage() {
                       {Object.entries(CATEGORIES).map(([key, category]) => (
                         <SelectItem key={key} value={key}>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }}></div>
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: category.color }}
+                            ></div>
                             <span>{category.name}</span>
                           </div>
                         </SelectItem>
@@ -1313,15 +1472,27 @@ export default function AdminPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="iconFile">Файл иконки (PNG, SVG, 32x32px)</Label>
-                  <Input id="iconFile" type="file" accept="image/png,image/svg+xml" onChange={handleIconFileUpload} />
+                  <Label htmlFor="iconFile">
+                    Файл иконки (PNG, SVG, 32x32px)
+                  </Label>
+                  <Input
+                    id="iconFile"
+                    type="file"
+                    accept="image/png,image/svg+xml"
+                    onChange={handleIconFileUpload}
+                  />
                 </div>
 
                 <div className="mt-4">
-                  <h4 className="font-medium mb-2">Загруженные иконки ({icons.length}):</h4>
+                  <h4 className="font-medium mb-2">
+                    Загруженные иконки ({icons.length}):
+                  </h4>
                   <div className="grid grid-cols-4 gap-2">
                     {icons.map((icon) => (
-                      <div key={icon.id} className="border rounded p-2 text-center relative group">
+                      <div
+                        key={icon.id}
+                        className="border rounded p-2 text-center relative group"
+                      >
                         <div className="w-8 h-8 mx-auto mb-1 bg-gray-200 rounded flex items-center justify-center">
                           {icon.url ? (
                             <Image
@@ -1348,7 +1519,9 @@ export default function AdminPage() {
                     ))}
                     {icons.length === 0 && (
                       <div className="col-span-4 text-center py-4">
-                        <p className="text-sm text-gray-500">Нет загруженных иконок</p>
+                        <p className="text-sm text-gray-500">
+                          Нет загруженных иконок
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1359,24 +1532,34 @@ export default function AdminPage() {
             <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle>Системная информация</CardTitle>
-                <CardDescription>Информация о системе и статистика использования</CardDescription>
+                <CardDescription>
+                  Информация о системе и статистика использования
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-4 gap-4">
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Версия системы</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                      Версия системы
+                    </h4>
                     <p className="text-lg font-semibold">1.0.0</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Объектов в БД</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                      Объектов в БД
+                    </h4>
                     <p className="text-lg font-semibold">{pois.length}</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Новостей в БД</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                      Новостей в БД
+                    </h4>
                     <p className="text-lg font-semibold">{news.length}</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Медиафайлов в БД</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">
+                      Медиафайлов в БД
+                    </h4>
                     <p className="text-lg font-semibold">{media.length}</p>
                   </div>
                 </div>
@@ -1384,8 +1567,9 @@ export default function AdminPage() {
                 <Alert className="mt-6">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    Все данные сохраняются в локальной базе данных браузера (IndexedDB). Для применения некоторых
-                    настроек может потребоваться перезагрузка системы.
+                    Все данные сохраняются в локальной базе данных браузера
+                    (IndexedDB). Для применения некоторых настроек может
+                    потребоваться перезагрузка системы.
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -1394,5 +1578,5 @@ export default function AdminPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
