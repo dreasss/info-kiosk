@@ -1,290 +1,262 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ScrollArea } from "@/components/ui/scroll-area"
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { TouchButton } from "@/components/ui/touch-button"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  MapPin,
+  Search,
+  Building,
+  Coffee,
+  Car,
+  Utensils,
+  ShoppingBag,
+  Heart,
+  GraduationCap,
+  Briefcase,
+} from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
-import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { fetchPOIs } from "@/lib/api"
-import { type POI, type POICategory, CATEGORIES } from "@/types/poi"
-import { Search, MapPin, Info, Home, Building, Filter } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import dynamic from "next/dynamic"
+import { getAllPOIs, getPOIsByCategory } from "@/lib/db"
+import type { POI } from "@/types/poi"
 
-// Динамический импорт компонента POIDetail
-const POIDetail = dynamic(() => import("@/components/map/poi-detail"), {
-  ssr: false,
-})
+const categoryIcons = {
+  building: Building,
+  entertainment: Coffee,
+  parking: Car,
+  restaurant: Utensils,
+  shop: ShoppingBag,
+  medical: Heart,
+  education: GraduationCap,
+  office: Briefcase,
+}
+
+const categoryColors = {
+  building: "bg-blue-100 text-blue-800",
+  entertainment: "bg-purple-100 text-purple-800",
+  parking: "bg-gray-100 text-gray-800",
+  restaurant: "bg-orange-100 text-orange-800",
+  shop: "bg-green-100 text-green-800",
+  medical: "bg-red-100 text-red-800",
+  education: "bg-indigo-100 text-indigo-800",
+  office: "bg-yellow-100 text-yellow-800",
+}
 
 export default function InfrastructurePage() {
+  const { t } = useLanguage()
   const [pois, setPois] = useState<POI[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<POICategory | "all">("all")
-  const [selectedPoi, setSelectedPoi] = useState<POI | null>(null)
-  const [showDetail, setShowDetail] = useState(false)
-  const { t, language } = useLanguage()
+  const [filteredPois, setFilteredPois] = useState<POI[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [loading, setLoading] = useState(true)
 
-  // Загрузка объектов при монтировании
   useEffect(() => {
-    const loadPOIs = async () => {
-      try {
-        const data = await fetchPOIs()
-        setPois(data)
-      } catch (error) {
-        console.error("Error loading POIs:", error)
-      }
-    }
-
     loadPOIs()
   }, [])
 
-  // Фильтрация объектов по поисковому запросу и категории
-  const filteredPOIs = useMemo(() => {
-    return pois.filter((poi) => {
-      const matchesSearch =
-        searchQuery === "" ||
-        poi.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        poi.shortDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        poi.address.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    filterPOIs()
+  }, [pois, searchTerm, selectedCategory])
 
-      const matchesCategory = selectedCategory === "all" || poi.category === selectedCategory
-
-      return matchesSearch && matchesCategory
-    })
-  }, [pois, searchQuery, selectedCategory])
-
-  // Группировка объектов по первой букве для алфавитного указателя
-  const poisByLetter = useMemo(() => {
-    const grouped: Record<string, POI[]> = {}
-
-    filteredPOIs.forEach((poi) => {
-      const firstLetter = poi.name.charAt(0).toUpperCase()
-      if (!grouped[firstLetter]) {
-        grouped[firstLetter] = []
-      }
-      grouped[firstLetter].push(poi)
-    })
-
-    return grouped
-  }, [filteredPOIs])
-
-  // Получение всех доступных первых букв
-  const availableLetters = useMemo(() => {
-    return Object.keys(poisByLetter).sort()
-  }, [poisByLetter])
-
-  const handleShowDetail = (poi: POI) => {
-    setSelectedPoi(poi)
-    setShowDetail(true)
+  const loadPOIs = async () => {
+    try {
+      setLoading(true)
+      const data = await getAllPOIs()
+      setPois(data)
+    } catch (error) {
+      console.error("Ошибка загрузки объектов:", error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleCloseDetail = () => {
-    setShowDetail(false)
+  const filterPOIs = async () => {
+    try {
+      let filtered = pois
+
+      if (selectedCategory !== "all") {
+        filtered = await getPOIsByCategory(selectedCategory)
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(
+          (poi) =>
+            poi.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            poi.shortDescription.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
+      }
+
+      setFilteredPois(filtered)
+    } catch (error) {
+      console.error("Ошибка фильтрации объектов:", error)
+      setFilteredPois([])
+    }
+  }
+
+  const getCategoryName = (category: string) => {
+    const categoryNames = {
+      building: t("categories.building"),
+      entertainment: t("categories.entertainment"),
+      parking: t("categories.parking"),
+      restaurant: t("categories.restaurant"),
+      shop: t("categories.shop"),
+      medical: t("categories.medical"),
+      education: t("categories.education"),
+      office: t("categories.office"),
+    }
+    return categoryNames[category as keyof typeof categoryNames] || category
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">{t("loading")}</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 min-h-screen">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">{language === "ru" ? "Инфраструктура" : "Infrastructure"}</h1>
-        <div className="flex items-center gap-3">
-          <LanguageSwitcher />
-          <TouchButton asChild touchSize="lg" className="bg-blue-600 text-white hover:bg-blue-700">
-            <Link href="/">
-              <Home className="h-5 w-5 mr-2" />
-              {language === "ru" ? "На главную" : "Home"}
-            </Link>
-          </TouchButton>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Заголовок */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">{t("infrastructure.title")}</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t("infrastructure.description")}</p>
         </div>
-      </div>
 
-      <Tabs defaultValue="all" className="w-full">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <TabsList className="h-auto p-1">
-            <TabsTrigger value="all" className="flex items-center gap-2">
-              <Building className="h-4 w-4" />
-              {language === "ru" ? "Все объекты" : "All objects"}
-            </TabsTrigger>
-            {Object.entries(CATEGORIES).map(([key, category]) => (
-              <TabsTrigger
-                key={key}
-                value={key}
-                className="flex items-center gap-2"
-                onClick={() => setSelectedCategory(key as POICategory)}
-              >
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }}></div>
-                {category.name}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder={language === "ru" ? "Поиск объектов..." : "Search objects..."}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+        {/* Фильтры */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Input
+                  placeholder={t("infrastructure.search")}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div className="md:w-64">
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("infrastructure.selectCategory")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("categories.all")}</SelectItem>
+                  <SelectItem value="building">{t("categories.building")}</SelectItem>
+                  <SelectItem value="entertainment">{t("categories.entertainment")}</SelectItem>
+                  <SelectItem value="parking">{t("categories.parking")}</SelectItem>
+                  <SelectItem value="restaurant">{t("categories.restaurant")}</SelectItem>
+                  <SelectItem value="shop">{t("categories.shop")}</SelectItem>
+                  <SelectItem value="medical">{t("categories.medical")}</SelectItem>
+                  <SelectItem value="education">{t("categories.education")}</SelectItem>
+                  <SelectItem value="office">{t("categories.office")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
-        {/* Алфавитный указатель */}
-        <div className="mb-6 bg-gray-50 p-3 rounded-lg">
-          <div className="flex items-center gap-3 mb-2">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <h3 className="font-medium text-sm">{language === "ru" ? "Алфавитный указатель" : "Alphabetical index"}</h3>
-            <Badge variant="outline" className="ml-auto">
-              {filteredPOIs.length} {language === "ru" ? "объектов" : "objects"}
-            </Badge>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {availableLetters.map((letter) => (
-              <Button
-                key={letter}
-                variant="outline"
-                size="sm"
-                className="w-8 h-8 p-0 font-medium"
-                onClick={() => {
-                  const element = document.getElementById(`letter-${letter}`)
-                  if (element) {
-                    element.scrollIntoView({ behavior: "smooth" })
-                  }
-                }}
-              >
-                {letter}
-              </Button>
-            ))}
-          </div>
+        {/* Результаты */}
+        <div className="mb-6">
+          <p className="text-gray-600">
+            {t("infrastructure.found")}: {filteredPois.length} {t("infrastructure.objects")}
+          </p>
         </div>
 
-        <TabsContent value="all" className="mt-0">
-          <ScrollArea className="h-[calc(100vh-280px)]">
-            {availableLetters.length > 0 ? (
-              availableLetters.map((letter) => (
-                <div key={letter} className="mb-8">
-                  <h2 id={`letter-${letter}`} className="text-2xl font-bold mb-4 sticky top-0 bg-white py-2 z-10">
-                    {letter}
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {poisByLetter[letter].map((poi) => (
-                      <Card key={poi.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="relative h-40">
-                          <Image
-                            src={poi.images[0] || "/placeholder.svg?height=200&width=300"}
-                            alt={poi.name}
-                            fill
-                            className="object-cover"
-                          />
-                          <div
-                            className="absolute top-2 right-2 px-2 py-1 text-xs font-medium text-white rounded"
-                            style={{ backgroundColor: CATEGORIES[poi.category].color }}
-                          >
-                            {CATEGORIES[poi.category].name}
-                          </div>
-                        </div>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-lg">{poi.name}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <p className="text-sm text-gray-600 line-clamp-2">{poi.shortDescription}</p>
-                          <div className="flex items-center text-xs text-gray-500 mt-2">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            <span className="truncate">{poi.address}</span>
-                          </div>
-                        </CardContent>
-                        <CardFooter>
-                          <Button onClick={() => handleShowDetail(poi)} className="w-full" variant="outline">
-                            <Info className="h-4 w-4 mr-2" />
-                            {language === "ru" ? "Подробнее" : "Details"}
-                          </Button>
-                        </CardFooter>
-                      </Card>
-                    ))}
-                  </div>
-                  <Separator className="my-6" />
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <Building className="h-12 w-12 mx-auto text-gray-300 mb-4" />
-                <h3 className="text-xl font-medium text-gray-600 mb-2">
-                  {language === "ru" ? "Объекты не найдены" : "No objects found"}
-                </h3>
-                <p className="text-gray-500">
-                  {language === "ru"
-                    ? "Попробуйте изменить параметры поиска или фильтрации"
-                    : "Try changing your search or filter parameters"}
-                </p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => {
-                    setSearchQuery("")
-                    setSelectedCategory("all")
-                  }}
+        {/* Сетка объектов */}
+        {filteredPois.length === 0 ? (
+          <div className="text-center py-12">
+            <MapPin className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">{t("infrastructure.noObjects")}</h3>
+            <p className="text-gray-600">{t("infrastructure.noObjectsDescription")}</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPois.map((poi) => {
+              const IconComponent = categoryIcons[poi.category as keyof typeof categoryIcons] || Building
+              const categoryColor =
+                categoryColors[poi.category as keyof typeof categoryColors] || "bg-gray-100 text-gray-800"
+
+              return (
+                <Card
+                  key={poi.id}
+                  className="overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
-                  {language === "ru" ? "Сбросить фильтры" : "Reset filters"}
-                </Button>
-              </div>
-            )}
-          </ScrollArea>
-        </TabsContent>
-
-        {Object.entries(CATEGORIES).map(([key, category]) => (
-          <TabsContent key={key} value={key} className="mt-0">
-            <ScrollArea className="h-[calc(100vh-280px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPOIs
-                  .filter((poi) => poi.category === key)
-                  .map((poi) => (
-                    <Card key={poi.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="relative h-40">
-                        <Image
-                          src={poi.images[0] || "/placeholder.svg?height=200&width=300"}
+                  <div className="relative">
+                    {poi.images && poi.images.length > 0 && (
+                      <div className="h-48 overflow-hidden">
+                        <img
+                          src={poi.images[0] || "/placeholder.svg"}
                           alt={poi.name}
-                          fill
-                          className="object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         />
-                        <div
-                          className="absolute top-2 right-2 px-2 py-1 text-xs font-medium text-white rounded"
-                          style={{ backgroundColor: category.color }}
-                        >
-                          {category.name}
-                        </div>
                       </div>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">{poi.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="pb-2">
-                        <p className="text-sm text-gray-600 line-clamp-2">{poi.shortDescription}</p>
-                        <div className="flex items-center text-xs text-gray-500 mt-2">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          <span className="truncate">{poi.address}</span>
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button onClick={() => handleShowDetail(poi)} className="w-full" variant="outline">
-                          <Info className="h-4 w-4 mr-2" />
-                          {language === "ru" ? "Подробнее" : "Details"}
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  ))}
-              </div>
-            </ScrollArea>
-          </TabsContent>
-        ))}
-      </Tabs>
+                    )}
+                    <div className="absolute top-4 right-4">
+                      <Badge className={categoryColor}>
+                        <IconComponent className="h-3 w-3 mr-1" />
+                        {getCategoryName(poi.category)}
+                      </Badge>
+                    </div>
+                  </div>
 
-      {/* Детальная информация об объекте */}
-      {showDetail && selectedPoi && <POIDetail poi={selectedPoi} onClose={handleCloseDetail} />}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-semibold text-gray-900 line-clamp-2">{poi.name}</CardTitle>
+                    <CardDescription className="text-sm text-gray-600 line-clamp-3">
+                      {poi.shortDescription}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="pt-0">
+                    {poi.address && (
+                      <div className="flex items-start gap-2 text-sm text-gray-500 mb-4">
+                        <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <span className="line-clamp-2">{poi.address}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          // Переход к карте с выбранным объектом
+                          window.location.href = `/map?poi=${poi.id}`
+                        }}
+                      >
+                        <MapPin className="h-4 w-4 mr-1" />
+                        {t("infrastructure.showOnMap")}
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        className="flex-1"
+                        onClick={() => {
+                          // Показать детали объекта
+                          // Можно открыть модальное окно или перейти на страницу деталей
+                        }}
+                      >
+                        {t("infrastructure.details")}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

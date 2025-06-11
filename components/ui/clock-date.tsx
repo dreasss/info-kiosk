@@ -54,8 +54,22 @@ export function ClockDate() {
 
   return (
     <div className="text-center">
-      <div className="text-2xl font-bold text-white mb-1">{formatTime(time)}</div>
-      <div className="text-sm text-blue-100">{formatDate(time)}</div>
+      <div
+        className="text-2xl font-bold text-white mb-1 tracking-wide"
+        style={{
+          textShadow: "2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5), 0 0 8px rgba(0,0,0,0.3)",
+        }}
+      >
+        {formatTime(time)}
+      </div>
+      <div
+        className="text-sm text-blue-100 font-medium"
+        style={{
+          textShadow: "1px 1px 2px rgba(0,0,0,0.6), 0 0 4px rgba(0,0,0,0.3)",
+        }}
+      >
+        {formatDate(time)}
+      </div>
     </div>
   )
 }

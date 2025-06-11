@@ -1,216 +1,217 @@
 "use client"
-
 import { useState, useEffect } from "react"
-import Link from "next/link"
 import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { RSSTicker } from "@/components/ui/rss-ticker"
-import { ClockDate } from "@/components/ui/clock-date"
+import Link from "next/link"
+import { Card } from "@/components/ui/card"
 import { TouchButton } from "@/components/ui/touch-button"
+import { ClockDate } from "@/components/ui/clock-date"
+import { RssTicker } from "@/components/ui/rss-ticker"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { NewsCarousel } from "@/components/ui/news-carousel"
+import { Map, ImageIcon, Newspaper, Info, Building2, Settings, Calendar } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
-import { Map, Building2, Newspaper, Users, Phone, Mail, Globe, Settings } from "lucide-react"
-import { fetchSettings } from "@/lib/api"
-import type { SystemSettings } from "@/types/settings"
+import { fetchNews } from "@/lib/api"
+import type { NewsItem } from "@/types/news"
 
 export default function HomePage() {
-  const { t, language } = useLanguage()
-  const [settings, setSettings] = useState<SystemSettings | null>(null)
+  const { language } = useLanguage()
+  const [news, setNews] = useState<NewsItem[]>([])
 
   useEffect(() => {
-    const loadSettings = async () => {
+    const loadNews = async () => {
       try {
-        const systemSettings = await fetchSettings()
-        setSettings(systemSettings)
+        const data = await fetchNews()
+        setNews(data.slice(0, 5)) // Берем только 5 последних новостей
       } catch (error) {
-        console.error("Error loading settings:", error)
+        console.error("Error loading news:", error)
       }
     }
 
-    loadSettings()
+    loadNews()
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      {/* Шапка с логотипом, часами и переключателем языка */}
-      <header className="bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-2xl">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Шапка с более мягким градиентом */}
+      <header className="bg-gradient-to-r from-blue-500 via-blue-400 to-sky-400 shadow-lg relative overflow-hidden">
+        {/* Декоративные элементы */}
+        <div className="absolute inset-0 bg-[url('/placeholder.svg?height=100&width=100')] opacity-5"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-300 via-sky-300 to-indigo-300"></div>
+
+        <div className="relative max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
             {/* Логотип и название */}
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center gap-4">
               <div className="relative">
+                <div className="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
                 <Image
                   src="/images/jinr-logo.png"
                   alt="JINR Logo"
-                  width={120}
-                  height={120}
-                  className="rounded-full border-4 border-white/20 shadow-xl bg-white/10 p-2"
+                  width={60}
+                  height={60}
+                  className="relative rounded-full border-2 border-white/30 shadow-lg"
                 />
               </div>
               <div>
                 <h1
-                  className="text-3xl font-bold mb-2 text-white"
+                  className="text-xl md:text-2xl font-bold text-white"
                   style={{
-                    textShadow: "2px 2px 4px rgba(0,0,0,0.8), -1px -1px 2px rgba(0,0,0,0.5)",
+                    textShadow: "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
                   }}
                 >
-                  Объединенный Институт Ядерных Исследований
+                  {language === "ru"
+                    ? "Объединенный Институт Ядерных Исследований"
+                    : "Joint Institute for Nuclear Research"}
                 </h1>
-                <p className="text-blue-100 text-lg font-medium">
-                  {language === "ru" ? "Международный научно-исследовательский центр" : "International Research Center"}
-                </p>
               </div>
             </div>
 
             {/* Часы и дата по центру */}
-            <div className="flex-1 flex justify-center">
-              <ClockDate />
+            <div className="hidden md:flex flex-1 justify-center">
+              <div
+                className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20 shadow-md"
+                style={{
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+                }}
+              >
+                <ClockDate />
+              </div>
             </div>
 
-            {/* Переключатель языка и кнопка настроек */}
-            <div className="flex items-center gap-4">
-              <LanguageSwitcher />
-              <TouchButton asChild variant="ghost" className="text-white hover:bg-white/20">
-                <Link href="/admin/login">
-                  <Settings className="h-6 w-6" />
-                </Link>
-              </TouchButton>
+            {/* Переключатель языка и кнопка админки */}
+            <div className="flex items-center gap-3">
+              <div
+                className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20"
+                style={{
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                }}
+              >
+                <LanguageSwitcher />
+              </div>
+
+              <Link href="/admin">
+                <div
+                  className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 group"
+                  style={{
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <Settings className="h-5 w-5 text-white group-hover:rotate-90 transition-transform duration-300" />
+                </div>
+              </Link>
             </div>
           </div>
         </div>
       </header>
 
-      {/* RSS бегущая строка */}
-      <RSSTicker />
+      {/* Бегущая строка новостей */}
+      <RssTicker />
 
       {/* Основной контент */}
-      <main className="container mx-auto px-6 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-gray-800 mb-4">
-            {language === "ru" ? "Информационная система" : "Information System"}
-          </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            {language === "ru"
-              ? "Добро пожаловать в интерактивную информационную систему. Выберите нужный раздел для получения информации."
-              : "Welcome to the interactive information system. Select the desired section to get information."}
-          </p>
+      <main className="flex-1 p-4 md:p-6 flex flex-col">
+        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
+          {/* Приветствие */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-2">
+              {language === "ru" ? "Добро пожаловать" : "Welcome"}
+            </h2>
+            <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto">
+              {language === "ru" ? "Интерактивная информационная система ОИЯИ" : "JINR Interactive Information System"}
+            </p>
+          </div>
+
+          {/* Сетка навигации */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+            <TouchButton
+              href="/map"
+              icon={Map}
+              title={language === "ru" ? "Карта" : "Map"}
+              className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+
+            <TouchButton
+              href="/gallery"
+              icon={ImageIcon}
+              title={language === "ru" ? "Галерея" : "Gallery"}
+              className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+
+            <TouchButton
+              href="/news"
+              icon={Newspaper}
+              title={language === "ru" ? "Новости" : "News"}
+              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+
+            <TouchButton
+              href="/infrastructure"
+              icon={Building2}
+              title={language === "ru" ? "Инфраструктура" : "Infrastructure"}
+              className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+
+            <TouchButton
+              href="/events"
+              icon={Calendar}
+              title={language === "ru" ? "События" : "Events"}
+              className="bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+
+            <TouchButton
+              href="/about"
+              icon={Info}
+              title={language === "ru" ? "О ОИЯИ" : "About"}
+              className="bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              touchSize="lg"
+            />
+          </div>
+
+          {/* Карусель новостей */}
+          <div className="flex-1 mb-6">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-xl overflow-hidden h-full">
+              <div className="p-4">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                  <Newspaper className="h-5 w-5 mr-2 text-blue-500" />
+                  {language === "ru" ? "Последние новости" : "Latest News"}
+                </h3>
+                <NewsCarousel news={news} />
+              </div>
+            </Card>
+          </div>
         </div>
-
-        {/* Основные разделы */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          <TouchButton asChild touchSize="xl" className="h-auto p-0">
-            <Link href="/map">
-              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
-                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <Map className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                    {language === "ru" ? "Интерактивная карта" : "Interactive Map"}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {language === "ru"
-                      ? "Навигация по территории с построением маршрутов"
-                      : "Territory navigation with route building"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          </TouchButton>
-
-          <TouchButton asChild touchSize="xl" className="h-auto p-0">
-            <Link href="/infrastructure">
-              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
-                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
-                    <Building2 className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                    {language === "ru" ? "Инфраструктура" : "Infrastructure"}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {language === "ru"
-                      ? "Информация об объектах и сооружениях"
-                      : "Information about objects and structures"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          </TouchButton>
-
-          <TouchButton asChild touchSize="xl" className="h-auto p-0">
-            <Link href="/news">
-              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
-                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-orange-600 rounded-full flex items-center justify-center shadow-lg">
-                    <Newspaper className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">{language === "ru" ? "Новости" : "News"}</h3>
-                  <p className="text-gray-600 text-lg">
-                    {language === "ru" ? "Актуальные новости и события" : "Current news and events"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          </TouchButton>
-
-          <TouchButton asChild touchSize="xl" className="h-auto p-0">
-            <Link href="/about">
-              <Card className="h-full hover:shadow-2xl transition-all duration-300 transform hover:scale-105 bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200">
-                <CardContent className="p-8 text-center h-full flex flex-col justify-center">
-                  <div className="w-20 h-20 mx-auto mb-6 bg-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                    <Users className="h-10 w-10 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800 mb-3">
-                    {language === "ru" ? "Об ОИЯИ" : "About JINR"}
-                  </h3>
-                  <p className="text-gray-600 text-lg">
-                    {language === "ru" ? "История и деятельность института" : "History and activities of the institute"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
-          </TouchButton>
-        </div>
-
-        {/* Контактная информация */}
-        <Card className="bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200">
-          <CardContent className="p-8">
-            <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-              {language === "ru" ? "Контактная информация" : "Contact Information"}
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                  <Phone className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{language === "ru" ? "Телефон" : "Phone"}</p>
-                  <p className="text-gray-600">+7 (496) 216-50-59</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center">
-                  <Mail className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">Email</p>
-                  <p className="text-gray-600">post@jinr.ru</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                  <Globe className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-800">{language === "ru" ? "Веб-сайт" : "Website"}</p>
-                  <p className="text-gray-600">www.jinr.ru</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </main>
+
+      {/* Футер с контактной информацией */}
+      <footer className="bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 text-white py-3 px-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm">
+          <div className="flex items-center">
+            <span className="font-medium mr-2">© 2025 ОИЯИ</span>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex items-center">
+              <span className="opacity-70 mr-1">📍</span>
+              <span>{language === "ru" ? "г. Дубна, Московская область" : "Dubna, Moscow Region"}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="opacity-70 mr-1">📞</span>
+              <span>+7 (496) 216-50-59</span>
+            </div>
+            <div className="flex items-center">
+              <span className="opacity-70 mr-1">✉️</span>
+              <span>post@jinr.ru</span>
+            </div>
+            <div className="flex items-center">
+              <span className="opacity-70 mr-1">🌐</span>
+              <span>www.jinr.ru</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

@@ -1,260 +1,364 @@
+import {
+  getAllPOIs,
+  getPOIsByCategory,
+  getPOIById,
+  savePOI,
+  deletePOI,
+  getAllNews,
+  getNewsById,
+  saveNews,
+  deleteNews,
+  getAllMedia,
+  getMediaByType,
+  saveMedia,
+  deleteMedia,
+  getSettings,
+  saveSettings,
+  getAllIcons,
+  getIconsByCategory,
+  saveIcon,
+  deleteIcon,
+  getAllRssFeeds,
+  getActiveRssFeeds,
+  saveRssFeed,
+  deleteRssFeed,
+  uploadFile,
+  type MarkerIcon,
+  type RssFeed,
+} from "@/lib/db"
+
 import type { POI, POICategory } from "@/types/poi"
 import type { NewsItem } from "@/types/news"
-import type { SystemSettings, OrganizationInfo } from "@/types/settings"
-import { DEFAULT_ORGANIZATION_INFO, ROUTE_CONFIG } from "@/lib/config"
 import type { MediaItem } from "@/types/media"
-
-// Имитация базы данных с использованием localStorage
-const DB_KEYS = {
-  POIS: "interactive_map_pois",
-  NEWS: "interactive_map_news",
-  SETTINGS: "interactive_map_settings",
-}
-
-// Инициализация базы данных с демо-данными
-function initializeDB() {
-  // Проверяем, инициализирована ли уже база данных
-  if (!localStorage.getItem(DB_KEYS.POIS)) {
-    // Демо-данные для POI
-    const demoPOIs: POI[] = [
-      {
-        id: "1",
-        name: "Объединенный институт ядерных исследований",
-        shortDescription: "Международный научный центр, проводящий фундаментальные исследования.",
-        fullDescription:
-          "Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследованиях в области ядерной физики, физики элементарных частиц и конденсированных сред.",
-        coordinates: [56.7458, 37.189],
-        images: ["/placeholder.svg?height=200&width=300", "/placeholder.svg?height=200&width=300"],
-        address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
-        category: "building",
-      },
-      {
-        id: "2",
-        name: "Дом ученых ОИЯИ",
-        shortDescription: "Культурный центр для научного сообщества Дубны.",
-        fullDescription:
-          "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
-        coordinates: [56.743, 37.192],
-        images: ["/placeholder.svg?height=200&width=300"],
-        address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
-        category: "entertainment",
-      },
-      {
-        id: "3",
-        name: "Лаборатория ядерных реакций",
-        shortDescription: "Исследовательская лаборатория, специализирующаяся на синтезе новых элементов.",
-        fullDescription:
-          "Лаборатория ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
-        coordinates: [56.744, 37.187],
-        images: ["/placeholder.svg?height=200&width=300", "/placeholder.svg?height=200&width=300"],
-        address: "ул. Жолио-Кюри, 4, Дубна, Московская область",
-        category: "building",
-      },
-      {
-        id: "4",
-        name: "Памятник И.В. Курчатову",
-        shortDescription: "Монумент в честь выдающегося физика, основателя советской атомной науки.",
-        fullDescription:
-          "Памятник Игорю Васильевичу Курчатову, выдающемуся советскому физику, основателю и первому директору Института атомной энергии. Под его руководством были созданы первый в Европе атомный реактор, первая советская атомная бомба и первая в мире термоядерная бомба.",
-        coordinates: [56.7425, 37.1915],
-        images: ["/placeholder.svg?height=200&width=300"],
-        address: "Площадь Курчатова, Дубна, Московская область",
-        category: "attraction",
-      },
-      {
-        id: "5",
-        name: "Столовая ОИЯИ",
-        shortDescription: "Столовая для сотрудников и гостей института.",
-        fullDescription:
-          "Столовая Объединенного института ядерных исследований предлагает разнообразное меню для сотрудников и гостей института. Здесь можно вкусно и недорого пообедать в перерыве между работой или экскурсией по территории института.",
-        coordinates: [56.7445, 37.1875],
-        images: ["/placeholder.svg?height=200&width=300"],
-        address: "ул. Жолио-Кюри, 6, корп. 2, Дубна, Московская область",
-        category: "food",
-      },
-      {
-        id: "6",
-        name: "Главная проходная ОИЯИ",
-        shortDescription: "Центральный вход на территорию института.",
-        fullDescription:
-          "Главная проходная Объединенного института ядерных исследований. Здесь осуществляется контроль доступа на территорию института. Для посещения института необходимо иметь пропуск или быть в составе организованной экскурсионной группы.",
-        coordinates: [56.7435, 37.1865],
-        images: ["/placeholder.svg?height=200&width=300"],
-        address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
-        category: "entrance",
-      },
-    ]
-    localStorage.setItem(DB_KEYS.POIS, JSON.stringify(demoPOIs))
-
-    // Демо-данные для новостей
-    const demoNews: NewsItem[] = [
-      {
-        id: "1",
-        title: "Открытие нового ускорителя",
-        content:
-          "В ОИЯИ состоялось торжественное открытие нового ускорителя тяжелых ионов, который позволит проводить эксперименты по синтезу сверхтяжелых элементов с еще большей эффективностью.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: new Date(Date.now() - 86400000).toISOString(), // вчера
-        url: "#",
-      },
-      {
-        id: "2",
-        title: "Международная конференция по ядерной физике",
-        content:
-          "С 10 по 15 сентября в Доме ученых ОИЯИ пройдет международная конференция по ядерной физике, на которую съедутся ученые из более чем 30 стран мира.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: new Date(Date.now() - 172800000).toISOString(), // позавчера
-        url: "#",
-      },
-      {
-        id: "3",
-        title: "Новое открытие в области физики элементарных частиц",
-        content:
-          "Ученые ОИЯИ совместно с коллегами из ЦЕРН сделали важное открытие в области физики элементарных частиц, которое может привести к пересмотру некоторых аспектов Стандартной модели.",
-        image: "/placeholder.svg?height=200&width=300",
-        date: new Date(Date.now() - 259200000).toISOString(), // 3 дня назад
-        url: "#",
-      },
-    ]
-    localStorage.setItem(DB_KEYS.NEWS, JSON.stringify(demoNews))
-
-    // Настройки системы по умолчанию
-    const defaultSettings: SystemSettings = {
-      idleTimeout: 5 * 60 * 1000, // 5 минут
-      loadingGif: "/placeholder.svg?height=400&width=600",
-      organizationInfo: DEFAULT_ORGANIZATION_INFO,
-    }
-    localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(defaultSettings))
-  }
-}
-
-// Инициализация при импорте
-if (typeof window !== "undefined") {
-  initializeDB()
-}
+import type { SystemSettings, OrganizationInfo } from "@/types/settings"
+import { ROUTE_CONFIG } from "@/lib/config"
 
 // API для работы с POI
 export async function fetchPOIs(): Promise<POI[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const pois = JSON.parse(localStorage.getItem(DB_KEYS.POIS) || "[]")
-      resolve(pois)
-    }, 300)
-  })
+  try {
+    return await getAllPOIs()
+  } catch (error) {
+    console.error("Error fetching POIs:", error)
+    return []
+  }
 }
 
 export async function fetchPOIsByCategory(category: POICategory | "all"): Promise<POI[]> {
-  const pois = await fetchPOIs()
-  if (category === "all") {
-    return pois
+  try {
+    return await getPOIsByCategory(category)
+  } catch (error) {
+    console.error("Error fetching POIs by category:", error)
+    return []
   }
-  return pois.filter((poi) => poi.category === category)
 }
 
 export async function fetchPOIById(id: string): Promise<POI | null> {
-  const pois = await fetchPOIs()
-  const poi = pois.find((p) => p.id === id)
-  return poi || null
+  try {
+    return await getPOIById(id)
+  } catch (error) {
+    console.error("Error fetching POI by ID:", error)
+    return null
+  }
 }
 
 export async function createPOI(poi: Omit<POI, "id">): Promise<POI> {
-  const pois = await fetchPOIs()
-  const newPOI: POI = {
-    ...poi,
-    id: Date.now().toString(),
+  try {
+    return await savePOI(poi as POI)
+  } catch (error) {
+    console.error("Error creating POI:", error)
+    throw error
   }
-  pois.push(newPOI)
-  localStorage.setItem(DB_KEYS.POIS, JSON.stringify(pois))
-  return newPOI
 }
 
 export async function updatePOI(id: string, poi: Partial<POI>): Promise<POI | null> {
-  const pois = await fetchPOIs()
-  const index = pois.findIndex((p) => p.id === id)
-  if (index === -1) return null
+  try {
+    const existingPOI = await getPOIById(id)
+    if (!existingPOI) return null
 
-  const updatedPOI = { ...pois[index], ...poi }
-  pois[index] = updatedPOI
-  localStorage.setItem(DB_KEYS.POIS, JSON.stringify(pois))
-  return updatedPOI
+    const updatedPOI = { ...existingPOI, ...poi }
+    return await savePOI(updatedPOI)
+  } catch (error) {
+    console.error("Error updating POI:", error)
+    throw error
+  }
 }
 
-export async function deletePOI(id: string): Promise<boolean> {
-  const pois = await fetchPOIs()
-  const filteredPOIs = pois.filter((p) => p.id !== id)
-  if (filteredPOIs.length === pois.length) return false
-  localStorage.setItem(DB_KEYS.POIS, JSON.stringify(filteredPOIs))
-  return true
+export async function removePOI(id: string): Promise<boolean> {
+  try {
+    return await deletePOI(id)
+  } catch (error) {
+    console.error("Error deleting POI:", error)
+    throw error
+  }
 }
 
 // API для работы с новостями
 export async function fetchNews(): Promise<NewsItem[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const news = JSON.parse(localStorage.getItem(DB_KEYS.NEWS) || "[]")
-      resolve(news)
-    }, 300)
-  })
+  try {
+    return await getAllNews()
+  } catch (error) {
+    console.error("Error fetching news:", error)
+    return []
+  }
 }
 
 export async function fetchNewsById(id: string): Promise<NewsItem | null> {
-  const news = await fetchNews()
-  const newsItem = news.find((n) => n.id === id)
-  return newsItem || null
+  try {
+    return await getNewsById(id)
+  } catch (error) {
+    console.error("Error fetching news by ID:", error)
+    return null
+  }
 }
 
 export async function createNews(newsItem: Omit<NewsItem, "id">): Promise<NewsItem> {
-  const news = await fetchNews()
-  const newNewsItem: NewsItem = {
-    ...newsItem,
-    id: Date.now().toString(),
+  try {
+    return await saveNews(newsItem as NewsItem)
+  } catch (error) {
+    console.error("Error creating news:", error)
+    throw error
   }
-  news.push(newNewsItem)
-  localStorage.setItem(DB_KEYS.NEWS, JSON.stringify(news))
-  return newNewsItem
 }
 
 export async function updateNews(id: string, newsItem: Partial<NewsItem>): Promise<NewsItem | null> {
-  const news = await fetchNews()
-  const index = news.findIndex((n) => n.id === id)
-  if (index === -1) return null
+  try {
+    const existingNews = await getNewsById(id)
+    if (!existingNews) return null
 
-  const updatedNewsItem = { ...news[index], ...newsItem }
-  news[index] = updatedNewsItem
-  localStorage.setItem(DB_KEYS.NEWS, JSON.stringify(news))
-  return updatedNewsItem
+    const updatedNews = { ...existingNews, ...newsItem }
+    return await saveNews(updatedNews)
+  } catch (error) {
+    console.error("Error updating news:", error)
+    throw error
+  }
 }
 
-export async function deleteNews(id: string): Promise<boolean> {
-  const news = await fetchNews()
-  const filteredNews = news.filter((n) => n.id !== id)
-  if (filteredNews.length === news.length) return false
-  localStorage.setItem(DB_KEYS.NEWS, JSON.stringify(filteredNews))
-  return true
+export async function removeNews(id: string): Promise<boolean> {
+  try {
+    return await deleteNews(id)
+  } catch (error) {
+    console.error("Error deleting news:", error)
+    throw error
+  }
+}
+
+// API для работы с медиафайлами
+export async function fetchMedia(): Promise<MediaItem[]> {
+  try {
+    return await getAllMedia()
+  } catch (error) {
+    console.error("Error fetching media:", error)
+    return []
+  }
+}
+
+export async function fetchMediaByType(type: string): Promise<MediaItem[]> {
+  try {
+    return await getMediaByType(type)
+  } catch (error) {
+    console.error("Error fetching media by type:", error)
+    return []
+  }
+}
+
+export async function createMedia(mediaItem: Omit<MediaItem, "id">): Promise<MediaItem> {
+  try {
+    return await saveMedia(mediaItem as MediaItem)
+  } catch (error) {
+    console.error("Error creating media:", error)
+    throw error
+  }
+}
+
+export async function updateMedia(id: string, mediaItem: Partial<MediaItem>): Promise<MediaItem | null> {
+  try {
+    const existingMedia = await getMediaByType(id)
+    if (!existingMedia || existingMedia.length === 0) return null
+
+    const updatedMedia = { ...existingMedia[0], ...mediaItem }
+    return await saveMedia(updatedMedia as MediaItem)
+  } catch (error) {
+    console.error("Error updating media:", error)
+    throw error
+  }
+}
+
+export async function removeMedia(id: string): Promise<boolean> {
+  try {
+    return await deleteMedia(id)
+  } catch (error) {
+    console.error("Error deleting media:", error)
+    throw error
+  }
 }
 
 // API для работы с настройками
 export async function fetchSettings(): Promise<SystemSettings> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const settings = JSON.parse(localStorage.getItem(DB_KEYS.SETTINGS) || "{}")
-      resolve(settings)
-    }, 300)
-  })
+  try {
+    const settings = await getSettings()
+    if (!settings) {
+      // Возвращаем настройки по умолчанию, если их нет в базе
+      return {
+        id: "system_settings",
+        idleTimeout: 5 * 60 * 1000, // 5 минут
+        loadingGif: "/placeholder.svg?height=400&width=600",
+        organizationInfo: {
+          name: "ОИЯИ",
+          fullName: "Объединенный институт ядерных исследований",
+          logo: "/images/jinr-logo.png",
+          description: "Международная межправительственная научно-исследовательская организация",
+          address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
+          phone: "+7 (496) 216-50-59",
+          email: "post@jinr.ru",
+          website: "http://www.jinr.ru",
+        },
+      }
+    }
+    return settings
+  } catch (error) {
+    console.error("Error fetching settings:", error)
+    // Возвращаем настройки по умолчанию в случае ошибки
+    return {
+      id: "system_settings",
+      idleTimeout: 5 * 60 * 1000,
+      loadingGif: "/placeholder.svg?height=400&width=600",
+      organizationInfo: {
+        name: "ОИЯИ",
+        fullName: "Объединенный институт ядерных исследований",
+        logo: "/images/jinr-logo.png",
+        description: "Международная межправительственная научно-исследовательская организация",
+        address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
+        phone: "+7 (496) 216-50-59",
+        email: "post@jinr.ru",
+        website: "http://www.jinr.ru",
+      },
+    }
+  }
 }
 
 export async function updateSettings(settings: Partial<SystemSettings>): Promise<SystemSettings> {
-  const currentSettings = await fetchSettings()
-  const updatedSettings = { ...currentSettings, ...settings }
-  localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(updatedSettings))
-  return updatedSettings
+  try {
+    const currentSettings = await fetchSettings()
+    const updatedSettings = { ...currentSettings, ...settings }
+    return await saveSettings(updatedSettings)
+  } catch (error) {
+    console.error("Error updating settings:", error)
+    throw error
+  }
 }
 
 export async function updateOrganizationInfo(info: Partial<OrganizationInfo>): Promise<OrganizationInfo> {
-  const settings = await fetchSettings()
-  const updatedInfo = { ...settings.organizationInfo, ...info }
-  await updateSettings({ organizationInfo: updatedInfo })
-  return updatedInfo
+  try {
+    const settings = await fetchSettings()
+    const updatedInfo = { ...settings.organizationInfo, ...info }
+    await updateSettings({ organizationInfo: updatedInfo })
+    return updatedInfo
+  } catch (error) {
+    console.error("Error updating organization info:", error)
+    throw error
+  }
+}
+
+// API для работы с иконками маркеров
+export async function fetchIcons(): Promise<MarkerIcon[]> {
+  try {
+    return await getAllIcons()
+  } catch (error) {
+    console.error("Error fetching icons:", error)
+    return []
+  }
+}
+
+export async function fetchIconsByCategory(category: string): Promise<MarkerIcon[]> {
+  try {
+    return await getIconsByCategory(category)
+  } catch (error) {
+    console.error("Error fetching icons by category:", error)
+    return []
+  }
+}
+
+export async function createIcon(icon: Omit<MarkerIcon, "id">, file?: File): Promise<MarkerIcon> {
+  try {
+    if (file) {
+      const blob = await file.arrayBuffer().then((buffer) => new Blob([buffer], { type: file.type }))
+      return await saveIcon(icon as MarkerIcon, blob)
+    }
+    return await saveIcon(icon as MarkerIcon)
+  } catch (error) {
+    console.error("Error creating icon:", error)
+    throw error
+  }
+}
+
+export async function removeIcon(id: string): Promise<boolean> {
+  try {
+    return await deleteIcon(id)
+  } catch (error) {
+    console.error("Error deleting icon:", error)
+    throw error
+  }
+}
+
+// API для работы с RSS-лентами
+export async function fetchRssFeeds(): Promise<RssFeed[]> {
+  try {
+    return await getAllRssFeeds()
+  } catch (error) {
+    console.error("Error fetching RSS feeds:", error)
+    return []
+  }
+}
+
+export async function fetchActiveRssFeeds(): Promise<RssFeed[]> {
+  try {
+    return await getActiveRssFeeds()
+  } catch (error) {
+    console.error("Error fetching active RSS feeds:", error)
+    return []
+  }
+}
+
+export async function createRssFeed(feed: Omit<RssFeed, "id">): Promise<RssFeed> {
+  try {
+    return await saveRssFeed(feed as RssFeed)
+  } catch (error) {
+    console.error("Error creating RSS feed:", error)
+    throw error
+  }
+}
+
+export async function updateRssFeed(id: string, feed: Partial<RssFeed>): Promise<RssFeed | null> {
+  try {
+    const feeds = await getAllRssFeeds()
+    const existingFeed = feeds.find((f) => f.id === id)
+    if (!existingFeed) return null
+
+    const updatedFeed = { ...existingFeed, ...feed }
+    return await saveRssFeed(updatedFeed)
+  } catch (error) {
+    console.error("Error updating RSS feed:", error)
+    throw error
+  }
+}
+
+export async function removeRssFeed(id: string): Promise<boolean> {
+  try {
+    return await deleteRssFeed(id)
+  } catch (error) {
+    console.error("Error deleting RSS feed:", error)
+    throw error
+  }
+}
+
+// API для загрузки файлов
+export async function uploadMediaFile(file: File): Promise<string> {
+  try {
+    return await uploadFile(file)
+  } catch (error) {
+    console.error("Error uploading file:", error)
+    throw error
+  }
 }
 
 // API для работы с маршрутами
@@ -379,44 +483,4 @@ function getFallbackRoute(start: [number, number], end: [number, number]): Route
     distance,
     duration: distance / ROUTE_CONFIG.WALKING_SPEED,
   }
-}
-
-// API для работы с медиафайлами
-export async function fetchMedia(): Promise<MediaItem[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const media = JSON.parse(localStorage.getItem("interactive_map_media") || "[]")
-      resolve(media)
-    }, 300)
-  })
-}
-
-export async function createMedia(mediaItem: Omit<MediaItem, "id">): Promise<MediaItem> {
-  const media = await fetchMedia()
-  const newMediaItem: MediaItem = {
-    ...mediaItem,
-    id: Date.now().toString(),
-  }
-  media.push(newMediaItem)
-  localStorage.setItem("interactive_map_media", JSON.stringify(media))
-  return newMediaItem
-}
-
-export async function updateMedia(id: string, mediaItem: Partial<MediaItem>): Promise<MediaItem | null> {
-  const media = await fetchMedia()
-  const index = media.findIndex((m) => m.id === id)
-  if (index === -1) return null
-
-  const updatedMediaItem = { ...media[index], ...mediaItem }
-  media[index] = updatedMediaItem
-  localStorage.setItem("interactive_map_media", JSON.stringify(media))
-  return updatedMediaItem
-}
-
-export async function deleteMedia(id: string): Promise<boolean> {
-  const media = await fetchMedia()
-  const filteredMedia = media.filter((m) => m.id !== id)
-  if (filteredMedia.length === media.length) return false
-  localStorage.setItem("interactive_map_media", JSON.stringify(filteredMedia))
-  return true
 }
