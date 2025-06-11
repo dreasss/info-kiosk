@@ -10,6 +10,7 @@ export interface OrganizationInfo {
 }
 
 export interface SystemSettings {
+  id?: string
   idleTimeout: number // в миллисекундах
   loadingGif: string
   organizationInfo: OrganizationInfo

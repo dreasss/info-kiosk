@@ -1,13 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useLanguage } from "@/lib/language-context"
+import { ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react"
 import type { NewsItem } from "@/types/news"
+import { useLanguage } from "@/lib/language-context"
+import Image from "next/image"
 
 interface NewsCarouselProps {
   news: NewsItem[]
@@ -22,110 +21,117 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
     if (news.length <= 1) return
 
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % news.length)
-    }, 5000)
+      setCurrentIndex((prev) => (prev + 1) % news.length)
+    }, 5000) // Переключение каждые 5 секунд
 
     return () => clearInterval(interval)
   }, [news.length])
 
   const goToPrevious = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? news.length - 1 : prevIndex - 1))
+    setCurrentIndex((prev) => (prev - 1 + news.length) % news.length)
   }
 
   const goToNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % news.length)
-  }
-
-  if (news.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-40 bg-gray-100 rounded-lg">
-        <p className="text-gray-500">{language === "ru" ? "Новости не найдены" : "No news found"}</p>
-      </div>
-    )
+    setCurrentIndex((prev) => (prev + 1) % news.length)
   }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString(language === "ru" ? "ru-RU" : "en-US", {
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric",
     })
   }
 
+  if (news.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">{language === "ru" ? "Нет новостей для отображения" : "No news to display"}</p>
+      </div>
+    )
+  }
+
+  const currentNews = news[currentIndex]
+
   return (
     <div className="relative">
-      <div className="overflow-hidden rounded-lg">
-        <div
-          className="flex transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-        >
-          {news.map((item) => (
-            <div key={item.id} className="w-full flex-shrink-0">
-              <Card className="border-0 shadow-none bg-transparent">
-                <CardContent className="p-0">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="relative h-40 md:h-full rounded-lg overflow-hidden">
-                      <Image
-                        src={item.image || "/placeholder.svg?height=200&width=300"}
-                        alt={item.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <div className="flex flex-col h-full">
-                        <h4 className="text-lg font-bold mb-2 line-clamp-2">{item.title}</h4>
-                        <p className="text-sm text-gray-500 mb-2">{formatDate(item.date)}</p>
-                        <p className="text-sm text-gray-600 line-clamp-3 mb-4">{item.content}</p>
-                        <div className="mt-auto">
-                          <Link href={`/news/${item.id}`}>
-                            <Button variant="outline" size="sm">
-                              {language === "ru" ? "Подробнее" : "Read more"}
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {news.length > 1 && (
-        <>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-md hover:bg-white"
-            onClick={goToPrevious}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200 shadow-md hover:bg-white"
-            onClick={goToNext}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-
-          <div className="absolute bottom-0 left-0 right-0 flex justify-center gap-1 pb-2">
-            {news.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  index === currentIndex ? "bg-blue-500 w-4" : "bg-gray-300"
-                }`}
-                onClick={() => setCurrentIndex(index)}
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <div className="grid md:grid-cols-3 gap-0">
+            {/* Изображение */}
+            <div className="relative h-48 md:h-auto">
+              <Image
+                src={currentNews.image || "/placeholder.svg?height=200&width=300"}
+                alt={currentNews.title}
+                fill
+                className="object-cover"
               />
-            ))}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="absolute bottom-4 left-4 text-white">
+                <div className="flex items-center text-sm">
+                  <Clock className="h-4 w-4 mr-1" />
+                  {formatDate(currentNews.date)}
+                </div>
+              </div>
+            </div>
+
+            {/* Контент */}
+            <div className="md:col-span-2 p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{currentNews.title}</h3>
+              <p className="text-gray-600 mb-4 line-clamp-3">{currentNews.content}</p>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {/* Индикаторы */}
+                  {news.length > 1 && (
+                    <div className="flex gap-1">
+                      {news.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            index === currentIndex ? "bg-blue-600" : "bg-gray-300"
+                          }`}
+                          onClick={() => setCurrentIndex(index)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {currentNews.url && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={currentNews.url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        {language === "ru" ? "Читать" : "Read"}
+                      </a>
+                    </Button>
+                  )}
+
+                  {/* Кнопки навигации */}
+                  {news.length > 1 && (
+                    <div className="flex gap-1">
+                      <Button variant="outline" size="sm" onClick={goToPrevious}>
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={goToNext}>
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </>
+        </CardContent>
+      </Card>
+
+      {/* Счетчик новостей */}
+      {news.length > 1 && (
+        <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm">
+          {currentIndex + 1} / {news.length}
+        </div>
       )}
     </div>
   )

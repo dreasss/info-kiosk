@@ -37,16 +37,38 @@ import type { NewsItem } from "@/types/news"
 import type { MediaItem } from "@/types/media"
 import type { SystemSettings, OrganizationInfo } from "@/types/settings"
 import { CATEGORIES } from "@/types/poi"
-import { fetchPOIs, fetchNews, fetchSettings, updateSettings } from "@/lib/api"
+import {
+  fetchPOIs,
+  fetchNews,
+  fetchSettings,
+  updateSettings,
+  createPOI,
+  createNews,
+  createMedia,
+  fetchMedia,
+  removeMedia,
+  fetchRssFeeds,
+  createRssFeed,
+  removeRssFeed,
+  fetchIcons,
+  createIcon,
+  removeIcon,
+  uploadMediaFile,
+} from "@/lib/api"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("pois")
   const [pois, setPois] = useState<POI[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
+  const [media, setMedia] = useState<MediaItem[]>([])
   const [settings, setSettings] = useState<SystemSettings | null>(null)
+  const [rssFeeds, setRssFeeds] = useState<any[]>([])
+  const [icons, setIcons] = useState<any[]>([])
+
+  // Состояния форм
   const [currentPoi, setCurrentPoi] = useState<Partial<POI>>({
-    id: "",
     name: "",
     shortDescription: "",
     fullDescription: "",
@@ -55,31 +77,37 @@ export default function AdminPage() {
     address: "",
     category: "building",
   })
+
   const [currentNews, setCurrentNews] = useState<Partial<NewsItem>>({
-    id: "",
     title: "",
     content: "",
     image: "",
     date: new Date().toISOString(),
   })
+
   const [currentMedia, setCurrentMedia] = useState<Partial<MediaItem>>({
-    id: "",
     title: "",
     description: "",
     type: "image",
     url: "",
+    category: "photo",
+    date: new Date().toISOString(),
   })
+
   const [rssUrl, setRssUrl] = useState("")
+  const [rssName, setRssName] = useState("")
   const [organizationInfo, setOrganizationInfo] = useState<OrganizationInfo | null>(null)
   const [idleTimeout, setIdleTimeout] = useState(5)
   const [isLoading, setIsLoading] = useState(false)
+  const [iconName, setIconName] = useState("")
+  const [iconCategory, setIconCategory] = useState("building")
+
   const { toast } = useToast()
-  const { t, language } = useLanguage()
+  const { language } = useLanguage()
   const router = useRouter()
 
   // Загрузка данных при монтировании
   useEffect(() => {
-    // Проверяем авторизацию
     const isAuthenticated = localStorage.getItem("admin_authenticated")
     const loginTime = localStorage.getItem("admin_login_time")
 
@@ -88,8 +116,7 @@ export default function AdminPage() {
       return
     }
 
-    // Проверяем, не истекла ли сессия (24 часа)
-    const sessionDuration = 24 * 60 * 60 * 1000 // 24 часа
+    const sessionDuration = 24 * 60 * 60 * 1000
     if (Date.now() - Number.parseInt(loginTime) > sessionDuration) {
       localStorage.removeItem("admin_authenticated")
       localStorage.removeItem("admin_login_time")
@@ -97,7 +124,6 @@ export default function AdminPage() {
       return
     }
 
-    // Загружаем данные только если авторизован
     loadData()
   }, [router])
 
@@ -110,16 +136,23 @@ export default function AdminPage() {
   const loadData = async () => {
     setIsLoading(true)
     try {
-      const poisData = await fetchPOIs()
+      const [poisData, newsData, settingsData, mediaData, rssData, iconsData] = await Promise.all([
+        fetchPOIs(),
+        fetchNews(),
+        fetchSettings(),
+        fetchMedia(),
+        fetchRssFeeds(),
+        fetchIcons(),
+      ])
+
       setPois(poisData)
-
-      const newsData = await fetchNews()
       setNews(newsData)
-
-      const settingsData = await fetchSettings()
       setSettings(settingsData)
+      setMedia(mediaData)
+      setRssFeeds(rssData)
+      setIcons(iconsData)
       setOrganizationInfo(settingsData.organizationInfo)
-      setIdleTimeout(settingsData.idleTimeout / (60 * 1000)) // Конвертируем из мс в минуты
+      setIdleTimeout(settingsData.idleTimeout / (60 * 1000))
     } catch (error) {
       console.error("Error loading data:", error)
       toast({
@@ -154,7 +187,7 @@ export default function AdminPage() {
   const handleAddImage = () => {
     setCurrentPoi((prev) => ({
       ...prev,
-      images: [...(prev.images || []), `/images/placeholder-${(prev.images?.length || 0) + 1}.jpg`],
+      images: [...(prev.images || []), `/placeholder.svg?height=200&width=300`],
     }))
   }
 
@@ -165,7 +198,7 @@ export default function AdminPage() {
     }))
   }
 
-  const handleSavePoi = () => {
+  const handleSavePoi = async () => {
     if (!currentPoi.name || !currentPoi.coordinates) {
       toast({
         title: "Ошибка",
@@ -175,35 +208,45 @@ export default function AdminPage() {
       return
     }
 
-    const newPoi: POI = {
-      id: currentPoi.id || Date.now().toString(),
-      name: currentPoi.name,
-      shortDescription: currentPoi.shortDescription || "",
-      fullDescription: currentPoi.fullDescription || "",
-      coordinates: currentPoi.coordinates as [number, number],
-      images: currentPoi.images || [],
-      address: currentPoi.address || "",
-      category: currentPoi.category || "building",
+    try {
+      setIsLoading(true)
+      const newPoi = await createPOI({
+        name: currentPoi.name,
+        shortDescription: currentPoi.shortDescription || "",
+        fullDescription: currentPoi.fullDescription || "",
+        coordinates: currentPoi.coordinates as [number, number],
+        images: currentPoi.images || [],
+        address: currentPoi.address || "",
+        category: currentPoi.category || "building",
+      })
+
+      setPois((prev) => [...prev, newPoi])
+
+      // Сброс формы
+      setCurrentPoi({
+        name: "",
+        shortDescription: "",
+        fullDescription: "",
+        coordinates: [56.7417, 37.189],
+        images: [],
+        address: "",
+        category: "building",
+      })
+
+      toast({
+        title: "Успешно",
+        description: "Объект сохранен в базу данных!",
+      })
+    } catch (error) {
+      console.error("Error saving POI:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить объект",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
-
-    setPois((prev) => [...prev, newPoi])
-
-    // Сброс формы
-    setCurrentPoi({
-      id: "",
-      name: "",
-      shortDescription: "",
-      fullDescription: "",
-      coordinates: [56.7417, 37.189],
-      images: [],
-      address: "",
-      category: "building",
-    })
-
-    toast({
-      title: "Успешно",
-      description: "Объект сохранен!",
-    })
   }
 
   // Обработчики для новостей
@@ -212,7 +255,7 @@ export default function AdminPage() {
     setCurrentNews((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSaveNews = () => {
+  const handleSaveNews = async () => {
     if (!currentNews.title || !currentNews.content) {
       toast({
         title: "Ошибка",
@@ -222,30 +265,142 @@ export default function AdminPage() {
       return
     }
 
-    const newNews: NewsItem = {
-      id: currentNews.id || Date.now().toString(),
-      title: currentNews.title,
-      content: currentNews.content,
-      image: currentNews.image || "/placeholder.svg?height=200&width=300",
-      date: currentNews.date || new Date().toISOString(),
-      url: currentNews.url,
+    try {
+      setIsLoading(true)
+      const newNews = await createNews({
+        title: currentNews.title,
+        content: currentNews.content,
+        image: currentNews.image || "/placeholder.svg?height=200&width=300",
+        date: currentNews.date || new Date().toISOString(),
+        url: currentNews.url,
+      })
+
+      setNews((prev) => [newNews, ...prev])
+
+      // Сброс формы
+      setCurrentNews({
+        title: "",
+        content: "",
+        image: "",
+        date: new Date().toISOString(),
+      })
+
+      toast({
+        title: "Успешно",
+        description: "Новость сохранена в базу данных!",
+      })
+    } catch (error) {
+      console.error("Error saving news:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить новость",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Обработчики для медиафайлов
+  const handleMediaInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setCurrentMedia((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleMediaFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsLoading(true)
+      const url = await uploadMediaFile(file)
+      setCurrentMedia((prev) => ({ ...prev, url }))
+
+      toast({
+        title: "Успешно",
+        description: "Файл загружен!",
+      })
+    } catch (error) {
+      console.error("Error uploading file:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить файл",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSaveMedia = async () => {
+    if (!currentMedia.title || !currentMedia.url) {
+      toast({
+        title: "Ошибка",
+        description: "Название и файл обязательны!",
+        variant: "destructive",
+      })
+      return
     }
 
-    setNews((prev) => [...prev, newNews])
+    try {
+      setIsLoading(true)
+      const newMedia = await createMedia({
+        title: currentMedia.title,
+        description: currentMedia.description || "",
+        type: currentMedia.type || "image",
+        url: currentMedia.url,
+        category: currentMedia.category || "photo",
+        date: new Date().toISOString(),
+      })
 
-    // Сброс формы
-    setCurrentNews({
-      id: "",
-      title: "",
-      content: "",
-      image: "",
-      date: new Date().toISOString(),
-    })
+      setMedia((prev) => [...prev, newMedia])
 
-    toast({
-      title: "Успешно",
-      description: "Новость сохранена!",
-    })
+      // Сброс формы
+      setCurrentMedia({
+        title: "",
+        description: "",
+        type: "image",
+        url: "",
+        category: "photo",
+        date: new Date().toISOString(),
+      })
+
+      toast({
+        title: "Успешно",
+        description: "Медиафайл сохранен в базу данных!",
+      })
+    } catch (error) {
+      console.error("Error saving media:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить медиафайл",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteMedia = async (id: string) => {
+    try {
+      setIsLoading(true)
+      await removeMedia(id)
+      setMedia((prev) => prev.filter((m) => m.id !== id))
+
+      toast({
+        title: "Успешно",
+        description: "Медиафайл удален!",
+      })
+    } catch (error) {
+      console.error("Error deleting media:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить медиафайл",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Обработчики для настроек
@@ -257,12 +412,11 @@ export default function AdminPage() {
   const handleSaveSettings = async () => {
     if (!settings || !organizationInfo) return
 
-    setIsLoading(true)
     try {
-      // Обновляем настройки
+      setIsLoading(true)
       const updatedSettings = await updateSettings({
         ...settings,
-        idleTimeout: idleTimeout * 60 * 1000, // Конвертируем минуты в мс
+        idleTimeout: idleTimeout * 60 * 1000,
         organizationInfo,
       })
 
@@ -270,7 +424,7 @@ export default function AdminPage() {
 
       toast({
         title: "Успешно",
-        description: "Настройки сохранены!",
+        description: "Настройки сохранены в базу данных!",
       })
     } catch (error) {
       console.error("Error saving settings:", error)
@@ -284,22 +438,129 @@ export default function AdminPage() {
     }
   }
 
-  const handleSaveRssUrl = () => {
-    if (!rssUrl) {
+  // Обработчики для RSS
+  const handleSaveRssUrl = async () => {
+    if (!rssUrl || !rssName) {
       toast({
         title: "Ошибка",
-        description: "URL RSS-ленты не может быть пустым",
+        description: "Название и URL RSS-ленты обязательны",
         variant: "destructive",
       })
       return
     }
 
-    toast({
-      title: "Успешно",
-      description: "URL RSS-ленты сохранен!",
-    })
+    try {
+      setIsLoading(true)
+      const newFeed = await createRssFeed({
+        name: rssName,
+        url: rssUrl,
+        active: true,
+      })
 
-    setRssUrl("")
+      setRssFeeds((prev) => [...prev, newFeed])
+      setRssUrl("")
+      setRssName("")
+
+      toast({
+        title: "Успешно",
+        description: "RSS-лента добавлена в базу данных!",
+      })
+    } catch (error) {
+      console.error("Error saving RSS feed:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось сохранить RSS-ленту",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteRssFeed = async (id: string) => {
+    try {
+      setIsLoading(true)
+      await removeRssFeed(id)
+      setRssFeeds((prev) => prev.filter((f) => f.id !== id))
+
+      toast({
+        title: "Успешно",
+        description: "RSS-лента удалена!",
+      })
+    } catch (error) {
+      console.error("Error deleting RSS feed:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить RSS-ленту",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Обработчики для иконок
+  const handleIconFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !iconName) {
+      toast({
+        title: "Ошибка",
+        description: "Выберите файл и введите название иконки",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      const newIcon = await createIcon(
+        {
+          name: iconName,
+          category: iconCategory,
+          url: "",
+        },
+        file,
+      )
+
+      setIcons((prev) => [...prev, newIcon])
+      setIconName("")
+
+      toast({
+        title: "Успешно",
+        description: "Иконка загружена в базу данных!",
+      })
+    } catch (error) {
+      console.error("Error uploading icon:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось загрузить иконку",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteIcon = async (id: string) => {
+    try {
+      setIsLoading(true)
+      await removeIcon(id)
+      setIcons((prev) => prev.filter((i) => i.id !== id))
+
+      toast({
+        title: "Успешно",
+        description: "Иконка удалена!",
+      })
+    } catch (error) {
+      console.error("Error deleting icon:", error)
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить иконку",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -354,13 +615,14 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Название</Label>
+                  <Label htmlFor="name">Название *</Label>
                   <Input
                     id="name"
                     name="name"
                     value={currentPoi.name}
                     onChange={handlePoiInputChange}
                     placeholder="Название объекта"
+                    required
                   />
                 </div>
 
@@ -408,7 +670,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Координаты</Label>
+                  <Label>Координаты *</Label>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Label htmlFor="lat" className="text-xs">
@@ -420,6 +682,7 @@ export default function AdminPage() {
                         step="0.0001"
                         value={currentPoi.coordinates?.[0]}
                         onChange={(e) => handleCoordinatesChange(e, 0)}
+                        required
                       />
                     </div>
                     <div>
@@ -432,6 +695,7 @@ export default function AdminPage() {
                         step="0.0001"
                         value={currentPoi.coordinates?.[1]}
                         onChange={(e) => handleCoordinatesChange(e, 1)}
+                        required
                       />
                     </div>
                   </div>
@@ -480,16 +744,17 @@ export default function AdminPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSavePoi} className="w-full">
-                  <Save className="h-4 w-4 mr-2" /> Сохранить объект
+                <Button onClick={handleSavePoi} className="w-full" disabled={isLoading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? "Сохранение..." : "Сохранить объект"}
                 </Button>
               </CardFooter>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Добавленные объекты</CardTitle>
-                <CardDescription>Список объектов, добавленных в текущей сессии</CardDescription>
+                <CardTitle>Сохраненные объекты ({pois.length})</CardTitle>
+                <CardDescription>Список объектов в базе данных</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px] pr-4">
@@ -517,7 +782,7 @@ export default function AdminPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Нет добавленных объектов</p>
+                    <p className="text-muted-foreground">Нет сохраненных объектов</p>
                   )}
                 </ScrollArea>
               </CardContent>
@@ -535,18 +800,19 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newsTitle">Заголовок</Label>
+                  <Label htmlFor="newsTitle">Заголовок *</Label>
                   <Input
                     id="newsTitle"
                     name="title"
                     value={currentNews.title}
                     onChange={handleNewsInputChange}
                     placeholder="Заголовок новости"
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="newsContent">Содержание</Label>
+                  <Label htmlFor="newsContent">Содержание *</Label>
                   <Textarea
                     id="newsContent"
                     name="content"
@@ -554,23 +820,19 @@ export default function AdminPage() {
                     onChange={handleNewsInputChange}
                     placeholder="Текст новости"
                     rows={6}
+                    required
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="newsImage">Изображение</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="newsImage"
-                      name="image"
-                      value={currentNews.image}
-                      onChange={handleNewsInputChange}
-                      placeholder="URL изображения или путь к файлу"
-                    />
-                    <Button variant="outline" size="icon">
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Input
+                    id="newsImage"
+                    name="image"
+                    value={currentNews.image}
+                    onChange={handleNewsInputChange}
+                    placeholder="URL изображения"
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -585,16 +847,17 @@ export default function AdminPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveNews} className="w-full">
-                  <Save className="h-4 w-4 mr-2" /> Сохранить новость
+                <Button onClick={handleSaveNews} className="w-full" disabled={isLoading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? "Сохранение..." : "Сохранить новость"}
                 </Button>
               </CardFooter>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Добавленные новости</CardTitle>
-                <CardDescription>Список добавленных новостей</CardDescription>
+                <CardTitle>Сохраненные новости ({news.length})</CardTitle>
+                <CardDescription>Список новостей в базе данных</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px] pr-4">
@@ -613,7 +876,7 @@ export default function AdminPage() {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-muted-foreground">Нет добавленных новостей</p>
+                    <p className="text-muted-foreground">Нет сохраненных новостей</p>
                   )}
                 </ScrollArea>
               </CardContent>
@@ -625,27 +888,36 @@ export default function AdminPage() {
                 <CardDescription>Добавьте внешние источники новостей</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <Input value={rssUrl} onChange={(e) => setRssUrl(e.target.value)} placeholder="URL RSS-ленты" />
-                  </div>
-                  <Button onClick={handleSaveRssUrl}>
-                    <Rss className="h-4 w-4 mr-2" /> Добавить
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <Input value={rssName} onChange={(e) => setRssName(e.target.value)} placeholder="Название ленты" />
+                  <Input value={rssUrl} onChange={(e) => setRssUrl(e.target.value)} placeholder="URL RSS-ленты" />
+                  <Button onClick={handleSaveRssUrl} disabled={isLoading}>
+                    <Rss className="h-4 w-4 mr-2" />
+                    {isLoading ? "Добавление..." : "Добавить"}
                   </Button>
                 </div>
 
                 <div className="border rounded-lg p-4">
-                  <h4 className="font-medium mb-2">Добавленные RSS-ленты:</h4>
+                  <h4 className="font-medium mb-2">Добавленные RSS-ленты ({rssFeeds.length}):</h4>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <div className="flex items-center gap-2">
-                        <Rss className="h-4 w-4 text-orange-500" />
-                        <span>https://jinr.ru/rss/news</span>
+                    {rssFeeds.map((feed) => (
+                      <div key={feed.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <div className="flex items-center gap-2">
+                          <Rss className="h-4 w-4 text-orange-500" />
+                          <span className="font-medium">{feed.name}</span>
+                          <span className="text-sm text-gray-500">({feed.url})</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleDeleteRssFeed(feed.id)}
+                        >
+                          <Trash className="h-4 w-4 text-red-500" />
+                        </Button>
                       </div>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Trash className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
+                    ))}
+                    {rssFeeds.length === 0 && <p className="text-sm text-gray-500">Нет добавленных RSS-лент</p>}
                   </div>
                 </div>
               </CardContent>
@@ -663,86 +935,124 @@ export default function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="mediaTitle">Название</Label>
-                  <Input id="mediaTitle" placeholder="Название медиафайла" />
+                  <Label htmlFor="mediaTitle">Название *</Label>
+                  <Input
+                    id="mediaTitle"
+                    name="title"
+                    value={currentMedia.title}
+                    onChange={handleMediaInputChange}
+                    placeholder="Название медиафайла"
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="mediaDescription">Описание</Label>
-                  <Textarea id="mediaDescription" placeholder="Описание медиафайла" rows={2} />
+                  <Textarea
+                    id="mediaDescription"
+                    name="description"
+                    value={currentMedia.description}
+                    onChange={handleMediaInputChange}
+                    placeholder="Описание медиафайла"
+                    rows={2}
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Тип медиафайла</Label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="mediaType" value="photo" defaultChecked />
-                      <span>Фото</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="mediaType" value="video" />
-                      <span>Видео</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="radio" name="mediaType" value="gif" />
-                      <span>GIF</span>
-                    </label>
-                  </div>
+                  <Select
+                    value={currentMedia.type}
+                    onValueChange={(value) => setCurrentMedia((prev) => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Изображение</SelectItem>
+                      <SelectItem value="video">Видео</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="mediaFile">Файл</Label>
-                  <Input id="mediaFile" type="file" accept="image/*,video/*" />
+                  <Label>Категория</Label>
+                  <Select
+                    value={currentMedia.category}
+                    onValueChange={(value) => setCurrentMedia((prev) => ({ ...prev, category: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="photo">Фото</SelectItem>
+                      <SelectItem value="video">Видео</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <Button className="w-full">
+                <div className="space-y-2">
+                  <Label htmlFor="mediaFile">Файл *</Label>
+                  <Input
+                    id="mediaFile"
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleMediaFileUpload}
+                    required
+                  />
+                  {currentMedia.url && <p className="text-sm text-green-600">Файл загружен: {currentMedia.url}</p>}
+                </div>
+
+                <Button onClick={handleSaveMedia} className="w-full" disabled={isLoading || !currentMedia.url}>
                   <Save className="h-4 w-4 mr-2" />
-                  Добавить медиафайл
+                  {isLoading ? "Сохранение..." : "Добавить медиафайл"}
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Загруженные медиафайлы</CardTitle>
+                <CardTitle>Загруженные медиафайлы ({media.length})</CardTitle>
                 <CardDescription>Управление загруженными медиафайлами</CardDescription>
               </CardHeader>
               <CardContent>
                 <ScrollArea className="h-[500px] pr-4">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="border rounded p-3">
-                      <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
-                        <img
-                          src="/placeholder.svg?height=200&width=300"
-                          alt="Превью"
-                          className="w-full h-full object-cover"
-                        />
+                    {media.map((item) => (
+                      <div key={item.id} className="border rounded p-3">
+                        <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
+                          {item.type === "image" ? (
+                            <Image
+                              src={item.url || "/placeholder.svg?height=200&width=300"}
+                              alt={item.title}
+                              width={200}
+                              height={150}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <video className="w-full h-full object-cover" controls>
+                              <source src={item.url} type="video/mp4" />
+                            </video>
+                          )}
+                        </div>
+                        <h4 className="font-medium text-sm">{item.title}</h4>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-xs text-muted-foreground capitalize">{item.type}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => handleDeleteMedia(item.id)}
+                          >
+                            <Trash className="h-3 w-3 text-red-500" />
+                          </Button>
+                        </div>
                       </div>
-                      <h4 className="font-medium text-sm">Фото лаборатории</h4>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-muted-foreground">Фото</span>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                          <Trash className="h-3 w-3 text-red-500" />
-                        </Button>
+                    ))}
+                    {media.length === 0 && (
+                      <div className="col-span-2 text-center py-8">
+                        <p className="text-muted-foreground">Нет загруженных медиафайлов</p>
                       </div>
-                    </div>
-
-                    <div className="border rounded p-3">
-                      <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
-                        <img
-                          src="/placeholder.svg?height=200&width=300"
-                          alt="Превью"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <h4 className="font-medium text-sm">Видео презентация</h4>
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-muted-foreground">Видео</span>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                          <Trash className="h-3 w-3 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -785,18 +1095,13 @@ export default function AdminPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="logo">Логотип</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="logo"
-                          name="logo"
-                          value={organizationInfo.logo}
-                          onChange={handleOrganizationInfoChange}
-                          placeholder="URL логотипа"
-                        />
-                        <Button variant="outline" size="icon">
-                          <ImageIcon className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Input
+                        id="logo"
+                        name="logo"
+                        value={organizationInfo.logo}
+                        onChange={handleOrganizationInfoChange}
+                        placeholder="URL логотипа"
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -861,61 +1166,48 @@ export default function AdminPage() {
               </CardContent>
               <CardFooter>
                 <Button onClick={handleSaveSettings} className="w-full" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" /> Сохранить настройки брендинга
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? "Сохранение..." : "Сохранить настройки брендинга"}
                 </Button>
               </CardFooter>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Редактирование раздела "О ОИЯИ"</CardTitle>
-                <CardDescription>Настройте содержимое страницы "О ОИЯИ"</CardDescription>
+                <CardTitle>Предварительный просмотр</CardTitle>
+                <CardDescription>Как будет выглядеть информация на сайте</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="aboutTitle">Заголовок</Label>
-                  <Input id="aboutTitle" placeholder="Заголовок страницы" defaultValue="О ОИЯИ" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="aboutContent">Содержание</Label>
-                  <Textarea
-                    id="aboutContent"
-                    placeholder="Основной текст страницы"
-                    rows={10}
-                    defaultValue="Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследованиях в области ядерной физики, физики элементарных частиц и конденсированных сред."
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Изображения</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="border rounded p-2">
-                      <div className="aspect-video bg-gray-100 rounded mb-2 overflow-hidden">
-                        <img
-                          src="/placeholder.svg?height=200&width=300"
-                          alt="Превью"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs truncate">about-image-1.jpg</span>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-                          <Trash className="h-3 w-3 text-red-500" />
-                        </Button>
+              <CardContent>
+                {organizationInfo && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-500 to-sky-400 rounded-lg text-white">
+                      <Image
+                        src={organizationInfo.logo || "/images/jinr-logo.png"}
+                        alt="Logo"
+                        width={50}
+                        height={50}
+                        className="rounded-lg"
+                      />
+                      <div>
+                        <h3 className="font-bold">{organizationInfo.name}</h3>
+                        <p className="text-sm opacity-90">{organizationInfo.fullName}</p>
                       </div>
                     </div>
+
+                    <div className="p-4 bg-gray-50 rounded-lg">
+                      <h4 className="font-semibold mb-2">Описание:</h4>
+                      <p className="text-sm text-gray-600">{organizationInfo.description}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>📍 {organizationInfo.address}</div>
+                      <div>📞 {organizationInfo.phone}</div>
+                      <div>✉️ {organizationInfo.email}</div>
+                      <div>🌐 {organizationInfo.website}</div>
+                    </div>
                   </div>
-                  <Button variant="outline" size="sm" className="mt-2">
-                    <Plus className="h-4 w-4 mr-1" /> Добавить изображение
-                  </Button>
-                </div>
+                )}
               </CardContent>
-              <CardFooter>
-                <Button className="w-full">
-                  <Save className="h-4 w-4 mr-2" /> Сохранить изменения
-                </Button>
-              </CardFooter>
             </Card>
           </div>
         </TabsContent>
@@ -944,25 +1236,6 @@ export default function AdminPage() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     Время бездействия, после которого система автоматически вернется на главный экран
-                  </p>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-2">
-                  <Label htmlFor="loadingGif">Анимация загрузки / скринсейвер</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="loadingGif"
-                      placeholder="URL GIF-анимации"
-                      defaultValue="/placeholder.svg?height=400&width=600"
-                    />
-                    <Button variant="outline" size="icon">
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    GIF-анимация, которая будет отображаться при загрузке и в качестве скринсейвера
                   </p>
                 </div>
 
@@ -998,7 +1271,8 @@ export default function AdminPage() {
               </CardContent>
               <CardFooter>
                 <Button onClick={handleSaveSettings} className="w-full" disabled={isLoading}>
-                  <Save className="h-4 w-4 mr-2" /> Сохранить настройки
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? "Сохранение..." : "Сохранить настройки"}
                 </Button>
               </CardFooter>
             </Card>
@@ -1011,12 +1285,17 @@ export default function AdminPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="iconName">Название иконки</Label>
-                  <Input id="iconName" placeholder="Например: Лаборатория" />
+                  <Input
+                    id="iconName"
+                    value={iconName}
+                    onChange={(e) => setIconName(e.target.value)}
+                    placeholder="Например: Лаборатория"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="iconCategory">Категория</Label>
-                  <Select defaultValue="building">
+                  <Select value={iconCategory} onValueChange={setIconCategory}>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите категорию" />
                     </SelectTrigger>
@@ -1035,25 +1314,43 @@ export default function AdminPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="iconFile">Файл иконки (PNG, SVG, 32x32px)</Label>
-                  <Input id="iconFile" type="file" accept="image/png,image/svg+xml" />
+                  <Input id="iconFile" type="file" accept="image/png,image/svg+xml" onChange={handleIconFileUpload} />
                 </div>
 
-                <Button className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Загрузить иконку
-                </Button>
-
                 <div className="mt-4">
-                  <h4 className="font-medium mb-2">Загруженные иконки:</h4>
+                  <h4 className="font-medium mb-2">Загруженные иконки ({icons.length}):</h4>
                   <div className="grid grid-cols-4 gap-2">
-                    <div className="border rounded p-2 text-center">
-                      <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
-                      <span className="text-xs">Лаборатория</span>
-                    </div>
-                    <div className="border rounded p-2 text-center">
-                      <div className="w-8 h-8 bg-gray-200 rounded mx-auto mb-1"></div>
-                      <span className="text-xs">Столовая</span>
-                    </div>
+                    {icons.map((icon) => (
+                      <div key={icon.id} className="border rounded p-2 text-center relative group">
+                        <div className="w-8 h-8 mx-auto mb-1 bg-gray-200 rounded flex items-center justify-center">
+                          {icon.url ? (
+                            <Image
+                              src={icon.url || "/placeholder.svg"}
+                              alt={icon.name}
+                              width={32}
+                              height={32}
+                              className="rounded"
+                            />
+                          ) : (
+                            <span className="text-xs">?</span>
+                          )}
+                        </div>
+                        <span className="text-xs">{icon.name}</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-0 right-0 h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                          onClick={() => handleDeleteIcon(icon.id)}
+                        >
+                          <Trash className="h-3 w-3 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                    {icons.length === 0 && (
+                      <div className="col-span-4 text-center py-4">
+                        <p className="text-sm text-gray-500">Нет загруженных иконок</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -1065,25 +1362,30 @@ export default function AdminPage() {
                 <CardDescription>Информация о системе и статистика использования</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-4 gap-4">
                   <div className="border rounded-lg p-4">
                     <h4 className="text-sm font-medium text-muted-foreground mb-1">Версия системы</h4>
                     <p className="text-lg font-semibold">1.0.0</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Последнее обновление</h4>
-                    <p className="text-lg font-semibold">11.06.2025</p>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Объектов в БД</h4>
+                    <p className="text-lg font-semibold">{pois.length}</p>
                   </div>
                   <div className="border rounded-lg p-4">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Количество объектов</h4>
-                    <p className="text-lg font-semibold">{pois.length}</p>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Новостей в БД</h4>
+                    <p className="text-lg font-semibold">{news.length}</p>
+                  </div>
+                  <div className="border rounded-lg p-4">
+                    <h4 className="text-sm font-medium text-muted-foreground mb-1">Медиафайлов в БД</h4>
+                    <p className="text-lg font-semibold">{media.length}</p>
                   </div>
                 </div>
 
                 <Alert className="mt-6">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
-                    Для применения некоторых настроек может потребоваться перезагрузка системы
+                    Все данные сохраняются в локальной базе данных браузера (IndexedDB). Для применения некоторых
+                    настроек может потребоваться перезагрузка системы.
                   </AlertDescription>
                 </Alert>
               </CardContent>
