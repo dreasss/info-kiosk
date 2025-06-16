@@ -675,7 +675,7 @@ export default function AdminPage() {
                           <h4 className="font-medium">{poi.name}</h4>
                           <p className="text-sm text-gray-600">{poi.address}</p>
                           <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                            {CATEGORIES[poi.category]?.name}
+                            {CATEGORIES[poi.category as POICategory]?.name}
                           </span>
                         </div>
                         <div className="flex gap-2">
