@@ -70,7 +70,7 @@ export default function HomePage() {
                       "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
                   }}
                 >
-                  {language === "ru"
+                  {language === "ru" || !language
                     ? "Объединенный Институт Ядерных Исследований"
                     : "Joint Institute for Nuclear Research"}
                 </h1>
