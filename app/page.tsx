@@ -237,7 +237,7 @@ export default function HomePage() {
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
               <span className="opacity-70 mr-2 text-lg">📍</span>
               <span>
-                {language === "ru"
+                {language === "ru" || !language
                   ? "г. Дубна, Московская область"
                   : "Dubna, Moscow Region"}
               </span>
