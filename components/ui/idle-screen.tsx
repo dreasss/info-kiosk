@@ -21,6 +21,20 @@ export function IdleScreen({ children }: IdleScreenProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  // Загружаем настройки при монтировании
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const systemSettings = await fetchSettings();
+        setSettings(systemSettings);
+      } catch (error) {
+        console.error("Error loading settings for idle screen:", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
   // Обновляем время каждую секунду
   useEffect(() => {
     const timer = setInterval(() => {
