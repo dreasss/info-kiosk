@@ -171,7 +171,11 @@ export default function HomePage() {
             <TouchButton
               href="/infrastructure"
               icon={Building2}
-              title={language === "ru" ? "Инфраструктура" : "Infrastructure"}
+              title={
+                language === "ru" || !language
+                  ? "Инфраструктура"
+                  : "Infrastructure"
+              }
               className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-orange-400/30 hover:border-orange-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.3s", animationFillMode: "both" }}
