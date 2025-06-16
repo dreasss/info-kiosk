@@ -193,7 +193,7 @@ export default function HomePage() {
             <TouchButton
               href="/about"
               icon={Info}
-              title={language === "ru" ? "О ОИЯИ" : "About"}
+              title={language === "ru" || !language ? "О ОИЯИ" : "About"}
               className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-indigo-400/30 hover:border-indigo-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.5s", animationFillMode: "both" }}
