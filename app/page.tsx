@@ -93,10 +93,10 @@ export default function HomePage() {
             {/* Переключатель языка и кнопка админки */}
             <div className="flex items-center gap-3">
               <div
-                className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20"
+                className="bg-white/15 backdrop-blur-md rounded-xl border border-white/30 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5"
                 style={{
                   boxShadow:
-                    "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                    "0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 rgba(255,255,255,0.1)",
                 }}
               >
                 <LanguageSwitcher />
@@ -104,13 +104,13 @@ export default function HomePage() {
 
               <Link href="/admin">
                 <div
-                  className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 group"
+                  className="p-3 bg-white/15 backdrop-blur-md rounded-xl border border-white/30 shadow-lg hover:shadow-xl hover:bg-white/25 transition-all duration-300 group transform hover:scale-105 hover:-translate-y-0.5"
                   style={{
                     boxShadow:
-                      "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                      "0 8px 32px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 rgba(255,255,255,0.1)",
                   }}
                 >
-                  <Settings className="h-5 w-5 text-white group-hover:rotate-90 transition-transform duration-300" />
+                  <Settings className="h-5 w-5 text-white group-hover:rotate-180 transition-transform duration-500" />
                 </div>
               </Link>
             </div>
