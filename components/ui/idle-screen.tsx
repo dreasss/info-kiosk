@@ -112,8 +112,8 @@ export function IdleScreen({ children }: IdleScreenProps) {
           {/* Логотип */}
           <div className="mb-8">
             <Image
-              src="/images/jinr-logo.png"
-              alt="JINR Logo"
+              src={settings?.organizationInfo.logo || "/images/jinr-logo.png"}
+              alt={`${settings?.organizationInfo.name || "JINR"} Logo`}
               width={200}
               height={200}
               className="mx-auto drop-shadow-2xl animate-pulse"
@@ -122,10 +122,13 @@ export function IdleScreen({ children }: IdleScreenProps) {
 
           {/* Название */}
           <h1 className="text-5xl font-bold mb-4 text-white drop-shadow-lg">
-            Объединенный Институт
+            {settings?.organizationInfo.name || "Объединенный Институт"}
           </h1>
           <h2 className="text-4xl font-bold mb-8 text-blue-200 drop-shadow-lg">
-            Ядерных Исследований
+            {settings?.organizationInfo.fullName.replace(
+              settings?.organizationInfo.name,
+              "",
+            ) || "Ядерных Исследований"}
           </h2>
 
           {/* Время и дата */}
