@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { useLanguage } from "@/lib/language-context"
+import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/language-context";
 
 export function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage()
+  const { language, setLanguage } = useLanguage();
 
   return (
-    <div className="flex items-center gap-1 p-1">
+    <div className="flex items-center gap-1 p-1 rounded-lg">
       <Button
         variant={language === "ru" ? "default" : "ghost"}
         size="sm"
         onClick={() => setLanguage("ru")}
-        className={`flex items-center gap-2 transition-all duration-300 ${
+        className={`flex items-center gap-2 transition-all duration-300 rounded-lg ${
           language === "ru"
-            ? "bg-white text-blue-600 hover:bg-white/90 shadow-lg"
-            : "text-white hover:bg-white/20 hover:text-white"
+            ? "bg-white/95 backdrop-blur-sm text-blue-600 hover:bg-white shadow-lg hover:shadow-xl transform hover:scale-105"
+            : "text-white hover:bg-white/20 hover:text-white hover:scale-105"
         }`}
         style={
           language !== "ru"
@@ -25,17 +25,19 @@ export function LanguageSwitcher() {
             : {}
         }
       >
-        <span className="text-lg">🇷🇺</span>
+        <span className="text-lg hover:scale-110 transition-transform duration-200">
+          🇷🇺
+        </span>
         <span className="font-medium">RU</span>
       </Button>
       <Button
         variant={language === "en" ? "default" : "ghost"}
         size="sm"
         onClick={() => setLanguage("en")}
-        className={`flex items-center gap-2 transition-all duration-300 ${
+        className={`flex items-center gap-2 transition-all duration-300 rounded-lg ${
           language === "en"
-            ? "bg-white text-blue-600 hover:bg-white/90 shadow-lg"
-            : "text-white hover:bg-white/20 hover:text-white"
+            ? "bg-white/95 backdrop-blur-sm text-blue-600 hover:bg-white shadow-lg hover:shadow-xl transform hover:scale-105"
+            : "text-white hover:bg-white/20 hover:text-white hover:scale-105"
         }`}
         style={
           language !== "en"
@@ -45,9 +47,11 @@ export function LanguageSwitcher() {
             : {}
         }
       >
-        <span className="text-lg">🇺🇸</span>
+        <span className="text-lg hover:scale-110 transition-transform duration-200">
+          🇺🇸
+        </span>
         <span className="font-medium">EN</span>
       </Button>
     </div>
-  )
+  );
 }
