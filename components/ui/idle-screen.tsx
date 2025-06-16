@@ -165,7 +165,10 @@ export function IdleScreen({ children }: IdleScreenProps) {
             </p>
             <div className="flex items-center justify-center gap-2 text-blue-200">
               <MapPin className="h-5 w-5" />
-              <span>г. Дубна, Московская область</span>
+              <span>
+                {settings?.organizationInfo.address ||
+                  "г. Дубна, Московская область"}
+              </span>
             </div>
           </div>
 
