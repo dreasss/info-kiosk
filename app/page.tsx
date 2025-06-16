@@ -211,7 +211,9 @@ export default function HomePage() {
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
                     <Newspaper className="h-5 w-5 text-blue-600" />
                   </div>
-                  {language === "ru" ? "Последние новости" : "Latest News"}
+                  {language === "ru" || !language
+                    ? "Последние новости"
+                    : "Latest News"}
                 </h3>
                 <NewsCarousel news={news} />
               </div>
