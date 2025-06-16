@@ -153,7 +153,7 @@ export default function HomePage() {
             <TouchButton
               href="/gallery"
               icon={ImageIcon}
-              title={language === "ru" ? "Галерея" : "Gallery"}
+              title={language === "ru" || !language ? "Галерея" : "Gallery"}
               className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-purple-400/30 hover:border-purple-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.1s", animationFillMode: "both" }}
