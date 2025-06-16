@@ -41,9 +41,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [language]);
 
   const value = {
-    language,
+    language: isClient ? language : "ru", // Всегда используем "ru" до загрузки клиента
     setLanguage,
-    t: translations[language],
+    t: translations[isClient ? language : "ru"],
   };
 
   return (
