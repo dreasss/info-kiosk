@@ -46,6 +46,8 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
         "bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-900 shadow-md hover:shadow-lg",
       ghost:
         "hover:bg-white/10 backdrop-blur-sm text-current border border-white/20 hover:border-white/40",
+      outline:
+        "border border-current hover:bg-current/10 text-current shadow-md hover:shadow-lg",
     };
 
     const baseClasses = cn(
