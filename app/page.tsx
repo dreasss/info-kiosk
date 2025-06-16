@@ -137,12 +137,12 @@ export default function HomePage() {
           </div>
 
           {/* Сетка навигации */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-6">
             <TouchButton
               href="/map"
               icon={Map}
               title={language === "ru" ? "Карта" : "Map"}
-              className="bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-blue-400/30 hover:border-blue-300/50 group animate-fadeInUp"
               touchSize="lg"
             />
 
@@ -150,40 +150,45 @@ export default function HomePage() {
               href="/gallery"
               icon={ImageIcon}
               title={language === "ru" ? "Галерея" : "Gallery"}
-              className="bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-purple-400/30 hover:border-purple-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0.1s" }}
             />
 
             <TouchButton
               href="/news"
               icon={Newspaper}
               title={language === "ru" ? "Новости" : "News"}
-              className="bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-green-400/30 hover:border-green-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0.2s" }}
             />
 
             <TouchButton
               href="/infrastructure"
               icon={Building2}
               title={language === "ru" ? "Инфраструктура" : "Infrastructure"}
-              className="bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-orange-400/30 hover:border-orange-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0.3s" }}
             />
 
             <TouchButton
               href="/events"
               icon={Calendar}
               title={language === "ru" ? "События" : "Events"}
-              className="bg-gradient-to-br from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-rose-400/30 hover:border-rose-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0.4s" }}
             />
 
             <TouchButton
               href="/about"
               icon={Info}
               title={language === "ru" ? "О ОИЯИ" : "About"}
-              className="bg-gradient-to-br from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white h-28 md:h-32 shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all duration-300"
+              className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-indigo-400/30 hover:border-indigo-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0.5s" }}
             />
           </div>
 
