@@ -24,48 +24,130 @@ export function RssTicker({ className }: RssTickerProps) {
       try {
         setLoading(true);
 
-        // Моковые данные для RSS-ленты
-        const mockNews: RssItem[] = [
-          {
-            title: "Ученые обнаружили новый тип черны�� дыр в центре галактики",
-            link: "#",
-            pubDate: new Date().toISOString(),
-            source: "Naked Science",
-          },
-          {
-            title:
-              "Российские физики создали квантовый компьютер нового поколения",
-            link: "#",
-            pubDate: new Date(Date.now() - 3600000).toISOString(),
-            source: "Naked Science",
-          },
-          {
-            title:
-              "Найден способ увеличить эффективность солнечных батарей на 40%",
-            link: "#",
-            pubDate: new Date(Date.now() - 7200000).toISOString(),
-            source: "Naked Science",
-          },
-          {
-            title:
-              "Марсоход Perseverance обнаружил следы древней жизни на Марсе",
-            link: "#",
-            pubDate: new Date(Date.now() - 10800000).toISOString(),
-            source: "Naked Science",
-          },
-          {
-            title:
-              "Новый метод лечения рака показал эффективность в 95% случаев",
-            link: "#",
-            pubDate: new Date(Date.now() - 14400000).toISOString(),
-            source: "Naked Science",
-          },
-        ];
+        // Получаем активные RSS ленты из базы данных
+        const activeFeeds = await fetchActiveRssFeeds();
 
-        setNews(mockNews);
+        if (activeFeeds.length === 0) {
+          // Если нет активных лент, показываем демо-данные
+          const mockNews: RssItem[] = [
+            {
+              title:
+                "Ученые обнаружили новый тип черных дыр в центре галактики",
+              link: "#",
+              pubDate: new Date().toISOString(),
+              source: "Naked Science",
+            },
+            {
+              title:
+                "Российские физики создали квантовый компьютер нового поколения",
+              link: "#",
+              pubDate: new Date(Date.now() - 3600000).toISOString(),
+              source: "Naked Science",
+            },
+            {
+              title:
+                "Найден способ увеличить эффективность солнечных батарей на 40%",
+              link: "#",
+              pubDate: new Date(Date.now() - 7200000).toISOString(),
+              source: "Naked Science",
+            },
+            {
+              title:
+                "Марсоход Perseverance обнаружил следы древней жизни на Марсе",
+              link: "#",
+              pubDate: new Date(Date.now() - 10800000).toISOString(),
+              source: "Naked Science",
+            },
+            {
+              title:
+                "Новый метод лечения рака показал эффективность в 95% случаев",
+              link: "#",
+              pubDate: new Date(Date.now() - 14400000).toISOString(),
+              source: "Naked Science",
+            },
+          ];
+          setNews(mockNews);
+          return;
+        }
+
+        // Пытаемся загрузить реальные RSS данные
+        const allNewsItems: RssItem[] = [];
+
+        for (const feed of activeFeeds) {
+          try {
+            // Используем CORS прокси для загрузки RSS
+            const response = await fetch(
+              `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
+            );
+            const data = await response.json();
+
+            if (data.contents) {
+              const parser = new DOMParser();
+              const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+
+              // Парсим RSS элементы
+              const items = xmlDoc.querySelectorAll("item");
+
+              items.forEach((item, index) => {
+                if (index < 5) {
+                  // Берем только первые 5 новостей с каждой ленты
+                  const title = item.querySelector("title")?.textContent || "";
+                  const link = item.querySelector("link")?.textContent || "#";
+                  const pubDate =
+                    item.querySelector("pubDate")?.textContent ||
+                    new Date().toISOString();
+
+                  if (title) {
+                    allNewsItems.push({
+                      title,
+                      link,
+                      pubDate,
+                      source: feed.name,
+                    });
+                  }
+                }
+              });
+            }
+          } catch (feedError) {
+            console.warn(`Error loading RSS feed ${feed.name}:`, feedError);
+            continue;
+          }
+        }
+
+        // Если удалось загрузить новости, используем их
+        if (allNewsItems.length > 0) {
+          // Сортируем по дате и берем последние 10
+          allNewsItems.sort(
+            (a, b) =>
+              new Date(b.pubDate || 0).getTime() -
+              new Date(a.pubDate || 0).getTime(),
+          );
+          setNews(allNewsItems.slice(0, 10));
+        } else {
+          // Fallback на демо-данные
+          const mockNews: RssItem[] = [
+            {
+              title:
+                "Настройте RSS ленты в панели администратора для отображения актуальных новостей",
+              link: "/admin",
+              pubDate: new Date().toISOString(),
+              source: "Система",
+            },
+          ];
+          setNews(mockNews);
+        }
       } catch (error) {
         console.error("Error fetching RSS feeds:", error);
-        setNews([]);
+        // Fallback данные при ошибке
+        setNews([
+          {
+            title:
+              "Ошибка загрузки RSS лент. Проверьте настройки в панели администратора.",
+            link: "/admin",
+            pubDate: new Date().toISOString(),
+            source: "Система",
+          },
+        ]);
       } finally {
         setLoading(false);
       }
