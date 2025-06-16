@@ -422,46 +422,95 @@ export async function removeRssFeed(id: string): Promise<boolean> {
 }
 
 // API для работы с иконками
-export interface IconItem {
-  id: string;
-  name: string;
-  url: string;
-  category: string;
-  createdAt: string;
-}
-
-export async function fetchIcons(): Promise<IconItem[]> {
+export async function fetchIcons(): Promise<MarkerIcon[]> {
   if (!isBrowser) {
     return [];
   }
 
   try {
-    // Заглушка для иконок
-    const icons: IconItem[] = [];
-    return icons;
+    return await getAllIcons();
   } catch (error) {
     console.error("Error fetching icons:", error);
     return [];
   }
 }
 
+export async function fetchIconsByCategory(
+  category: string,
+): Promise<MarkerIcon[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    return await getIconsByCategory(category);
+  } catch (error) {
+    console.error("Error fetching icons by category:", error);
+    return [];
+  }
+}
+
 export async function createIcon(
-  icon: Omit<IconItem, "id" | "createdAt">,
-): Promise<IconItem> {
+  icon: Omit<MarkerIcon, "id">,
+  iconFile?: File,
+): Promise<MarkerIcon> {
   if (!isBrowser) {
     throw new Error("Browser API not available");
   }
 
   try {
-    const newIcon: IconItem = {
+    const newIcon: MarkerIcon = {
       ...icon,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
     };
-    // В реальном приложении здесь будет сохранение в базу данных
-    return newIcon;
+
+    if (iconFile) {
+      // Загружаем файл и создаем Blob
+      const url = await uploadFile(iconFile);
+      newIcon.url = url;
+
+      const blob = new Blob([await iconFile.arrayBuffer()], {
+        type: iconFile.type,
+      });
+      return await saveIcon(newIcon, blob);
+    } else {
+      return await saveIcon(newIcon);
+    }
   } catch (error) {
     console.error("Error creating icon:", error);
+    throw error;
+  }
+}
+
+export async function updateIcon(
+  id: string,
+  updates: Partial<MarkerIcon>,
+  iconFile?: File,
+): Promise<MarkerIcon | null> {
+  if (!isBrowser) {
+    return null;
+  }
+
+  try {
+    const icons = await getAllIcons();
+    const existingIcon = icons.find((i) => i.id === id);
+    if (!existingIcon) return null;
+
+    const updatedIcon = { ...existingIcon, ...updates };
+
+    if (iconFile) {
+      const url = await uploadFile(iconFile);
+      updatedIcon.url = url;
+
+      const blob = new Blob([await iconFile.arrayBuffer()], {
+        type: iconFile.type,
+      });
+      return await saveIcon(updatedIcon, blob);
+    } else {
+      return await saveIcon(updatedIcon);
+    }
+  } catch (error) {
+    console.error("Error updating icon:", error);
     throw error;
   }
 }
@@ -472,8 +521,7 @@ export async function removeIcon(id: string): Promise<boolean> {
   }
 
   try {
-    // В реальном приложении здесь будет удаление из базы данных
-    return true;
+    return await deleteIcon(id);
   } catch (error) {
     console.error("Error removing icon:", error);
     return false;
