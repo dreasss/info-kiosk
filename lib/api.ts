@@ -46,7 +46,20 @@ export async function fetchPOIs(): Promise<POI[]> {
     return await getAllPOIs();
   } catch (error) {
     console.error("Error fetching POIs:", error);
-    return [];
+    // Возвращаем fallback данные при ошибке базы данных
+    return [
+      {
+        id: "fallback_1",
+        name: "Главное здание ОИЯИ",
+        shortDescription: "Основное административное здание института",
+        fullDescription:
+          "Главное здание Объединенного института ядерных исследований, где располагается администрация и основные научные подразделения.",
+        coordinates: [56.7458, 37.189] as [number, number],
+        images: [],
+        address: "ул. Жолио-Кюри, 6, Дубна",
+        category: "building" as const,
+      },
+    ];
   }
 }
 
