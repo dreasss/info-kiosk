@@ -80,10 +80,10 @@ export default function HomePage() {
             {/* Часы и дата по центру */}
             <div className="hidden md:flex flex-1 justify-center">
               <div
-                className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20 shadow-md"
+                className="bg-white/15 backdrop-blur-md rounded-2xl px-6 py-3 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 style={{
                   boxShadow:
-                    "0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+                    "0 8px 32px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.25), 0 1px 0 rgba(255,255,255,0.1)",
                 }}
               >
                 <ClockDate />
