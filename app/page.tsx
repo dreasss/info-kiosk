@@ -184,7 +184,7 @@ export default function HomePage() {
             <TouchButton
               href="/events"
               icon={Calendar}
-              title={language === "ru" ? "События" : "Events"}
+              title={language === "ru" || !language ? "События" : "Events"}
               className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-rose-400/30 hover:border-rose-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.4s", animationFillMode: "both" }}
