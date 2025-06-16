@@ -90,7 +90,7 @@ export function IdleScreen({ children }: IdleScreenProps) {
         document.removeEventListener(event, handleActivity, true);
       });
     };
-  }, [pathname]);
+  }, [pathname, settings]);
 
   const handleReturnHome = () => {
     setIsIdle(false);
