@@ -60,8 +60,8 @@ export function IdleScreen({ children }: IdleScreenProps) {
         () => {
           setIsIdle(true);
         },
-        5 * 60 * 1000,
-      ); // 5 минут
+        settings?.idleTimeout || 5 * 60 * 1000,
+      ); // Используем настройки из базы данных или 5 минут по умолчанию
     };
 
     const handleActivity = () => {
