@@ -1,34 +1,42 @@
-"use client"
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { Card } from "@/components/ui/card"
-import { TouchButton } from "@/components/ui/touch-button"
-import { ClockDate } from "@/components/ui/clock-date"
-import { RssTicker } from "@/components/ui/rss-ticker"
-import { LanguageSwitcher } from "@/components/ui/language-switcher"
-import { NewsCarousel } from "@/components/ui/news-carousel"
-import { Map, ImageIcon, Newspaper, Info, Building2, Settings, Calendar } from "lucide-react"
-import { useLanguage } from "@/lib/language-context"
-import { fetchNews } from "@/lib/api"
-import type { NewsItem } from "@/types/news"
+"use client";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { TouchButton } from "@/components/ui/touch-button";
+import { ClockDate } from "@/components/ui/clock-date";
+import { RssTicker } from "@/components/ui/rss-ticker";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { NewsCarousel } from "@/components/ui/news-carousel";
+import {
+  Map,
+  ImageIcon,
+  Newspaper,
+  Info,
+  Building2,
+  Settings,
+  Calendar,
+} from "lucide-react";
+import { useLanguage } from "@/lib/language-context";
+import { fetchNews } from "@/lib/api";
+import type { NewsItem } from "@/types/news";
 
 export default function HomePage() {
-  const { language } = useLanguage()
-  const [news, setNews] = useState<NewsItem[]>([])
+  const { language } = useLanguage();
+  const [news, setNews] = useState<NewsItem[]>([]);
 
   useEffect(() => {
     const loadNews = async () => {
       try {
-        const data = await fetchNews()
-        setNews(data.slice(0, 5)) // Берем только 5 последних новостей
+        const data = await fetchNews();
+        setNews(data.slice(0, 5)); // Берем только 5 последних новостей
       } catch (error) {
-        console.error("Error loading news:", error)
+        console.error("Error loading news:", error);
       }
-    }
+    };
 
-    loadNews()
-  }, [])
+    loadNews();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -42,21 +50,24 @@ export default function HomePage() {
           <div className="flex justify-between items-center">
             {/* Логотип и название */}
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-white/20 rounded-full blur-md"></div>
-                <Image
-                  src="/images/jinr-logo.png"
-                  alt="JINR Logo"
-                  width={60}
-                  height={60}
-                  className="relative rounded-full border-2 border-white/30 shadow-lg"
-                />
+              <div className="relative group">
+                <div className="absolute inset-0 bg-white/30 rounded-full blur-lg scale-110 group-hover:scale-125 transition-transform duration-300"></div>
+                <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex items-center justify-center overflow-hidden group-hover:shadow-3xl transition-all duration-300">
+                  <Image
+                    src="/images/jinr-logo.png"
+                    alt="JINR Logo"
+                    width={70}
+                    height={70}
+                    className="object-cover rounded-full scale-90 group-hover:scale-95 transition-transform duration-300"
+                  />
+                </div>
               </div>
               <div>
                 <h1
                   className="text-xl md:text-2xl font-bold text-white"
                   style={{
-                    textShadow: "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
+                    textShadow:
+                      "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
                   }}
                 >
                   {language === "ru"
@@ -71,7 +82,8 @@ export default function HomePage() {
               <div
                 className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20 shadow-md"
                 style={{
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  boxShadow:
+                    "0 4px 16px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
                 }}
               >
                 <ClockDate />
@@ -83,7 +95,8 @@ export default function HomePage() {
               <div
                 className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20"
                 style={{
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                  boxShadow:
+                    "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
                 }}
               >
                 <LanguageSwitcher />
@@ -93,7 +106,8 @@ export default function HomePage() {
                 <div
                   className="p-2 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 hover:bg-white/20 transition-all duration-300 group"
                   style={{
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
+                    boxShadow:
+                      "0 4px 12px rgba(0,0,0,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
                   }}
                 >
                   <Settings className="h-5 w-5 text-white group-hover:rotate-90 transition-transform duration-300" />
@@ -116,7 +130,9 @@ export default function HomePage() {
               {language === "ru" ? "Добро пожаловать" : "Welcome"}
             </h2>
             <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto">
-              {language === "ru" ? "Интерактивная информационная система ОИЯИ" : "JINR Interactive Information System"}
+              {language === "ru"
+                ? "Интерактивная информационная система ОИЯИ"
+                : "JINR Interactive Information System"}
             </p>
           </div>
 
@@ -195,7 +211,11 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <div className="flex items-center">
               <span className="opacity-70 mr-1">📍</span>
-              <span>{language === "ru" ? "г. Дубна, Московская область" : "Dubna, Moscow Region"}</span>
+              <span>
+                {language === "ru"
+                  ? "г. Дубна, Московская область"
+                  : "Dubna, Moscow Region"}
+              </span>
             </div>
             <div className="flex items-center">
               <span className="opacity-70 mr-1">📞</span>
@@ -213,5 +233,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
