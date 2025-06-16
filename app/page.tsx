@@ -144,7 +144,7 @@ export default function HomePage() {
             <TouchButton
               href="/map"
               icon={Map}
-              title={language === "ru" ? "Карта" : "Map"}
+              title={language === "ru" || !language ? "Карта" : "Map"}
               className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-blue-400/30 hover:border-blue-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0s", animationFillMode: "both" }}
