@@ -49,7 +49,7 @@ import type { POI } from "@/types/poi";
 import type { NewsItem } from "@/types/news";
 import type { MediaItem } from "@/types/media";
 import type { SystemSettings } from "@/types/settings";
-import { CATEGORIES } from "@/types/poi";
+import { CATEGORIES, type POICategory } from "@/types/poi";
 import {
   fetchPOIs,
   createPOI,
@@ -963,7 +963,7 @@ export default function AdminPage() {
                       }}
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Отм��на
+                      Отмена
                     </Button>
                   )}
                 </CardFooter>
