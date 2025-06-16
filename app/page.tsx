@@ -125,11 +125,14 @@ export default function HomePage() {
       <main className="flex-1 p-4 md:p-6 flex flex-col">
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col">
           {/* Приветствие */}
-          <div className="text-center mb-6">
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-2">
+          <div
+            className="text-center mb-8 animate-fadeInUp"
+            style={{ animationDelay: "0.2s", animationFillMode: "both" }}
+          >
+            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-4 hover:scale-105 transition-transform duration-300">
               {language === "ru" ? "Добро пожаловать" : "Welcome"}
             </h2>
-            <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto">
+            <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300">
               {language === "ru"
                 ? "Интерактивная информационная система ОИЯИ"
                 : "JINR Interactive Information System"}
