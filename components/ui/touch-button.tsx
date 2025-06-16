@@ -71,13 +71,17 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
     const content =
       Icon && title ? (
         <div className="flex flex-col items-center justify-center text-center space-y-2 w-full h-full">
-          <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center mb-2">
-            <Icon className="h-6 w-6" />
+          <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-3 shadow-lg border border-white/30 group-hover:scale-110 group-hover:bg-white/30 transition-all duration-300">
+            <Icon className="h-7 w-7 group-hover:scale-110 transition-transform duration-300" />
           </div>
           <div>
-            <h3 className="font-bold text-lg mb-1">{title}</h3>
+            <h3 className="font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300">
+              {title}
+            </h3>
             {description && (
-              <p className="text-sm opacity-90 leading-tight">{description}</p>
+              <p className="text-sm opacity-90 leading-tight group-hover:opacity-100 transition-opacity duration-300">
+                {description}
+              </p>
             )}
           </div>
         </div>
