@@ -149,7 +149,7 @@ export default function HomePage() {
             <TouchButton
               href="/gallery"
               icon={ImageIcon}
-              title={language === "ru" ? "Галерея" : "Gallery"}
+              title={language === "ru" ? "��алерея" : "Gallery"}
               className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-purple-400/30 hover:border-purple-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.1s" }}
@@ -193,11 +193,16 @@ export default function HomePage() {
           </div>
 
           {/* Карусель новостей */}
-          <div className="flex-1 mb-6">
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg rounded-xl overflow-hidden h-full">
-              <div className="p-4">
-                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                  <Newspaper className="h-5 w-5 mr-2 text-blue-500" />
+          <div
+            className="flex-1 mb-6 animate-fadeInUp"
+            style={{ animationDelay: "0.6s" }}
+          >
+            <Card className="bg-white/90 backdrop-blur-md border border-white/20 shadow-2xl rounded-2xl overflow-hidden h-full hover:shadow-3xl transition-all duration-300 transform hover:scale-[1.01] card-hover">
+              <div className="p-6">
+                <h3 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
+                    <Newspaper className="h-5 w-5 text-blue-600" />
+                  </div>
                   {language === "ru" ? "Последние новости" : "Latest News"}
                 </h3>
                 <NewsCarousel news={news} />
