@@ -535,11 +535,34 @@ export async function uploadMediaFile(file: File): Promise<string> {
   }
 
   try {
-    // Заглушка для загрузки файлов
-    // В реальном приложении здесь будет загрузка на сервер
-    return `/placeholder.svg?height=200&width=300&text=${encodeURIComponent(file.name)}`;
+    return await uploadFile(file);
   } catch (error) {
     console.error("Error uploading file:", error);
+    throw error;
+  }
+}
+
+// Дополнительная функция для сохранения медиафайла с загруженным файлом
+export async function createMediaWithFile(
+  media: Omit<MediaItem, "id" | "url">,
+  file: File,
+): Promise<MediaItem> {
+  if (!isBrowser) {
+    throw new Error("Browser API not available");
+  }
+
+  try {
+    const url = await uploadFile(file);
+    const newMedia: MediaItem = {
+      ...media,
+      id: Date.now().toString(),
+      url,
+      type: file.type.startsWith("image/") ? "image" : "video",
+    };
+
+    return await saveMedia(newMedia);
+  } catch (error) {
+    console.error("Error creating media with file:", error);
     throw error;
   }
 }
