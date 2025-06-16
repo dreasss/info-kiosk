@@ -14,6 +14,17 @@ import {
   deleteMedia,
   getSettings,
   saveSettings,
+  getAllRssFeeds,
+  getActiveRssFeeds,
+  saveRssFeed,
+  deleteRssFeed,
+  getAllIcons,
+  getIconsByCategory,
+  saveIcon,
+  deleteIcon,
+  uploadFile,
+  type RssFeed,
+  type MarkerIcon,
 } from "@/lib/db";
 
 import type { POI, POICategory } from "@/types/poi";
