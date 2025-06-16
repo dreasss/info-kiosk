@@ -162,7 +162,7 @@ export default function HomePage() {
             <TouchButton
               href="/news"
               icon={Newspaper}
-              title={language === "ru" ? "Новости" : "News"}
+              title={language === "ru" || !language ? "Новости" : "News"}
               className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-green-400/30 hover:border-green-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.2s", animationFillMode: "both" }}
