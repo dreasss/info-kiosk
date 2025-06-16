@@ -144,6 +144,7 @@ export default function HomePage() {
               title={language === "ru" ? "Карта" : "Map"}
               className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-blue-400/30 hover:border-blue-300/50 group animate-fadeInUp"
               touchSize="lg"
+              style={{ animationDelay: "0s", animationFillMode: "both" }}
             />
 
             <TouchButton
@@ -161,7 +162,7 @@ export default function HomePage() {
               title={language === "ru" ? "Новости" : "News"}
               className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-green-400/30 hover:border-green-300/50 group animate-fadeInUp"
               touchSize="lg"
-              style={{ animationDelay: "0.2s" }}
+              style={{ animationDelay: "0.2s", animationFillMode: "both" }}
             />
 
             <TouchButton
@@ -170,7 +171,7 @@ export default function HomePage() {
               title={language === "ru" ? "Инфраструктура" : "Infrastructure"}
               className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-orange-400/30 hover:border-orange-300/50 group animate-fadeInUp"
               touchSize="lg"
-              style={{ animationDelay: "0.3s" }}
+              style={{ animationDelay: "0.3s", animationFillMode: "both" }}
             />
 
             <TouchButton
@@ -179,7 +180,7 @@ export default function HomePage() {
               title={language === "ru" ? "События" : "Events"}
               className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-rose-400/30 hover:border-rose-300/50 group animate-fadeInUp"
               touchSize="lg"
-              style={{ animationDelay: "0.4s" }}
+              style={{ animationDelay: "0.4s", animationFillMode: "both" }}
             />
 
             <TouchButton
@@ -188,7 +189,7 @@ export default function HomePage() {
               title={language === "ru" ? "О ОИЯИ" : "About"}
               className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-indigo-400/30 hover:border-indigo-300/50 group animate-fadeInUp"
               touchSize="lg"
-              style={{ animationDelay: "0.5s" }}
+              style={{ animationDelay: "0.5s", animationFillMode: "both" }}
             />
           </div>
 
