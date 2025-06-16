@@ -326,6 +326,7 @@ export async function fetchSettings(): Promise<SystemSettings> {
     return settings || defaultSettings;
   } catch (error) {
     console.error("Error fetching settings:", error);
+    console.warn("Using fallback settings due to database error");
     return defaultSettings;
   }
 }
