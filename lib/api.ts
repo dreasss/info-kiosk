@@ -147,7 +147,18 @@ export async function fetchNews(): Promise<NewsItem[]> {
     return await getAllNews();
   } catch (error) {
     console.error("Error fetching news:", error);
-    return [];
+    // Возвращаем fallback данные при ошибке базы данных
+    return [
+      {
+        id: "fallback_news_1",
+        title: "Добро пожаловать в информационную систему ОИЯИ",
+        content:
+          "Система временно работает в автономном режиме. Пожалуйста, обновите страницу для полной функциональности.",
+        date: new Date().toISOString(),
+        image: "",
+        url: "",
+      },
+    ];
   }
 }
 
