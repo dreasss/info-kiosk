@@ -207,6 +207,7 @@ export default function AdminPage() {
       const poi: POI = {
         id: editingPoi?.id || Date.now().toString(),
         ...poiForm,
+        category: poiForm.category as POICategory,
         images: [],
       };
 
