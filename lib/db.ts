@@ -6,7 +6,7 @@ import type { SystemSettings } from "@/types/settings";
 
 // Имя базы данных
 const DB_NAME = "interactive_map_db";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Имена хранилищ (таблиц)
 const STORES = {
@@ -106,7 +106,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       shortDescription:
         "Международный научный центр, проводящий фундаментальные исследования.",
       fullDescription:
-        "Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследован��ях в области ядерной физики, физики элементарных частиц и конденсированных сред.",
+        "Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследованиях в области ядерной физики, физики элементарных частиц и конденсированных сред.",
       coordinates: [56.7458, 37.189],
       images: [
         "/placeholder.svg?height=200&width=300",
@@ -295,7 +295,7 @@ export async function savePOI(poi: POI): Promise<POI> {
     };
 
     request.onerror = (event) => {
-      console.error("Ошибк�� сохранения POI:", event);
+      console.error("Ошибка сохранения POI:", event);
       reject(new Error("Не удалось сохранить POI"));
     };
   });
@@ -416,7 +416,7 @@ export async function getAllMedia(): Promise<MediaItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения медиафайлов:", event);
-      reject(new Error("Не удалось получить м��диафайлы"));
+      reject(new Error("Не удалось получить медиафайлы"));
     };
   });
 }
