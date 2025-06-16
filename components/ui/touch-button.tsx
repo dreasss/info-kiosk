@@ -12,7 +12,7 @@ interface TouchButtonProps
   title?: string;
   description?: string;
   touchSize?: "sm" | "md" | "lg" | "xl";
-  variant?: "default" | "secondary" | "ghost";
+  variant?: "default" | "secondary" | "ghost" | "outline";
   asChild?: boolean;
 }
 
