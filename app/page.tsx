@@ -217,30 +217,35 @@ export default function HomePage() {
       </main>
 
       {/* Футер с контактной информацией */}
-      <footer className="bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 text-white py-3 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm">
-          <div className="flex items-center">
-            <span className="font-medium mr-2">© 2025 ОИЯИ</span>
+      <footer className="bg-gradient-to-r from-slate-800 via-blue-900 to-indigo-900 text-white py-4 px-4 border-t border-white/10">
+        <div
+          className="max-w-7xl mx-auto flex flex-wrap justify-between items-center text-sm animate-fadeInUp"
+          style={{ animationDelay: "0.8s", animationFillMode: "both" }}
+        >
+          <div className="flex items-center hover:scale-105 transition-transform duration-300">
+            <span className="font-medium mr-2 bg-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+              © 2025 ОИЯИ
+            </span>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <div className="flex items-center">
-              <span className="opacity-70 mr-1">📍</span>
+            <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
+              <span className="opacity-70 mr-2 text-lg">📍</span>
               <span>
                 {language === "ru"
                   ? "г. Дубна, Московская область"
                   : "Dubna, Moscow Region"}
               </span>
             </div>
-            <div className="flex items-center">
-              <span className="opacity-70 mr-1">📞</span>
+            <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
+              <span className="opacity-70 mr-2 text-lg">📞</span>
               <span>+7 (496) 216-50-59</span>
             </div>
-            <div className="flex items-center">
-              <span className="opacity-70 mr-1">✉️</span>
+            <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
+              <span className="opacity-70 mr-2 text-lg">✉️</span>
               <span>post@jinr.ru</span>
             </div>
-            <div className="flex items-center">
-              <span className="opacity-70 mr-1">🌐</span>
+            <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
+              <span className="opacity-70 mr-2 text-lg">🌐</span>
               <span>www.jinr.ru</span>
             </div>
           </div>
