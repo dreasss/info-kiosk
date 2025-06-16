@@ -128,7 +128,7 @@ export function RssTicker({ className }: RssTickerProps) {
           const mockNews: RssItem[] = [
             {
               title:
-                "Настройте RSS ленты в панели администратора для отображения актуальных новостей",
+                "Настройт�� RSS ленты в панели администратора для отображения актуальных новостей",
               link: "/admin",
               pubDate: new Date().toISOString(),
               source: "Система",
@@ -168,26 +168,35 @@ export function RssTicker({ className }: RssTickerProps) {
   return (
     <div
       className={cn(
-        "bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 overflow-hidden",
+        "bg-gradient-to-r from-blue-500/90 via-blue-600/95 to-sky-500/90 backdrop-blur-sm text-white py-4 overflow-hidden border-y border-white/10",
         className,
       )}
     >
       <div className="flex items-center h-8">
-        <div className="font-bold mr-6 px-4 whitespace-nowrap bg-blue-900 rounded-r-full flex items-center">
-          <span className="text-yellow-300 mr-2">📡</span>
-          НОВОСТИ НАУКИ
+        <div
+          className="font-bold mr-8 px-6 py-2 whitespace-nowrap bg-white/15 backdrop-blur-md rounded-r-2xl flex items-center shadow-lg border border-white/20"
+          style={{
+            boxShadow:
+              "0 4px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2)",
+          }}
+        >
+          <span className="text-yellow-300 mr-2 text-lg">📡</span>
+          <span className="font-semibold tracking-wide">НОВОСТИ НАУКИ</span>
         </div>
         <div className="ticker-container overflow-hidden relative w-full">
-          <div className="ticker-content whitespace-nowrap animate-scroll">
+          <div className="ticker-content whitespace-nowrap animate-scroll-slow">
             {news.concat(news).map((item, index) => (
               <span
                 key={index}
-                className="mx-8 font-medium hover:text-blue-200 cursor-pointer transition-colors"
+                className="mx-12 font-medium hover:text-blue-200 cursor-pointer transition-all duration-300 hover:scale-105 inline-block"
               >
-                <span className="text-yellow-300 mr-2">🔬</span>
-                <span className="font-semibold">{item.source}</span>:{" "}
-                {item.title}
-                <span className="mx-4 text-blue-300">•</span>
+                <span className="text-yellow-300 mr-3 text-lg">🔬</span>
+                <span className="font-semibold text-blue-100">
+                  {item.source}
+                </span>
+                <span className="mx-2 text-white/70">•</span>
+                <span className="text-white">{item.title}</span>
+                <span className="mx-8 text-blue-300/60">•</span>
               </span>
             ))}
           </div>
@@ -197,5 +206,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым именем для совместимости
+// Экспортируем ��акже под старым именем для совместимости
 export { RssTicker as RSSTicker };
