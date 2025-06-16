@@ -342,41 +342,34 @@ export async function updateOrganizationInfo(
 }
 
 // API для работы с RSS лентами
-export interface RssFeed {
-  id: string;
-  url: string;
-  title: string;
-  description?: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
 export async function fetchRssFeeds(): Promise<RssFeed[]> {
   if (!isBrowser) {
     return [];
   }
 
   try {
-    // Заглушка для RSS лент (в реальном приложении можно добавить в базу данных)
-    const rssFeeds: RssFeed[] = [
-      {
-        id: "1",
-        url: "https://jinr.ru/rss/",
-        title: "JINR News RSS",
-        description: "Официальная RSS лента новостей ОИЯИ",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    return rssFeeds;
+    return await getAllRssFeeds();
   } catch (error) {
     console.error("Error fetching RSS feeds:", error);
     return [];
   }
 }
 
+export async function fetchActiveRssFeeds(): Promise<RssFeed[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    return await getActiveRssFeeds();
+  } catch (error) {
+    console.error("Error fetching active RSS feeds:", error);
+    return [];
+  }
+}
+
 export async function createRssFeed(
-  feed: Omit<RssFeed, "id" | "createdAt">,
+  feed: Omit<RssFeed, "id">,
 ): Promise<RssFeed> {
   if (!isBrowser) {
     throw new Error("Browser API not available");
@@ -386,12 +379,31 @@ export async function createRssFeed(
     const newFeed: RssFeed = {
       ...feed,
       id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
     };
-    // В реальном приложении здесь будет сохранение в базу данных
-    return newFeed;
+    return await saveRssFeed(newFeed);
   } catch (error) {
     console.error("Error creating RSS feed:", error);
+    throw error;
+  }
+}
+
+export async function updateRssFeed(
+  id: string,
+  updates: Partial<RssFeed>,
+): Promise<RssFeed | null> {
+  if (!isBrowser) {
+    return null;
+  }
+
+  try {
+    const feeds = await getAllRssFeeds();
+    const existingFeed = feeds.find((f) => f.id === id);
+    if (!existingFeed) return null;
+
+    const updatedFeed = { ...existingFeed, ...updates };
+    return await saveRssFeed(updatedFeed);
+  } catch (error) {
+    console.error("Error updating RSS feed:", error);
     throw error;
   }
 }
@@ -402,8 +414,7 @@ export async function removeRssFeed(id: string): Promise<boolean> {
   }
 
   try {
-    // В реальном приложении здесь будет удаление из базы данных
-    return true;
+    return await deleteRssFeed(id);
   } catch (error) {
     console.error("Error removing RSS feed:", error);
     return false;
