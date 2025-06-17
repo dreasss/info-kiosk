@@ -7,9 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Save, Upload, Image as ImageIcon } from "lucide-react";
+import {
+  Settings,
+  Save,
+  Upload,
+  Image as ImageIcon,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import type { SystemSettings } from "@/types/settings";
 import { fetchSettings, updateSettings } from "@/lib/api";
+import { useSounds } from "@/lib/sound-system";
+import { Switch } from "@/components/ui/switch";
 
 interface SettingsManagerProps {
   onDataChange?: () => void;
@@ -19,7 +28,9 @@ export function SettingsManager({ onDataChange }: SettingsManagerProps) {
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [soundsEnabled, setSoundsEnabled] = useState(true);
   const { toast } = useToast();
+  const { setEnabled, isEnabled, playSuccess, playError } = useSounds();
 
   const [formData, setFormData] = useState({
     idleTimeout: 300000, // 5 минут
@@ -71,6 +82,7 @@ export function SettingsManager({ onDataChange }: SettingsManagerProps) {
 
   useEffect(() => {
     loadSettings();
+    setSoundsEnabled(isEnabled());
   }, []);
 
   const handleSave = async () => {
@@ -138,6 +150,20 @@ export function SettingsManager({ onDataChange }: SettingsManagerProps) {
     }
   };
 
+  const handleSoundToggle = (enabled: boolean) => {
+    setSoundsEnabled(enabled);
+    setEnabled(enabled);
+    if (enabled) {
+      playSuccess();
+    }
+    toast({
+      title: "Настройки звука",
+      description: enabled
+        ? "Звуки интерфейса включены"
+        : "Звуки интерфейса отключены",
+    });
+  };
+
   const formatTimeout = (milliseconds: number): string => {
     const minutes = Math.floor(milliseconds / 60000);
     const seconds = Math.floor((milliseconds % 60000) / 1000);
@@ -198,6 +224,27 @@ export function SettingsManager({ onDataChange }: SettingsManagerProps) {
                     (текущее: {formatTimeout(formData.idleTimeout)})
                   </span>
                 </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    {soundsEnabled ? (
+                      <Volume2 className="h-5 w-5 text-blue-600" />
+                    ) : (
+                      <VolumeX className="h-5 w-5 text-gray-400" />
+                    )}
+                    <Label htmlFor="sounds">Звуки интерфейса</Label>
+                  </div>
+                  <Switch
+                    id="sounds"
+                    checked={soundsEnabled}
+                    onCheckedChange={handleSoundToggle}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Воспроизведение звуков при нажатии на кнопки и навигации
+                </p>
               </div>
 
               <div>
