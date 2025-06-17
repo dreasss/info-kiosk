@@ -126,7 +126,7 @@ export default function YandexMap() {
       console.error("❌ Ошибка построения маршрута:", error);
       toast({
         title: "Ошибка маршрута",
-        description: "Не удалось построит�� маршрут",
+        description: "Не удалось построить маршрут",
         variant: "destructive",
       });
     } finally {
@@ -299,7 +299,12 @@ export default function YandexMap() {
         >
           <Link href="/">
             <Home className="h-6 w-6 mr-2 text-gray-700" />
-            <span className="font-semibold text-gray-800">На главную</span>
+            <span
+              className="font-semibold text-gray-800"
+              suppressHydrationWarning={true}
+            >
+              На главную
+            </span>
           </Link>
         </TouchButton>
         <LanguageSwitcher />
@@ -346,7 +351,7 @@ export default function YandexMap() {
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-semibold text-gray-800">
-                  ✅ Маршрут пос��роен
+                  ✅ Маршрут построен
                 </h3>
                 <p className="text-sm text-gray-600">
                   Расстояние:{" "}
