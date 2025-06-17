@@ -20,7 +20,11 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import { fetchNews } from "@/lib/api";
-import { resetDBState } from "@/lib/db";
+import {
+  resetDBState,
+  diagnoseDatabaseIssues,
+  testDatabaseConnection,
+} from "@/lib/db";
 import type { NewsItem } from "@/types/news";
 
 export default function HomePage() {
@@ -113,7 +117,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Переключатель языка и кнопка а��минки */}
+            {/* Переключатель языка и кнопка админки */}
             <div className="flex items-center gap-3">
               <div
                 className="bg-white/15 backdrop-blur-md rounded-xl border border-white/30 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5"
