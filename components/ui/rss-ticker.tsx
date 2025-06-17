@@ -67,13 +67,13 @@ export function RssTicker({ className }: RssTickerProps) {
     if (!isClient) return
 
     const fetchRssNews = async () => {
+      try {
+        setLoading(true)
+
+        // Получаем активные RSS ленты из базы данных
         console.log("RSS Ticker: Fetching active RSS feeds...")
         const activeFeeds = await fetchActiveRssFeeds()
         console.log("RSS Ticker: Found active feeds:", activeFeeds.length, activeFeeds)
-
-        if (activeFeeds.length === 0) {
-          // Если нет активных лент, показываем демо-данные
-          console.log("RSS Ticker: No active RSS feeds found, using demo data")
           setNews(getDemoNews())
           return
         }
