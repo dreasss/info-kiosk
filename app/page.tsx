@@ -99,7 +99,7 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-white/30 rounded-full blur-lg scale-110 group-hover:scale-125 transition-transform duration-300"></div>
                 <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex items-center justify-center overflow-hidden group-hover:shadow-3xl transition-all duration-300">
                   <Image
-                    src="/images/jinr-logo.png"
+                    src="/placeholder-logo.svg"
                     alt="JINR Logo"
                     width={70}
                     height={70}
