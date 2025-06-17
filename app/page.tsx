@@ -113,7 +113,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Переключатель языка и кнопка админки */}
+            {/* Переключатель языка и кнопка а��минки */}
             <div className="flex items-center gap-3">
               <div
                 className="bg-white/15 backdrop-blur-md rounded-xl border border-white/30 shadow-lg hover:shadow-xl hover:bg-white/20 transition-all duration-300 transform hover:scale-105 hover:-translate-y-0.5"
@@ -140,6 +140,25 @@ export default function HomePage() {
           </div>
         </div>
       </header>
+
+      {/* Индикатор ошибки базы данных */}
+      {dbError && (
+        <div className="bg-amber-100 border-l-4 border-amber-500 p-3 mx-4 mt-4 rounded-r-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <p className="text-amber-800 text-sm font-medium">{dbError}</p>
+            </div>
+            <TouchButton
+              onClick={handleRetryDatabase}
+              variant="outline"
+              className="px-3 py-1 text-xs bg-amber-200 hover:bg-amber-300 border-amber-400 text-amber-800"
+            >
+              Повторить
+            </TouchButton>
+          </div>
+        </div>
+      )}
 
       {/* Бегущая строка новостей */}
       <RssTicker />
