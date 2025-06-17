@@ -35,85 +35,162 @@ export interface RssFeed {
   active: boolean;
 }
 
+// Переменная для кеширования инициализированной базы данных
+let dbCache: IDBDatabase | null = null;
+
+// Флаг для отслеживания неудачных попыток инициализации
+let dbInitFailed = false;
+
 // Инициализация базы данных
 export async function initDB(): Promise<IDBDatabase> {
+  // Возвращаем кешированную БД если она уже инициализирована
+  if (dbCache) {
+    return dbCache;
+  }
+
+  // Если предыдущие попытки не удались, возвращаем ошибку сразу
+  if (dbInitFailed) {
+    throw new Error("IndexedDB недоступна - используйте fallback данные");
+  }
+
   // Проверяем поддержку IndexedDB
   if (typeof window === "undefined" || !window.indexedDB) {
+    dbInitFailed = true;
     throw new Error("IndexedDB не поддерживается в этом браузере");
   }
 
   return new Promise((resolve, reject) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+      // Устанавливаем таймаут для предотвращения зависания
+      timeoutId = setTimeout(() => {
+        console.error("Таймаут инициализации IndexedDB");
+        dbInitFailed = true;
+        reject(new Error("Таймаут инициализации базы данных"));
+      }, 10000); // 10 секунд
+
       request.onerror = (event) => {
+        if (timeoutId) clearTimeout(timeoutId);
+
         console.error("Ошибка открытия базы данных:", event);
         const error = request.error;
         console.error("Детали ошибки:", error);
-        reject(
-          new Error(
-            `Не удалось открыть базу данных: ${error?.message || "Неизвестная ошибка"}`,
-          ),
-        );
+
+        // Проверяем на типичные ошибки
+        const errorMessage = error?.message || "Неизвестная ошибка";
+
+        if (
+          errorMessage.includes("quota") ||
+          errorMessage.includes("storage")
+        ) {
+          console.error("Недостаточно места для хранения данных");
+        } else if (
+          errorMessage.includes("private") ||
+          errorMessage.includes("incognito")
+        ) {
+          console.error("IndexedDB недоступна в режиме инкогнито");
+        }
+
+        dbInitFailed = true;
+        reject(new Error(`Не удалось открыть базу данных: ${errorMessage}`));
       };
 
       request.onsuccess = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        resolve(db);
+        if (timeoutId) clearTimeout(timeoutId);
+
+        try {
+          const db = (event.target as IDBOpenDBRequest).result;
+          dbCache = db; // Кешируем успешно инициализированную БД
+
+          // Добавляем обработчик ошибок для будущих операций
+          db.onerror = (errorEvent) => {
+            console.error("Ошибка базы данных:", errorEvent);
+          };
+
+          resolve(db);
+        } catch (error) {
+          console.error("Ошибка при обработке успешного открытия БД:", error);
+          dbInitFailed = true;
+          reject(error);
+        }
       };
 
       request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        const transaction = (event.target as IDBOpenDBRequest).transaction!;
+        try {
+          const db = (event.target as IDBOpenDBRequest).result;
+          const transaction = (event.target as IDBOpenDBRequest).transaction!;
 
-        // Создаем хранилища, если их нет
-        if (!db.objectStoreNames.contains(STORES.POIS)) {
-          const poisStore = db.createObjectStore(STORES.POIS, {
-            keyPath: "id",
-          });
-          poisStore.createIndex("category", "category", { unique: false });
+          // Создаем хранилища, если их нет
+          if (!db.objectStoreNames.contains(STORES.POIS)) {
+            const poisStore = db.createObjectStore(STORES.POIS, {
+              keyPath: "id",
+            });
+            poisStore.createIndex("category", "category", { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.NEWS)) {
+            const newsStore = db.createObjectStore(STORES.NEWS, {
+              keyPath: "id",
+            });
+            newsStore.createIndex("date", "date", { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.MEDIA)) {
+            const mediaStore = db.createObjectStore(STORES.MEDIA, {
+              keyPath: "id",
+            });
+            mediaStore.createIndex("type", "type", { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
+            db.createObjectStore(STORES.SETTINGS, { keyPath: "id" });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.ICONS)) {
+            const iconsStore = db.createObjectStore(STORES.ICONS, {
+              keyPath: "id",
+            });
+            iconsStore.createIndex("category", "category", { unique: false });
+          }
+
+          if (!db.objectStoreNames.contains(STORES.RSS_FEEDS)) {
+            const rssStore = db.createObjectStore(STORES.RSS_FEEDS, {
+              keyPath: "id",
+            });
+            rssStore.createIndex("active", "active", { unique: false });
+          }
+
+          // Инициализир��ем базу данными по умолчанию используя текущую транзакцию
+          initializeDefaultData(transaction);
+        } catch (error) {
+          if (timeoutId) clearTimeout(timeoutId);
+          console.error("Ошибка при создании схемы базы данных:", error);
+          dbInitFailed = true;
+          reject(error);
         }
+      };
 
-        if (!db.objectStoreNames.contains(STORES.NEWS)) {
-          const newsStore = db.createObjectStore(STORES.NEWS, {
-            keyPath: "id",
-          });
-          newsStore.createIndex("date", "date", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORES.MEDIA)) {
-          const mediaStore = db.createObjectStore(STORES.MEDIA, {
-            keyPath: "id",
-          });
-          mediaStore.createIndex("type", "type", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
-          db.createObjectStore(STORES.SETTINGS, { keyPath: "id" });
-        }
-
-        if (!db.objectStoreNames.contains(STORES.ICONS)) {
-          const iconsStore = db.createObjectStore(STORES.ICONS, {
-            keyPath: "id",
-          });
-          iconsStore.createIndex("category", "category", { unique: false });
-        }
-
-        if (!db.objectStoreNames.contains(STORES.RSS_FEEDS)) {
-          const rssStore = db.createObjectStore(STORES.RSS_FEEDS, {
-            keyPath: "id",
-          });
-          rssStore.createIndex("active", "active", { unique: false });
-        }
-
-        // Инициализируем базу данными по умолчанию используя текущую транзакцию
-        initializeDefaultData(transaction);
+      request.onblocked = (event) => {
+        console.warn(
+          "База данных заблокирована другой вкладкой. Попробуйте закрыть другие вкладки приложения.",
+        );
       };
     } catch (error) {
+      if (timeoutId) clearTimeout(timeoutId);
       console.error("Ошибка при создании запроса к IndexedDB:", error);
+      dbInitFailed = true;
       reject(new Error("Не удалось создать запрос к IndexedDB"));
     }
   });
+}
+
+// Функция для сброса состояния БД (для восстановления после ошибок)
+export function resetDBState(): void {
+  dbCache = null;
+  dbInitFailed = false;
 }
 
 // Инициализация базы данных демо-данными
@@ -140,7 +217,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       name: "Дом ученых ОИЯИ",
       shortDescription: "Культурный центр для научного сообщества Дубны.",
       fullDescription:
-        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
+        "Дом ��ченых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
       coordinates: [56.743, 37.192],
       images: ["/placeholder.svg?height=200&width=300"],
       address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
@@ -158,7 +235,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
         "/placeholder.svg?height=200&width=300",
         "/placeholder.svg?height=200&width=300",
       ],
-      address: "ул. Жолио-Кюри, 4, Дубна, Московская область",
+      address: "ул. Жолио-Кюри, 4, Дубна, Московская о��ласть",
       category: "building",
     },
   ];
@@ -185,7 +262,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
     },
   ];
 
-  // Демо-данные для RSS-лент
+  // Де��о-данные для RSS-лент
   const demoRssFeeds: RssFeed[] = [
     {
       id: "1",
@@ -237,7 +314,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
   }
 }
 
-// Функции для работы с POI
+// Функции д��я работы с POI
 export async function getAllPOIs(): Promise<POI[]> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
@@ -436,7 +513,7 @@ export async function getAllMedia(): Promise<MediaItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения медиафайлов:", event);
-      reject(new Error("Не удалось получить медиафайлы"));
+      reject(new Error("Не у��алось получить медиафайлы"));
     };
   });
 }
@@ -478,7 +555,7 @@ export async function saveMedia(media: MediaItem): Promise<MediaItem> {
     };
 
     request.onerror = (event) => {
-      console.error("Ошибка сохранения медиафайла:", event);
+      console.error("Ошибка сохра��ения медиафайла:", event);
       reject(new Error("Не удалось сохранить медиафайл"));
     };
   });
