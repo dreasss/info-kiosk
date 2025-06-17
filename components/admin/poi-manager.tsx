@@ -30,6 +30,7 @@ import {
   Image as ImageIcon,
   Save,
   X,
+  Upload,
 } from "lucide-react";
 import type { POI, POICategory } from "@/types/poi";
 import { CATEGORIES } from "@/types/poi";
@@ -206,6 +207,33 @@ export function POIManager({ onDataChange }: POIManagerProps) {
     }
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (result) {
+          setFormData((prev) => ({
+            ...prev,
+            images: [...prev.images, result],
+          }));
+          toast({
+            title: "Успех",
+            description: "Изображение загружено",
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Выберите файл изображения",
+      });
+    }
+  };
+
   const removeImage = (index: number) => {
     setFormData((prev) => ({
       ...prev,
@@ -228,7 +256,7 @@ export function POIManager({ onDataChange }: POIManagerProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2">Загрузка объе��тов...</span>
+            <span className="ml-2">Загрузка объектов...</span>
           </div>
         </CardContent>
       </Card>
@@ -376,10 +404,29 @@ export function POIManager({ onDataChange }: POIManagerProps) {
                   <div>
                     <div className="flex justify-between items-center mb-2">
                       <Label>Изображения</Label>
-                      <Button type="button" size="sm" onClick={addImage}>
-                        <ImageIcon className="h-4 w-4 mr-2" />
-                        Добавить
-                      </Button>
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() =>
+                            document.getElementById("image-upload")?.click()
+                          }
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Загрузить
+                        </Button>
+                        <Button type="button" size="sm" onClick={addImage}>
+                          <ImageIcon className="h-4 w-4 mr-2" />
+                          URL
+                        </Button>
+                      </div>
                     </div>
                     <div className="space-y-2">
                       {formData.images.map((image, index) => (
