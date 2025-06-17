@@ -196,6 +196,41 @@ export function RssManager({ onDataChange }: RssManagerProps) {
     }
   };
 
+  const cleanProblematicFeeds = async () => {
+    try {
+      const problematicDomains = ["rt.com", "tass.com"];
+      const allFeeds = await fetchRssFeeds();
+
+      for (const feed of allFeeds) {
+        try {
+          const url = new URL(feed.url);
+          if (
+            problematicDomains.some((domain) => url.hostname.includes(domain))
+          ) {
+            await removeRssFeed(feed.id);
+            console.log(`Removed problematic feed: ${feed.name}`);
+          }
+        } catch (error) {
+          console.error(`Error processing feed ${feed.name}:`, error);
+        }
+      }
+
+      await loadRssFeeds();
+      toast({
+        title: "Успех",
+        description: "Проблемные RSS ленты удалены",
+      });
+      onDataChange?.();
+    } catch (error) {
+      console.error("Error cleaning feeds:", error);
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось очистить RSS ленты",
+      });
+    }
+  };
+
   const toggleFeedActive = async (feed: RssFeed) => {
     try {
       await updateRssFeed(feed.id, { ...feed, active: !feed.active });
@@ -254,6 +289,9 @@ export function RssManager({ onDataChange }: RssManagerProps) {
               </DialogTrigger>
               <Button variant="outline" onClick={() => createDemoFeeds()}>
                 Создать демо ленты
+              </Button>
+              <Button variant="outline" onClick={() => cleanProblematicFeeds()}>
+                Очистить проблемные
               </Button>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
