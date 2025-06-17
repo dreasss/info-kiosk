@@ -48,6 +48,7 @@ import {
   removeMediaItem,
   updateMediaItem,
 } from "@/lib/api";
+import { createDemoMediaData } from "@/lib/demo-media";
 
 interface MediaManagerProps {
   onDataChange: () => void;
@@ -155,7 +156,7 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
       await loadData();
       onDataChange();
     } catch (error) {
-      toast({ title: "Ошибка удаления медиа��айла", variant: "destructive" });
+      toast({ title: "Ошибка удаления медиафайла", variant: "destructive" });
     }
   };
 
@@ -227,7 +228,7 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {editingAlbum ? "Редактировать альбом" : "Создать альбом"}
+                    {editingAlbum ? "Редактировать а��ьбом" : "Создать альбом"}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
