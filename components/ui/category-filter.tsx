@@ -52,7 +52,7 @@ export function CategoryFilter({
         <button
           onClick={() => handleCategoryClick("all")}
           className={cn(
-            "group relative flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-md",
+            "group relative flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md min-w-[80px]",
             activeCategory === "all"
               ? "bg-gradient-to-br from-gray-600 to-gray-800 text-white shadow-lg scale-105"
               : "bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200",
@@ -60,17 +60,17 @@ export function CategoryFilter({
         >
           <div
             className={cn(
-              "w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-all duration-300",
+              "w-6 h-6 rounded-lg flex items-center justify-center mb-1 transition-all duration-300",
               activeCategory === "all"
                 ? "bg-white/20"
                 : "bg-gray-200 group-hover:bg-gray-300",
             )}
           >
-            <div className="w-4 h-4 bg-current rounded-sm opacity-80"></div>
+            <div className="w-3 h-3 bg-current rounded-sm opacity-80"></div>
           </div>
           <span className="text-xs font-medium leading-tight">Все</span>
           {activeCategory === "all" && (
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
           )}
         </button>
 
