@@ -26,19 +26,40 @@ import type { NewsItem } from "@/types/news";
 export default function HomePage() {
   const { language } = useLanguage();
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [dbError, setDbError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadNews = async () => {
       try {
+        setDbError(null); // Сбрасываем ошибку перед попыткой
         const data = await fetchNews();
         setNews(data.slice(0, 5)); // Берем только 5 последних новостей
       } catch (error) {
         console.error("Error loading news:", error);
+
+        // Устанавливаем сообщение об ошибке
+        const errorMessage =
+          error instanceof Error ? error.message : "Неизвестная ошибка";
+        if (
+          errorMessage.includes("IndexedDB") ||
+          errorMessage.includes("база данных")
+        ) {
+          setDbError(
+            "Проблемы с локальным хранилищем. Приложение работает в режиме демо-данных.",
+          );
+        }
       }
     };
 
     loadNews();
-  }, []);
+  }, [retryCount]);
+
+  const handleRetryDatabase = () => {
+    console.log("Attempting to reset database state...");
+    resetDBState(); // Сбрасываем состояние БД
+    setRetryCount((prev) => prev + 1); // Перезапускаем useEffect
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
