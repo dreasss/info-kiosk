@@ -41,7 +41,7 @@ let dbCache: IDBDatabase | null = null;
 // Кеш для промиса инициализации (предотвращает конкурентные запросы)
 let dbInitPromise: Promise<IDBDatabase> | null = null;
 
-// Флаг для отслеживания неудачных попыток инициализации
+// Флаг для отслежи��ания неудачных попыток инициализации
 let dbInitFailed = false;
 
 // Инициализация базы данных
@@ -73,7 +73,7 @@ export async function initDB(): Promise<IDBDatabase> {
   try {
     const db = await dbInitPromise;
     dbCache = db; // Кешируем успешно инициализированную БД
-    dbInitPromise = null; // Очищаем промис после успешной инициализации
+    dbInitPromise = null; // Очищаем пр��мис после успешной инициализации
     return db;
   } catch (error) {
     dbInitPromise = null; // Очищаем промис в случае ошибки
@@ -219,7 +219,7 @@ function createDBInitPromise(): Promise<IDBDatabase> {
             rssStore.createIndex("active", "active", { unique: false });
           }
 
-          // Добавляем обработчик ошибок для транзакции
+          // Добавляем обработчик ошибок для транзакции ПЕРЕД инициализацией данных
           transaction.onerror = (txError) => {
             console.error("Ошибка транзакции при обновлении схемы:", txError);
             safeReject(new Error("Ошибка при создании схемы базы данных"));
@@ -233,8 +233,16 @@ function createDBInitPromise(): Promise<IDBDatabase> {
             safeReject(new Error("Обновление схемы базы данных было прервано"));
           };
 
-          // Инициализируем базу данными по умолчанию используя текущую транзакцию
-          initializeDefaultData(transaction);
+          // Инициализируем базу данными по умолчанию только если это новая база данных
+          if (event.oldVersion === 0) {
+            console.log("Инициализируем новую базу данных демо-данными");
+            try {
+              initializeDefaultData(transaction);
+            } catch (dataError) {
+              console.error("Ошибка при инициализации демо-данных:", dataError);
+              // Не прерываем создание схемы из-за ошибок в демо-данных
+            }
+          }
         } catch (error) {
           console.error("Ошибка при создании схемы базы данных:", error);
           safeReject(error instanceof Error ? error : new Error(String(error)));
@@ -542,7 +550,7 @@ export async function saveNews(news: NewsItem): Promise<NewsItem> {
     const transaction = db.transaction(STORES.NEWS, "readwrite");
     const store = transaction.objectStore(STORES.NEWS);
 
-    // Если ID не указан, генерируем новый
+    // Если ID не указ��н, генерируем новый
     if (!news.id) {
       news.id = Date.now().toString();
     }
@@ -770,7 +778,7 @@ export async function saveIcon(
     };
 
     request.onerror = (event) => {
-      console.error("Ошибка сохранения иконки:", event);
+      console.error("Ошибка сох��анения иконки:", event);
       reject(new Error("Не удалось сохранить иконку"));
     };
   });
