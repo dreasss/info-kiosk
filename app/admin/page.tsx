@@ -294,8 +294,6 @@ export default function AdminPage() {
     })
   }
 
-
-
   // Обработчики иконок
   const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -732,7 +730,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Загрузить новую иконку</CardTitle>
-                <CardDescription>Загружайте пользователь��кие иконки для маркеров на карте</CardDescription>
+                <CardDescription>Загружайте пользовательские иконки для маркеров на карте</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -774,7 +772,7 @@ export default function AdminPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Пользовательские иконки ({icons.length})</CardTitle>
+                <CardTitle>Пользовательские икон��и ({icons.length})</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
