@@ -47,7 +47,7 @@ import Link from "next/link";
 import { TouchButton } from "@/components/ui/touch-button";
 import type { POI } from "@/types/poi";
 import type { NewsItem } from "@/types/news";
-import type { MediaItem } from "@/types/media";
+import type { MediaItem, Album } from "@/types/media";
 import type { SystemSettings } from "@/types/settings";
 import { CATEGORIES, type POICategory } from "@/types/poi";
 import {
