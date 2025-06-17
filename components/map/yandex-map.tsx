@@ -338,7 +338,9 @@ export default function YandexMap() {
             touchSize="lg"
             className="bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 text-gray-700 hover:text-gray-900"
           >
-            <span className="text-lg mr-2">←</span>
+            <span className="text-lg mr-2" suppressHydrationWarning={true}>
+              ←
+            </span>
             Сбросить маршрут
           </TouchButton>
         </div>
