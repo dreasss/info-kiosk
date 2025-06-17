@@ -2,6 +2,43 @@ import { createMediaItem, createAlbum } from "@/lib/api";
 import type { MediaItem, Album } from "@/types/media";
 
 // Функция для создания демо альбомов и медиафайлов
+export async function createDemoRssFeeds(): Promise<void> {
+  try {
+    console.log("Creating demo RSS feeds...");
+
+    const demoFeeds: Omit<RssFeed, "id">[] = [
+      {
+        name: "ОИЯИ Новости",
+        url: "https://www.jinr.ru/news/rss/",
+        active: true,
+      },
+      {
+        name: "N+1 Наука",
+        url: "https://nplus1.ru/rss",
+        active: true,
+      },
+      {
+        name: "РИА Новости - Наука",
+        url: "https://ria.ru/export/rss2/archive/index.xml?theme=398",
+        active: true,
+      },
+    ];
+
+    for (const feedData of demoFeeds) {
+      const feed: RssFeed = {
+        ...feedData,
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      };
+      await saveRssFeed(feed);
+      console.log(`Created demo RSS feed: ${feed.name}`);
+    }
+
+    console.log("Demo RSS feeds created successfully!");
+  } catch (error) {
+    console.error("Error creating demo RSS feeds:", error);
+  }
+}
+
 export async function createDemoMediaData(): Promise<void> {
   try {
     // Создаем демо альбомы
