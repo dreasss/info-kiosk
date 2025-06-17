@@ -209,16 +209,30 @@ export function RssTicker({ className }: RssTickerProps) {
           console.log("Active feeds from DB:", testFeeds);
 
           const testUrl = "https://elementy.ru/rss/news/russia";
-          console.log("Testing direct access to:", testUrl);
+          console.log("Testing internal API access to:", testUrl);
 
           try {
             const response = await fetch(
-              `https://api.allorigins.win/get?url=${encodeURIComponent(testUrl)}`,
+              `/api/rss?url=${encodeURIComponent(testUrl)}`,
             );
-            const data = await response.json();
-            console.log("CORS proxy response:", data);
+            if (response.ok) {
+              const xmlContent = await response.text();
+              console.log("API response length:", xmlContent.length);
+              console.log("XML preview:", xmlContent.substring(0, 200) + "...");
+
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(xmlContent, "text/xml");
+              const items = doc.querySelectorAll("item");
+              console.log("Found RSS items:", items.length);
+            } else {
+              console.error(
+                "API response error:",
+                response.status,
+                response.statusText,
+              );
+            }
           } catch (error) {
-            console.error("CORS proxy failed:", error);
+            console.error("Internal API failed:", error);
           }
         } catch (error) {
           console.error("RSS test failed:", error);
