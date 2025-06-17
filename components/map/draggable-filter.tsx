@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
 import { CategoryFilter } from "@/components/ui/category-filter";
 import type { POICategory } from "@/types/poi";
-import { GripVertical } from "lucide-react";
 
 interface DraggableFilterProps {
   onFilterChange: (category: POICategory | "all") => void;
