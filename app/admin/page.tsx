@@ -294,39 +294,7 @@ export default function AdminPage() {
     })
   }
 
-  // Обработчики медиафайлов
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
 
-    try {
-      const mediaItem: MediaItem = {
-        id: Date.now().toString(),
-        title: file.name,
-        description: "",
-        type: file.type.startsWith('image/') ? 'image' : 'video',
-        category: file.type.startsWith('image/') ? 'photo' : 'video',
-        url: "",
-        date: new Date().toISOString()
-      }
-
-      await createMediaWithFile(mediaItem, file)
-      toast({ title: "Медиафайл загружен" })
-      loadData()
-    } catch (error) {
-      toast({ title: "Ошибка загрузки", variant: "destructive" })
-    }
-  }
-
-  const handleDeleteMedia = async (id: string) => {
-    try {
-      await removeMedia(id)
-      toast({ title: "Медиафайл удален" })
-      loadData()
-    } catch (error) {
-      toast({ title: "Ошибка удаления", variant: "destructive" })
-    }
-  }
 
   // Обработчики иконок
   const handleIconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -764,7 +732,7 @@ export default function AdminPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Загрузить новую иконку</CardTitle>
-                <CardDescription>Загружайте пользовательские иконки для маркеров на карте</CardDescription>
+                <CardDescription>Загружайте пользователь��кие иконки для маркеров на карте</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
