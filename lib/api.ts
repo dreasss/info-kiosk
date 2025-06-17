@@ -35,7 +35,7 @@ import {
 
 import type { POI, POICategory } from "@/types/poi";
 import type { NewsItem } from "@/types/news";
-import type { MediaItem } from "@/types/media";
+import type { MediaItem, Album } from "@/types/media";
 import type { SystemSettings, OrganizationInfo } from "@/types/settings";
 import { ROUTE_CONFIG } from "@/lib/config";
 
