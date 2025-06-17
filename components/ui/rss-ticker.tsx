@@ -140,6 +140,9 @@ export function RssTicker({ className }: RssTickerProps) {
         }
       } catch (error) {
         console.error("Error fetching RSS feeds:", error);
+
+        // В случае ошибки (например, проблемы с IndexedDB) используем демо-данные
+        setNews(getDemoNews());
         // Fallback данные при ошибке
         setNews([
           {
