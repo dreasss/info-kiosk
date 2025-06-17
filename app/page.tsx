@@ -372,14 +372,15 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
               <span className="opacity-70 mr-2 text-lg">📍</span>
-              <span>
-                {isClient && language === "en"
-                  ? "Dubna, Moscow Region"
-                  : "г. Дубна, Московская область"}
+              <span suppressHydrationWarning={true}>
+                {getText(
+                  "Dubna, Moscow Region",
+                  "г. Дубна, Московская область",
+                )}
               </span>
             </div>
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
-              <span className="opacity-70 mr-2 text-lg">📞</span>
+              <span className="opacity-70 mr-2 text-lg">����</span>
               <span>+7 (496) 216-50-59</span>
             </div>
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
