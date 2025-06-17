@@ -189,7 +189,7 @@ export function RssTicker({ className }: RssTickerProps) {
     const interval = setInterval(fetchRssNews, 15 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isClient]);
 
   // Show nothing while not client-ready
   if (!isClient) {
