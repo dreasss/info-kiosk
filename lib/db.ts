@@ -257,7 +257,9 @@ function createDBInitPromise(): Promise<IDBDatabase> {
 // Функция для сброса состояния БД (для восстановления после ошибок)
 export function resetDBState(): void {
   dbCache = null;
+  dbInitPromise = null;
   dbInitFailed = false;
+  console.log("Состояние базы данных сброшено");
 }
 
 // Инициализация базы данных демо-данными
