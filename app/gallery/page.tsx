@@ -127,6 +127,23 @@ export default function GalleryPage() {
                 </p>
               </div>
             </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant={viewMode === "albums" ? "default" : "outline"}
+                onClick={() => setViewMode("albums")}
+                className="flex items-center gap-2"
+              >
+                Альбомы
+              </Button>
+              <Button
+                variant={viewMode === "media" ? "default" : "outline"}
+                onClick={() => setViewMode("media")}
+                className="flex items-center gap-2"
+              >
+                Все файлы
+              </Button>
+            </div>
           </div>
         </div>
       </header>
