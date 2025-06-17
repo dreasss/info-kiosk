@@ -136,9 +136,17 @@ export function RssTicker({ className }: RssTickerProps) {
               new Date(b.pubDate || 0).getTime() -
               new Date(a.pubDate || 0).getTime(),
           );
+          console.log(
+            "RSS Ticker: Successfully loaded",
+            allNewsItems.length,
+            "news items",
+          );
           setNews(allNewsItems.slice(0, 10));
         } else {
           // Fallback на демо-данные
+          console.log(
+            "RSS Ticker: No RSS items loaded, showing fallback message",
+          );
           const mockNews: RssItem[] = [
             {
               title:
