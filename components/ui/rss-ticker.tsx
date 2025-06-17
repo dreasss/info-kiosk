@@ -60,7 +60,7 @@ export function RssTicker({ className }: RssTickerProps) {
       try {
         setLoading(true);
 
-        // Получаем активные RSS ленты из базы данных и добавляем elementy.ru
+        // Получа��м активные RSS ленты из базы данных и добавляем elementy.ru
         console.log("RSS Ticker: Fetching RSS feeds...");
         let activeFeeds = await fetchActiveRssFeeds();
 
@@ -244,6 +244,38 @@ export function RssTicker({ className }: RssTickerProps) {
 
     return () => clearInterval(interval);
   }, [isClient]);
+
+  // Добавляем функцию тестирования RSS в глобальную область для отладки
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV === "development"
+    ) {
+      (window as any).testRSS = async () => {
+        console.log("Testing RSS loading...");
+        try {
+          const testFeeds = await fetchActiveRssFeeds();
+          console.log("Active feeds from DB:", testFeeds);
+
+          const testUrl = "https://elementy.ru/rss/news/russia";
+          console.log("Testing direct access to:", testUrl);
+
+          try {
+            const response = await fetch(
+              `https://api.allorigins.win/get?url=${encodeURIComponent(testUrl)}`,
+            );
+            const data = await response.json();
+            console.log("CORS proxy response:", data);
+          } catch (error) {
+            console.error("CORS proxy failed:", error);
+          }
+        } catch (error) {
+          console.error("RSS test failed:", error);
+        }
+      };
+      console.log("🔧 RSS debugging tool available: window.testRSS()");
+    }
+  }, []);
 
   // Show nothing while not client-ready
   if (!isClient) {
