@@ -206,6 +206,17 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const handleCreateDemoData = async () => {
+    try {
+      await createDemoMediaData();
+      toast({ title: "Демо-данные созданы" });
+      await loadData();
+      onDataChange();
+    } catch (error) {
+      toast({ title: "Ошибка создания демо-данных", variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Управление альбомами */}
@@ -228,7 +239,7 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
-                    {editingAlbum ? "Редактировать а��ьбом" : "Создать альбом"}
+                    {editingAlbum ? "Редактировать альбом" : "Создать альбом"}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
