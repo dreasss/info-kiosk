@@ -117,6 +117,7 @@ export default function HomePage() {
               <div>
                 <h1
                   className="text-xl md:text-2xl font-bold text-white"
+                  suppressHydrationWarning={true}
                   style={{
                     textShadow: "1px 1px 0px rgba(0,0,0,0.8), -1px -1px 0px rgba(0,0,0,0.8), 1px -1px 0px rgba(0,0,0,0.8), -1px 1px 0px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.3)",
                   }}
