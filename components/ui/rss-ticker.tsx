@@ -60,7 +60,7 @@ export function RssTicker({ className }: RssTickerProps) {
       try {
         setLoading(true);
 
-        // Получа��м активные RSS ленты из базы данных и добавляем elementy.ru
+        // Получаем активные RSS ленты из базы данных и добавляем elementy.ru
         console.log("RSS Ticker: Fetching RSS feeds...");
         let activeFeeds = await fetchActiveRssFeeds();
 
@@ -76,94 +76,41 @@ export function RssTicker({ className }: RssTickerProps) {
 
         for (const feed of feedsToLoad) {
           try {
-            console.log(
-              `RSS Ticker: Attempting to load ${feed.name} from ${feed.url}`,
+            console.log(`RSS Ticker: Loading ${feed.name} from ${feed.url}`);
+
+            // Используем наш собственный API для проксирования RSS
+            const response = await fetch(
+              `/api/rss?url=${encodeURIComponent(feed.url)}`,
+              {
+                method: "GET",
+                headers: {
+                  Accept: "application/xml, text/xml, */*",
+                },
+                // Таймаут 20 секунд
+                signal: AbortSignal.timeout(20000),
+              },
             );
 
-            // Список CORS прокси для попытки загрузки
-            const corsProxies = [
-              `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
-              `https://corsproxy.io/?${encodeURIComponent(feed.url)}`,
-              `https://cors-anywhere.herokuapp.com/${feed.url}`,
-              `https://thingproxy.freeboard.io/fetch/${feed.url}`,
-            ];
-
-            let response: Response | null = null;
-            let data: any = null;
-
-            // Пробуем разные прокси
-            for (let i = 0; i < corsProxies.length; i++) {
-              try {
-                console.log(
-                  `RSS Ticker: Trying proxy ${i + 1}/${corsProxies.length}`,
-                );
-                const proxyResponse = await fetch(corsProxies[i], {
-                  method: "GET",
-                  headers: {
-                    Accept: "application/json, text/plain, */*",
-                  },
-                  // Таймаут 10 секунд
-                  signal: AbortSignal.timeout(10000),
-                });
-
-                if (proxyResponse.ok) {
-                  if (corsProxies[i].includes("allorigins.win")) {
-                    data = await proxyResponse.json();
-                    if (data.contents) {
-                      response = proxyResponse;
-                      break;
-                    }
-                  } else {
-                    // Для других прокси данные возвращаются напрямую
-                    const textData = await proxyResponse.text();
-                    data = { contents: textData };
-                    response = proxyResponse;
-                    break;
-                  }
-                }
-              } catch (proxyError) {
-                console.warn(`RSS Ticker: Proxy ${i + 1} failed:`, proxyError);
-                continue;
-              }
+            if (!response.ok) {
+              throw new Error(
+                `API returned ${response.status}: ${response.statusText}`,
+              );
             }
 
-            if (!response || !data) {
-              // Последняя попытка - прямое обращение (работает только если сервер поддерживает CORS)
-              try {
-                console.log(`RSS Ticker: Trying direct access to ${feed.url}`);
-                const directResponse = await fetch(feed.url, {
-                  method: "GET",
-                  headers: {
-                    Accept:
-                      "application/rss+xml, application/xml, text/xml, */*",
-                  },
-                  signal: AbortSignal.timeout(10000),
-                });
+            const xmlContent = await response.text();
+            console.log(
+              `RSS Ticker: Received ${xmlContent.length} bytes from ${feed.name}`,
+            );
 
-                if (directResponse.ok) {
-                  const textData = await directResponse.text();
-                  data = { contents: textData };
-                  response = directResponse;
-                  console.log(
-                    `RSS Ticker: Direct access succeeded for ${feed.name}`,
-                  );
-                } else {
-                  throw new Error(
-                    `Direct access failed with status ${directResponse.status}`,
-                  );
-                }
-              } catch (directError) {
-                console.error(
-                  `RSS Ticker: Direct access also failed:`,
-                  directError,
-                );
-                throw new Error(`All access methods failed for ${feed.name}`);
-              }
-            }
-
-            if (data.contents) {
+            if (xmlContent) {
               const parser = new DOMParser();
-              const xmlDoc = parser.parseFromString(data.contents, "text/xml");
+              const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+
+              // Проверяем на ошибки парсинга
+              const parseError = xmlDoc.querySelector("parsererror");
+              if (parseError) {
+                throw new Error(`XML parsing error: ${parseError.textContent}`);
+              }
 
               // Парсим RSS элементы
               const items = xmlDoc.querySelectorAll("item");
@@ -196,6 +143,10 @@ export function RssTicker({ className }: RssTickerProps) {
                   }
                 }
               });
+            } else {
+              console.warn(
+                `RSS Ticker: No XML content received for ${feed.name}`,
+              );
             }
           } catch (feedError) {
             console.error(
