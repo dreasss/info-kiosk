@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { AlbumGrid } from "@/components/ui/album-grid";
 
 export default function GalleryPage() {
   const [media, setMedia] = useState<MediaItem[]>([]);
