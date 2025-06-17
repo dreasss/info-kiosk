@@ -51,7 +51,7 @@ export async function initDB(): Promise<IDBDatabase> {
     return dbCache;
   }
 
-  // Если инициализация уже в процессе, возвращаем существующий промис
+  // Если инициализация уже в процессе, возвращаем существую��ий промис
   if (dbInitPromise) {
     return dbInitPromise;
   }
@@ -161,68 +161,87 @@ function createDBInitPromise(): Promise<IDBDatabase> {
     };
   });
 }
-// Функция для обеспечения наличия демо-данных после открытия БД
-async function ensureDemoData(db: IDBDatabase): Promise<void> {
+// Функция для добавления демо-данных при первом запуске (упрощенная версия)
+export async function addDemoDataIfNeeded(): Promise<void> {
   try {
-    // Проверяем, есть ли уже данные в базе
-    const poisTransaction = db.transaction(STORES.POIS, "readonly");
-    const poisStore = poisTransaction.objectStore(STORES.POIS);
-    const poisRequest = poisStore.count();
+    const db = await initDB();
+    const transaction = db.transaction(STORES.POIS, "readonly");
+    const store = transaction.objectStore(STORES.POIS);
+    const request = store.count();
 
-    return new Promise((resolve, reject) => {
-      poisRequest.onsuccess = () => {
-        const count = poisRequest.result;
-        if (count === 0) {
-          console.log("База данных пуста, добавляем демо-данные...");
-          initializeDemoDataSeparately(db)
-            .then(() => resolve())
+    return new Promise((resolve) => {
+      request.onsuccess = () => {
+        if (request.result === 0) {
+          console.log("База данных пуста, добавляем базовые демо-данные...");
+          addBasicDemoData()
             .catch((error) => {
               console.warn("Не удалось добавить демо-данные:", error);
-              resolve(); // Не блокируем инициализацию БД
-            });
+            })
+            .finally(() => resolve());
         } else {
-          console.log(
-            `База данных содержит ${count} POI, демо-данные не нужны`,
-          );
           resolve();
         }
       };
-
-      poisRequest.onerror = () => {
-        console.warn("Не удалось проверить количество POI");
-        resolve(); // Не блокируем инициализацию БД
-      };
+      request.onerror = () => resolve(); // Не блокируем при ошибках
     });
   } catch (error) {
     console.warn("Ошибка при проверке демо-данных:", error);
   }
 }
 
-// Функция для инициализации демо-данных в отдельной транзакции
-async function initializeDemoDataSeparately(db: IDBDatabase): Promise<void> {
-  return new Promise((resolve, reject) => {
+// Упрощенная функция добавления базовых демо-данных
+async function addBasicDemoData(): Promise<void> {
+  try {
+    const db = await initDB();
     const transaction = db.transaction(
       [STORES.POIS, STORES.NEWS, STORES.RSS_FEEDS, STORES.SETTINGS],
       "readwrite",
     );
 
-    transaction.oncomplete = () => {
-      console.log("Демо-данные успешно добавлены");
-      resolve();
-    };
+    // Простой POI
+    const poisStore = transaction.objectStore(STORES.POIS);
+    poisStore.add({
+      id: "1",
+      name: "ОИЯИ",
+      shortDescription: "Главное здание института",
+      fullDescription: "Объединенный институт ядерных исследований",
+      coordinates: [56.7458, 37.189],
+      images: [],
+      address: "ул. Жолио-Кюри, 6, Дубна",
+      category: "building",
+    });
 
-    transaction.onerror = (event) => {
-      console.error("Ошибка добавления демо-данных:", event);
-      reject(new Error("Не удалось добавить демо-данные"));
-    };
+    // Простые настройки
+    const settingsStore = transaction.objectStore(STORES.SETTINGS);
+    settingsStore.add({
+      id: "system_settings",
+      idleTimeout: 300000,
+      loadingGif: "/placeholder.svg",
+      organizationInfo: {
+        name: "ОИЯИ",
+        fullName: "Объединенный институт ядерных исследований",
+        logo: "/images/jinr-logo.png",
+        description: "Международная научно-исследовательская организация",
+        address: "ул. Жолио-Кюри, 6, Дубна",
+        phone: "+7 (496) 216-50-59",
+        email: "post@jinr.ru",
+        website: "http://www.jinr.ru",
+      },
+    });
 
-    try {
-      initializeDefaultData(transaction);
-    } catch (error) {
-      console.error("Ошибка при инициализации демо-данных:", error);
-      reject(error);
-    }
-  });
+    // RSS лента
+    const rssStore = transaction.objectStore(STORES.RSS_FEEDS);
+    rssStore.add({
+      id: "1",
+      name: "Naked Science",
+      url: "https://naked-science.ru/article/category/sci/feed",
+      active: true,
+    });
+
+    console.log("Базовые демо-данные добавлены");
+  } catch (error) {
+    console.warn("Ошибка добавления демо-данных:", error);
+  }
 }
 
 // Функция для сброса состояния БД (для восстановления после ошибок)
@@ -267,7 +286,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       name: "Дом ученых ОИЯИ",
       shortDescription: "Культурный центр для научного сообщества Дубны.",
       fullDescription:
-        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
+        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие м��роприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
       coordinates: [56.743, 37.192],
       images: ["/placeholder.svg?height=200&width=300"],
       address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
@@ -305,7 +324,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       id: "2",
       title: "Международная конференция по ядерной физике",
       content:
-        "С 10 по 15 сентября в Доме ученых ОИЯИ пройдет ме��дународная конференция по ядерной физике, на которую съедутся ученые из более чем 30 стран мира.",
+        "С 10 по 15 сентября в Доме ученых ОИЯИ п��ойдет международная конференция по ядерной физике, на которую съедутся ученые из более чем 30 стран мира.",
       image: "/placeholder.svg?height=200&width=300",
       date: new Date(Date.now() - 172800000).toISOString(), // позавчера
       url: "#",
