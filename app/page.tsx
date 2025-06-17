@@ -217,10 +217,16 @@ export default function HomePage() {
             className="text-center mb-8 animate-fadeInUp"
             style={{ animationDelay: "0.2s", animationFillMode: "both" }}
           >
-            <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-4 hover:scale-105 transition-transform duration-300">
+            <h2
+              className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-4 hover:scale-105 transition-transform duration-300"
+              suppressHydrationWarning={true}
+            >
               {isClient && language === "en" ? "Welcome" : "Добро пожаловать"}
             </h2>
-            <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300">
+            <p
+              className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+              suppressHydrationWarning={true}
+            >
               {isClient && language === "en"
                 ? "JINR Interactive Information System"
                 : "Интерактивная информационная система ОИЯИ"}
