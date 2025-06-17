@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
 import { fetchNews } from "@/lib/api";
-import { resetDBState } from "@/lib/db";
+import { resetDBState, getDBStatus } from "@/lib/db";
 import type { NewsItem } from "@/types/news";
 
 export default function HomePage() {
