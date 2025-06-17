@@ -36,6 +36,7 @@ export default function GalleryPage() {
   );
   const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+  const [viewMode, setViewMode] = useState<"albums" | "media">("albums");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
