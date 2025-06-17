@@ -820,20 +820,6 @@ export async function removeIcon(id: string): Promise<boolean> {
   }
 }
 
-// API для загрузки файлов
-export async function uploadMediaFile(file: File): Promise<string> {
-  if (!isBrowser) {
-    throw new Error("Browser API not available");
-  }
-
-  try {
-    return await uploadFile(file);
-  } catch (error) {
-    console.error("Error uploading file:", error);
-    throw error;
-  }
-}
-
 // Дополнительная функция для сохранения медиафайла с загруженным файлом
 export async function createMediaWithFile(
   media: Omit<MediaItem, "id" | "url">,
