@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { fetchActiveRssFeeds } from "@/lib/api";
+import { fetchActiveRssFeeds, type RssFeed } from "@/lib/api";
 
 interface RssItem {
   title: string;
