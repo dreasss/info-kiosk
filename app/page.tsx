@@ -61,17 +61,19 @@ export default function HomePage() {
     setRetryCount((prev) => prev + 1); // Перезапускаем useEffect
   };
 
-  // В режиме разработки добавляем функцию сброса БД в глобальную область
+  // В режиме разработки добавляем функции БД в глобальную область
   useEffect(() => {
     if (
       process.env.NODE_ENV === "development" &&
       typeof window !== "undefined"
     ) {
-      // Добавляем функцию сброса в глобальную область для отладки
-      (window as any).dbReset = resetDBState;
+      // Добавляем функции в глобальную область для отладки
+      (window as any).dbReset = resetDBState(window as any).dbStatus =
+        getDBStatus;
 
-      console.log("🔧 Database debugging tool available:");
+      console.log("🔧 Database debugging tools available:");
       console.log("  - window.dbReset() - Сброс состояния базы данных");
+      console.log("  - window.dbStatus() - Проверка состояния базы данных");
     }
   }, []);
 
