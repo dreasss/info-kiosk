@@ -33,9 +33,13 @@ export default function GalleryPage() {
   useEffect(() => {
     const loadMedia = async () => {
       try {
-        const data = await fetchMedia();
-        setMedia(data);
-        setFilteredMedia(data);
+        const [mediaData, albumsData] = await Promise.all([
+          fetchMedia(),
+          fetchAlbums(),
+        ]);
+        setMedia(mediaData);
+        setAlbums(albumsData);
+        setFilteredMedia(mediaData);
       } catch (error) {
         console.error("Error loading media:", error);
       } finally {
