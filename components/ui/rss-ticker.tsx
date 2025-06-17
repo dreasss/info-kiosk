@@ -60,11 +60,60 @@ export function RssTicker({ className }: RssTickerProps) {
 
         for (const feed of feedsToLoad) {
           try {
-            // Используем CORS прокси для загрузки RSS
-            const response = await fetch(
-              `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
+            console.log(
+              `RSS Ticker: Attempting to load ${feed.name} from ${feed.url}`,
             );
-            const data = await response.json();
+
+            // Список CORS прокси для попытки загрузки
+            const corsProxies = [
+              `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`,
+              `https://corsproxy.io/?${encodeURIComponent(feed.url)}`,
+              `https://cors-anywhere.herokuapp.com/${feed.url}`,
+              `https://thingproxy.freeboard.io/fetch/${feed.url}`,
+            ];
+
+            let response: Response | null = null;
+            let data: any = null;
+
+            // Пробуем разные прокси
+            for (let i = 0; i < corsProxies.length; i++) {
+              try {
+                console.log(
+                  `RSS Ticker: Trying proxy ${i + 1}/${corsProxies.length}`,
+                );
+                const proxyResponse = await fetch(corsProxies[i], {
+                  method: "GET",
+                  headers: {
+                    Accept: "application/json, text/plain, */*",
+                  },
+                  // Таймаут 10 секунд
+                  signal: AbortSignal.timeout(10000),
+                });
+
+                if (proxyResponse.ok) {
+                  if (corsProxies[i].includes("allorigins.win")) {
+                    data = await proxyResponse.json();
+                    if (data.contents) {
+                      response = proxyResponse;
+                      break;
+                    }
+                  } else {
+                    // Для других прокси данные возвращаются напрямую
+                    const textData = await proxyResponse.text();
+                    data = { contents: textData };
+                    response = proxyResponse;
+                    break;
+                  }
+                }
+              } catch (proxyError) {
+                console.warn(`RSS Ticker: Proxy ${i + 1} failed:`, proxyError);
+                continue;
+              }
+            }
+
+            if (!response || !data) {
+              throw new Error(`All CORS proxies failed for ${feed.name}`);
+            }
 
             if (data.contents) {
               const parser = new DOMParser();
@@ -103,10 +152,11 @@ export function RssTicker({ className }: RssTickerProps) {
               });
             }
           } catch (feedError) {
-            console.warn(
+            console.error(
               `RSS Ticker: Error loading RSS feed ${feed.name}:`,
               feedError,
             );
+            console.error(`RSS Ticker: Feed URL was: ${feed.url}`);
             continue;
           }
         }
