@@ -72,23 +72,32 @@ export function RssTicker({ className }: RssTickerProps) {
 
               // Парсим RSS элементы
               const items = xmlDoc.querySelectorAll("item");
+              console.log(
+                `RSS Ticker: Found ${items.length} items in ${feed.name}`,
+              );
 
               items.forEach((item, index) => {
-                if (index < 5) {
-                  // Берем только первые 5 новостей с каждой ленты
-                  const title = item.querySelector("title")?.textContent || "";
-                  const link = item.querySelector("link")?.textContent || "#";
+                if (index < 10) {
+                  // Берем первые 10 новостей с каждой ленты
+                  const title =
+                    item.querySelector("title")?.textContent?.trim() || "";
+                  const link =
+                    item.querySelector("link")?.textContent?.trim() || "#";
                   const pubDate =
-                    item.querySelector("pubDate")?.textContent ||
+                    item.querySelector("pubDate")?.textContent?.trim() ||
+                    item.querySelector("dc\\:date")?.textContent?.trim() ||
                     new Date().toISOString();
 
                   if (title) {
                     allNewsItems.push({
-                      title,
+                      title: title.replace(/\[.*?\]/g, "").trim(), // Убираем [категории] из заголовков
                       link,
                       pubDate,
                       source: feed.name,
                     });
+                    console.log(
+                      `RSS Ticker: Added item: ${title.substring(0, 50)}...`,
+                    );
                   }
                 }
               });
