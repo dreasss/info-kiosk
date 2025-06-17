@@ -17,6 +17,11 @@ import {
 import Link from "next/link";
 import { TouchButton } from "@/components/ui/touch-button";
 import { MediaManager } from "@/components/admin/media-manager";
+import { POIManager } from "@/components/admin/poi-manager";
+import { NewsManager } from "@/components/admin/news-manager";
+import { RssManager } from "@/components/admin/rss-manager";
+import { IconManager } from "@/components/admin/icon-manager";
+import { SettingsManager } from "@/components/admin/settings-manager";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("media");
@@ -101,26 +106,12 @@ export default function AdminPage() {
 
           {/* POIs Tab */}
           <TabsContent value="pois" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Управление объектами</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Функционал объектов будет реализован.</p>
-              </CardContent>
-            </Card>
+            <POIManager onDataChange={loadData} />
           </TabsContent>
 
           {/* News Tab */}
           <TabsContent value="news" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Управление новостями</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Функционал новостей будет реализован.</p>
-              </CardContent>
-            </Card>
+            <NewsManager onDataChange={loadData} />
           </TabsContent>
 
           {/* Media Tab */}
@@ -130,38 +121,17 @@ export default function AdminPage() {
 
           {/* RSS Tab */}
           <TabsContent value="rss" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Управление RSS</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Функционал RSS будет реализован.</p>
-              </CardContent>
-            </Card>
+            <RssManager onDataChange={loadData} />
           </TabsContent>
 
           {/* Icons Tab */}
           <TabsContent value="icons" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Управление иконками</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Функционал иконок будет реализован.</p>
-              </CardContent>
-            </Card>
+            <IconManager onDataChange={loadData} />
           </TabsContent>
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Настройки системы</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Функционал настроек будет реализован.</p>
-              </CardContent>
-            </Card>
+            <SettingsManager onDataChange={loadData} />
           </TabsContent>
         </Tabs>
       </main>
