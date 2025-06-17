@@ -112,7 +112,37 @@ export function RssTicker({ className }: RssTickerProps) {
             }
 
             if (!response || !data) {
-              throw new Error(`All CORS proxies failed for ${feed.name}`);
+              // Последняя попытка - прямое обращение (работает только если сервер поддерживает CORS)
+              try {
+                console.log(`RSS Ticker: Trying direct access to ${feed.url}`);
+                const directResponse = await fetch(feed.url, {
+                  method: "GET",
+                  headers: {
+                    Accept:
+                      "application/rss+xml, application/xml, text/xml, */*",
+                  },
+                  signal: AbortSignal.timeout(10000),
+                });
+
+                if (directResponse.ok) {
+                  const textData = await directResponse.text();
+                  data = { contents: textData };
+                  response = directResponse;
+                  console.log(
+                    `RSS Ticker: Direct access succeeded for ${feed.name}`,
+                  );
+                } else {
+                  throw new Error(
+                    `Direct access failed with status ${directResponse.status}`,
+                  );
+                }
+              } catch (directError) {
+                console.error(
+                  `RSS Ticker: Direct access also failed:`,
+                  directError,
+                );
+                throw new Error(`All access methods failed for ${feed.name}`);
+              }
             }
 
             if (data.contents) {
