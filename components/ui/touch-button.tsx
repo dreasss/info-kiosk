@@ -35,7 +35,7 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
     },
     ref,
   ) => {
-    const { playButtonClick, playHover, init } = useSounds();
+    const { playButtonClick, playHover, playNavigation, init } = useSounds();
 
     const sizeClasses = {
       sm: "min-h-[44px] min-w-[44px] p-2",
