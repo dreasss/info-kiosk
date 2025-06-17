@@ -22,6 +22,7 @@ import {
   Save,
   Calendar,
   Image as ImageIcon,
+  Upload,
 } from "lucide-react";
 import type { NewsItem } from "@/types/news";
 import { fetchNews, createNews, updateNews, removeNews } from "@/lib/api";
@@ -142,6 +143,33 @@ export function NewsManager({ onDataChange }: NewsManagerProps) {
     }
   };
 
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        if (result) {
+          setFormData((prev) => ({
+            ...prev,
+            image: result,
+          }));
+          toast({
+            title: "Успех",
+            description: "Изображение загружено",
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Выберите файл изображения",
+      });
+    }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить эту новость?")) {
       return;
@@ -251,18 +279,53 @@ export function NewsManager({ onDataChange }: NewsManagerProps) {
                   </div>
 
                   <div>
-                    <Label htmlFor="image">URL изображения</Label>
-                    <Input
-                      id="image"
-                      value={formData.image}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          image: e.target.value,
-                        }))
-                      }
-                      placeholder="https://example.com/image.jpg"
-                    />
+                    <Label htmlFor="image">Изображение</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          id="news-image-upload"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() =>
+                            document
+                              .getElementById("news-image-upload")
+                              ?.click()
+                          }
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Загрузить с компьютера
+                        </Button>
+                      </div>
+                      <Input
+                        id="image"
+                        value={formData.image}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            image: e.target.value,
+                          }))
+                        }
+                        placeholder="или введите URL изображения"
+                      />
+                      {formData.image && (
+                        <div className="mt-2 p-2 border rounded-lg">
+                          <img
+                            src={formData.image}
+                            alt="Предварительный просмотр"
+                            className="max-w-full h-32 object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
