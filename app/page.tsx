@@ -227,15 +227,16 @@ export default function HomePage() {
               className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-4 hover:scale-105 transition-transform duration-300"
               suppressHydrationWarning={true}
             >
-              {isClient && language === "en" ? "Welcome" : "Добро пожаловать"}
+              {getText("Welcome", "Добро пожаловать")}
             </h2>
             <p
               className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
               suppressHydrationWarning={true}
             >
-              {isClient && language === "en"
-                ? "JINR Interactive Information System"
-                : "Интерактивная информационная система ОИЯИ"}
+              {getText(
+                "JINR Interactive Information System",
+                "Интерактивная информационная система ОИЯИ",
+              )}
             </p>
           </div>
 
