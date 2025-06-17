@@ -159,20 +159,25 @@ export function RssTicker({ className }: RssTickerProps) {
           setNews(mockNews);
         }
       } catch (error) {
-        console.error("Error fetching RSS feeds:", error);
+        console.error("RSS Ticker: Error fetching RSS feeds:", error);
 
-        // В случае ошибки (например, проблемы с IndexedDB) используем демо-данные
-        setNews(getDemoNews());
-        // Fallback данные при ошибке
-        setNews([
-          {
-            title:
-              "Ошибка загрузки RSS лент. Проверьте настройки в панели администратора.",
-            link: "/admin",
-            pubDate: new Date().toISOString(),
-            source: "Система",
-          },
-        ]);
+        // В случае ошибки всегда показываем демо-данные
+        const demoData = getDemoNews();
+        if (demoData.length > 0) {
+          console.log("RSS Ticker: Using demo data due to error");
+          setNews(demoData);
+        } else {
+          // Если даже демо-данные недоступны, показываем системное сообщение
+          setNews([
+            {
+              title:
+                "Ошибка загрузки RSS лент. Проверьте настройки в панели администратора.",
+              link: "/admin",
+              pubDate: new Date().toISOString(),
+              source: "Система",
+            },
+          ]);
+        }
       } finally {
         setLoading(false);
       }
