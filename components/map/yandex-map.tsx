@@ -290,21 +290,40 @@ export default function YandexMap() {
         </Map>
       </YMaps>
 
-      {/* Кнопка домой и переключатель языка */}
-      <div className="absolute top-4 left-20 z-10 flex flex-col gap-3">
+      {/* Кнопка домой и переключател�� языка */}
+      <div className="absolute top-6 left-6 z-10 flex flex-col gap-4">
         <TouchButton
           asChild
           touchSize="lg"
-          className="bg-white shadow-xl border-2 border-white text-gray-800 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-100"
+          className="group relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-900 text-white shadow-2xl hover:shadow-3xl border-0 backdrop-blur-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 overflow-hidden"
         >
           <Link href="/">
-            <Home className="h-6 w-6 mr-2 text-gray-700" />
-            <span
-              className="font-semibold text-gray-800"
-              suppressHydrationWarning={true}
-            >
-              На главную
-            </span>
+            {/* Анимированный фон */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+            {/* Декоративные элементы */}
+            <div className="absolute top-0 left-0 w-full h-full">
+              <div className="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
+              <div className="absolute bottom-3 left-3 w-1 h-1 bg-white/20 rounded-full animate-ping"></div>
+            </div>
+
+            {/* Основной контент */}
+            <div className="relative flex items-center px-6 py-3">
+              <div className="mr-3 p-2 bg-white/15 rounded-xl backdrop-blur-sm group-hover:bg-white/20 group-hover:scale-110 transition-all duration-300">
+                <Home className="h-5 w-5 text-white drop-shadow-lg" />
+              </div>
+              <div className="flex flex-col">
+                <span
+                  className="font-bold text-white drop-shadow-lg group-hover:text-blue-100 transition-colors duration-300"
+                  suppressHydrationWarning={true}
+                >
+                  На главную
+                </span>
+                <span className="text-xs text-blue-200 font-medium opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+                  Вернуться к меню
+                </span>
+              </div>
+            </div>
           </Link>
         </TouchButton>
         <LanguageSwitcher />
