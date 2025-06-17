@@ -1,18 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import type { LucideIcon } from "lucide-react"
+import * as React from "react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import type { LucideIcon } from "lucide-react";
+import { useSounds } from "@/lib/sound-system";
 
-interface TouchButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  href?: string
-  icon?: LucideIcon
-  title?: string
-  description?: string
-  touchSize?: "sm" | "md" | "lg" | "xl"
-  variant?: "default" | "secondary" | "ghost" | "outline"
-  asChild?: boolean
+interface TouchButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  href?: string;
+  icon?: LucideIcon;
+  title?: string;
+  description?: string;
+  touchSize?: "sm" | "md" | "lg" | "xl";
+  variant?: "default" | "secondary" | "ghost" | "outline";
+  asChild?: boolean;
 }
 
 const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
@@ -27,23 +29,31 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
       variant = "default",
       asChild = false,
       children,
+      onClick,
+      onMouseEnter,
       ...props
     },
     ref,
   ) => {
+    const { playButtonClick, playHover, init } = useSounds();
+
     const sizeClasses = {
       sm: "min-h-[44px] min-w-[44px] p-2",
       md: "min-h-[48px] min-w-[48px] p-3",
       lg: "min-h-[56px] min-w-[56px] p-4",
       xl: "min-h-[64px] min-w-[64px] p-6",
-    }
+    };
 
     const variantClasses = {
-      default: "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-2xl",
-      secondary: "bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-900 shadow-md hover:shadow-lg",
-      ghost: "hover:bg-white/10 backdrop-blur-sm text-current border border-white/20 hover:border-white/40",
-      outline: "border border-current hover:bg-current/10 text-current shadow-md hover:shadow-lg",
-    }
+      default:
+        "bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-2xl",
+      secondary:
+        "bg-gradient-to-br from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-900 shadow-md hover:shadow-lg",
+      ghost:
+        "hover:bg-white/10 backdrop-blur-sm text-current border border-white/20 hover:border-white/40",
+      outline:
+        "border border-current hover:bg-current/10 text-current shadow-md hover:shadow-lg",
+    };
 
     const baseClasses = cn(
       "inline-flex items-center justify-center rounded-xl font-medium transition-all duration-300 ease-out",
@@ -54,12 +64,50 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
       sizeClasses[touchSize],
       variantClasses[variant],
       className,
-    )
+    );
+
+    // Инициализируем звуковую систему при первом взаимодействии
+    React.useEffect(() => {
+      const initOnInteraction = () => {
+        init();
+        document.removeEventListener("click", initOnInteraction);
+        document.removeEventListener("keydown", initOnInteraction);
+      };
+
+      document.addEventListener("click", initOnInteraction);
+      document.addEventListener("keydown", initOnInteraction);
+
+      return () => {
+        document.removeEventListener("click", initOnInteraction);
+        document.removeEventListener("keydown", initOnInteraction);
+      };
+    }, []);
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      playButtonClick();
+      onClick?.(e);
+    };
+
+    const handleMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+      playHover();
+      onMouseEnter?.(e);
+    };
 
     if (asChild && children) {
       return React.cloneElement(children as React.ReactElement, {
-        className: cn(baseClasses, (children as React.ReactElement).props?.className),
-      })
+        className: cn(
+          baseClasses,
+          (children as React.ReactElement).props?.className,
+        ),
+        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+          playButtonClick();
+          (children as React.ReactElement).props?.onClick?.(e);
+        },
+        onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
+          playHover();
+          (children as React.ReactElement).props?.onMouseEnter?.(e);
+        },
+      });
     }
 
     const content =
@@ -69,32 +117,51 @@ const TouchButton = React.forwardRef<HTMLButtonElement, TouchButtonProps>(
             <Icon className="h-7 w-7 group-hover:scale-110 transition-transform duration-300" />
           </div>
           <div>
-            <h3 className="font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300">{title}</h3>
-            {description && <p className="text-sm opacity-90 leading-tight group-hover:opacity-100 transition-opacity duration-300">{description}</p>}
+            <h3 className="font-bold text-lg mb-1 group-hover:scale-105 transition-transform duration-300">
+              {title}
+            </h3>
+            {description && (
+              <p className="text-sm opacity-90 leading-tight group-hover:opacity-100 transition-opacity duration-300">
+                {description}
+              </p>
+            )}
           </div>
         </div>
       ) : (
         children
-      )
+      );
 
     if (href) {
       return (
-        <Link href={href} className={baseClasses}>
+        <Link
+          href={href}
+          className={baseClasses}
+          onClick={() => {
+            playNavigation();
+          }}
+          onMouseEnter={() => {
+            playHover();
+          }}
+        >
           {content}
         </Link>
-      )
+      );
     }
 
     return (
-      <Comp
-        className={cn(touchButtonVariants({ variant, size, touchSize, className }))}
+      <button
+        className={baseClasses}
         ref={ref}
-        {...props}
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
+        {...props}
       >
-)
+        {content}
+      </button>
+    );
+  },
+);
 
-TouchButton.displayName = "TouchButton"
+TouchButton.displayName = "TouchButton";
 
-export { TouchButton }
+export { TouchButton };
