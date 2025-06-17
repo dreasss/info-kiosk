@@ -46,7 +46,7 @@ let dbInitFailed = false;
 
 // Инициализация базы данных
 export async function initDB(): Promise<IDBDatabase> {
-  // Возвращаем кешированную БД если о��а уже инициализирована
+  // Возвращаем кешированную БД если она уже инициализирована
   if (dbCache) {
     return dbCache;
   }
@@ -152,7 +152,7 @@ function createDBInitPromise(): Promise<IDBDatabase> {
         try {
           const db = (event.target as IDBOpenDBRequest).result;
 
-          // Добавляем обработчик ошибок для будущих операций
+          // До��авляем обработчик ошибок для будущих операций
           db.onerror = (errorEvent) => {
             console.error("Ошибка базы данных:", errorEvent);
           };
@@ -174,6 +174,10 @@ function createDBInitPromise(): Promise<IDBDatabase> {
         try {
           const db = (event.target as IDBOpenDBRequest).result;
           const transaction = (event.target as IDBOpenDBRequest).transaction!;
+
+          console.log(
+            `Обновление базы данных с версии ${event.oldVersion} до ${event.newVersion}`,
+          );
 
           // Создаем хранилища, если их нет
           if (!db.objectStoreNames.contains(STORES.POIS)) {
@@ -215,13 +219,25 @@ function createDBInitPromise(): Promise<IDBDatabase> {
             rssStore.createIndex("active", "active", { unique: false });
           }
 
+          // Добавляем обработчик ошибок для транзакции
+          transaction.onerror = (txError) => {
+            console.error("Ошибка транзакции при обновлении схемы:", txError);
+            safeReject(new Error("Ошибка при создании схемы базы данных"));
+          };
+
+          transaction.onabort = (txAbort) => {
+            console.error(
+              "Транзакция обновления схемы была прервана:",
+              txAbort,
+            );
+            safeReject(new Error("Обновление схемы базы данных было прервано"));
+          };
+
           // Инициализируем базу данными по умолчанию используя текущую транзакцию
           initializeDefaultData(transaction);
         } catch (error) {
-          if (timeoutId) clearTimeout(timeoutId);
           console.error("Ошибка при создании схемы базы данных:", error);
-          dbInitFailed = true;
-          reject(error);
+          safeReject(error instanceof Error ? error : new Error(String(error)));
         }
       };
 
@@ -255,13 +271,13 @@ function initializeDefaultData(transaction: IDBTransaction) {
       shortDescription:
         "Международный научный центр, проводящий фундаментальные исследования.",
       fullDescription:
-        "Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследованиях в области ядерной физики, физики элементарных частиц и конденсированных сред.",
+        "Объединенный институт ядерных исследований (ОИЯИ) — международная межправительственная научно-исследовательская организация, расположенная в Дубне. Институт специализируется на исследованиях в области ядерной физики, физики элементарных частиц и конденсированных сре��.",
       coordinates: [56.7458, 37.189],
       images: [
         "/placeholder.svg?height=200&width=300",
         "/placeholder.svg?height=200&width=300",
       ],
-      address: "ул. Жолио-Кюри, 6, ��убна, Московская область",
+      address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
       category: "building",
     },
     {
@@ -279,7 +295,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       id: "3",
       name: "Лаборатория ядерных реакций",
       shortDescription:
-        "Исследовательская лаборатория, специализирующаяся на синтезе новых элементов.",
+        "Исследовательская лаборатория, специализиру��щаяся на синтезе новых элементов.",
       fullDescription:
         "Лаборатория ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
       coordinates: [56.744, 37.187],
@@ -445,7 +461,7 @@ export async function savePOI(poi: POI): Promise<POI> {
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения POI:", event);
-      reject(new Error("Не удалось сохрани��ь POI"));
+      reject(new Error("Не удалось сохранить POI"));
     };
   });
 }
@@ -486,7 +502,7 @@ export async function getAllNews(): Promise<NewsItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения новостей:", event);
-      reject(new Error("��е удалось получить новости"));
+      reject(new Error("Не удалось получить новости"));
     };
   });
 }
