@@ -268,8 +268,8 @@ export function getDBStatus() {
   };
 }
 
-// Инициализация базы данных демо-данными
-function initializeDefaultData(transaction: IDBTransaction) {
+// Функции для работы с POI
+export async function getAllPOIs(): Promise<POI[]> {
   // Демо-данные для POI
   const demoPOIs: POI[] = [
     {
