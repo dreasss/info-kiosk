@@ -18,6 +18,12 @@ interface RssTickerProps {
 export function RssTicker({ className }: RssTickerProps) {
   const [news, setNews] = useState<RssItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure we only render content after hydration
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Демо-данные для использования при ошибках
   const getDemoNews = (): RssItem[] => [
@@ -166,7 +172,7 @@ export function RssTicker({ className }: RssTickerProps) {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading || news.length === 0) {
+  if (!isClient || loading || news.length === 0) {
     return null;
   }
 
@@ -211,5 +217,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым именем для совместимости
+// Экспортир��ем также под старым именем для совместимости
 export { RssTicker as RSSTicker };
