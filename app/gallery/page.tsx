@@ -53,6 +53,15 @@ export default function GalleryPage() {
   useEffect(() => {
     let filtered = media;
 
+    // Фильтр по альбому
+    if (selectedAlbum !== "all") {
+      if (selectedAlbum === "none") {
+        filtered = filtered.filter((item) => !item.albumId);
+      } else {
+        filtered = filtered.filter((item) => item.albumId === selectedAlbum);
+      }
+    }
+
     // Фильтр по типу
     if (activeFilter !== "all") {
       filtered = filtered.filter((item) => item.category === activeFilter);
@@ -68,7 +77,7 @@ export default function GalleryPage() {
     }
 
     setFilteredMedia(filtered);
-  }, [media, activeFilter, searchTerm]);
+  }, [media, activeFilter, searchTerm, selectedAlbum]);
 
   const handleDownload = (item: MediaItem) => {
     const link = document.createElement("a");
