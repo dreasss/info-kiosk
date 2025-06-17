@@ -41,7 +41,7 @@ let dbCache: IDBDatabase | null = null;
 // Кеш для промиса инициализации (предотвращает конкурентные запросы)
 let dbInitPromise: Promise<IDBDatabase> | null = null;
 
-// Флаг для отслежи��ания неудачных попыток инициализации
+// Флаг для отслеживания неудачных попыток инициализации
 let dbInitFailed = false;
 
 // Инициализация базы данных
@@ -73,7 +73,7 @@ export async function initDB(): Promise<IDBDatabase> {
   try {
     const db = await dbInitPromise;
     dbCache = db; // Кешируем успешно инициализированную БД
-    dbInitPromise = null; // Очищаем пр��мис после успешной инициализации
+    dbInitPromise = null; // Очищаем промис после успешной инициализации
     return db;
   } catch (error) {
     dbInitPromise = null; // Очищаем промис в случае ошибки
@@ -379,25 +379,55 @@ function initializeDefaultData(transaction: IDBTransaction) {
 
   // Добавляем демо-данные в базу используя существующую транзакцию
   try {
-    const poisStore = transaction.objectStore(STORES.POIS);
-    demoPOIs.forEach((poi) => {
-      poisStore.add(poi);
-    });
+    // Инициализируем POI
+    try {
+      const poisStore = transaction.objectStore(STORES.POIS);
+      demoPOIs.forEach((poi) => {
+        const request = poisStore.add(poi);
+        request.onerror = (e) =>
+          console.warn("Ошибка добавления POI:", poi.id, e);
+      });
+    } catch (error) {
+      console.warn("Ошибка инициализации POI:", error);
+    }
 
-    const newsStore = transaction.objectStore(STORES.NEWS);
-    demoNews.forEach((news) => {
-      newsStore.add(news);
-    });
+    // Инициализируем новости
+    try {
+      const newsStore = transaction.objectStore(STORES.NEWS);
+      demoNews.forEach((news) => {
+        const request = newsStore.add(news);
+        request.onerror = (e) =>
+          console.warn("Ошибка добавления новости:", news.id, e);
+      });
+    } catch (error) {
+      console.warn("Ошибка инициализации новостей:", error);
+    }
 
-    const rssStore = transaction.objectStore(STORES.RSS_FEEDS);
-    demoRssFeeds.forEach((feed) => {
-      rssStore.add(feed);
-    });
+    // Инициализируем RSS ленты
+    try {
+      const rssStore = transaction.objectStore(STORES.RSS_FEEDS);
+      demoRssFeeds.forEach((feed) => {
+        const request = rssStore.add(feed);
+        request.onerror = (e) =>
+          console.warn("Ошибка добавления RSS ленты:", feed.id, e);
+      });
+    } catch (error) {
+      console.warn("Ошибка инициализации RSS лент:", error);
+    }
 
-    const settingsStore = transaction.objectStore(STORES.SETTINGS);
-    settingsStore.add(defaultSettings);
+    // Инициализируем настройки
+    try {
+      const settingsStore = transaction.objectStore(STORES.SETTINGS);
+      const request = settingsStore.add(defaultSettings);
+      request.onerror = (e) => console.warn("Ошибка добавления настроек:", e);
+    } catch (error) {
+      console.warn("Ошибка инициализации настроек:", error);
+    }
+
+    console.log("Инициализация демо-данных завершена");
   } catch (error) {
-    console.error("Ошибка инициализации демо-данных:", error);
+    console.error("Общая ошибка инициализации демо-данных:", error);
+    // Не прерываем транзакцию из-за ошибок в демо-данных
   }
 }
 
@@ -456,7 +486,7 @@ export async function getPOIById(id: string): Promise<POI | null> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения POI по ID:", event);
-      reject(new Error("Не удалось получить POI по ID"));
+      reject(new Error("Н�� удалось получить POI по ID"));
     };
   });
 }
@@ -550,7 +580,7 @@ export async function saveNews(news: NewsItem): Promise<NewsItem> {
     const transaction = db.transaction(STORES.NEWS, "readwrite");
     const store = transaction.objectStore(STORES.NEWS);
 
-    // Если ID не указ��н, генерируем новый
+    // Если ID не указан, генерируем новый
     if (!news.id) {
       news.id = Date.now().toString();
     }
@@ -666,7 +696,7 @@ export async function deleteMedia(id: string): Promise<boolean> {
   });
 }
 
-// Функции для работы с настройками
+// Фун��ции для работы с настройками
 export async function getSettings(): Promise<SystemSettings | null> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
@@ -704,7 +734,7 @@ export async function saveSettings(
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения настроек:", event);
-      reject(new Error("Не удалось сохранить настройки"));
+      reject(new Error("Не удалось сох��анить настройки"));
     };
   });
 }
@@ -778,7 +808,7 @@ export async function saveIcon(
     };
 
     request.onerror = (event) => {
-      console.error("Ошибка сох��анения иконки:", event);
+      console.error("Ошибка сохранения иконки:", event);
       reject(new Error("Не удалось сохранить иконку"));
     };
   });
