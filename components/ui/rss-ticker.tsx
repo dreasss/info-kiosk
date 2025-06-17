@@ -172,8 +172,63 @@ export function RssTicker({ className }: RssTickerProps) {
     return () => clearInterval(interval);
   }, []);
 
-  if (!isClient || loading || news.length === 0) {
+  // Show nothing while not client-ready
+  if (!isClient) {
     return null;
+  }
+
+  // Show loading or fallback
+  if (loading) {
+    return (
+      <div className="bg-gradient-to-r from-blue-500/90 via-blue-600/95 to-sky-500/90 backdrop-blur-sm text-white py-4 overflow-hidden border-y border-white/10">
+        <div className="flex items-center h-8">
+          <div className="font-bold mr-8 px-6 py-2 whitespace-nowrap bg-white/15 backdrop-blur-md rounded-r-2xl flex items-center shadow-lg border border-white/20">
+            <span className="text-yellow-300 mr-2 text-lg">📡</span>
+            <span className="font-semibold tracking-wide">
+              ЗАГРУЗКА НОВОСТЕЙ...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If no news found, show demo data or fallback
+  if (news.length === 0) {
+    console.log("RSS Ticker: No news found, showing demo data");
+    const demoNews = getDemoNews();
+    if (demoNews.length === 0) {
+      return null;
+    }
+    // Use demo news for display
+    return (
+      <div className="bg-gradient-to-r from-blue-500/90 via-blue-600/95 to-sky-500/90 backdrop-blur-sm text-white py-4 overflow-hidden border-y border-white/10">
+        <div className="flex items-center h-8">
+          <div className="font-bold mr-8 px-6 py-2 whitespace-nowrap bg-white/15 backdrop-blur-md rounded-r-2xl flex items-center shadow-lg border border-white/20">
+            <span className="text-yellow-300 mr-2 text-lg">📡</span>
+            <span className="font-semibold tracking-wide">ДЕМО НОВОСТИ</span>
+          </div>
+          <div className="ticker-container overflow-hidden relative w-full">
+            <div className="ticker-content whitespace-nowrap animate-scroll-slow">
+              {demoNews.concat(demoNews).map((item, index) => (
+                <span
+                  key={index}
+                  className="mx-12 font-medium hover:text-blue-200 cursor-pointer transition-all duration-300 hover:scale-105 inline-block"
+                >
+                  <span className="text-yellow-300 mr-3 text-lg">🔬</span>
+                  <span className="font-semibold text-blue-100">
+                    {item.source}
+                  </span>
+                  <span className="mx-2 text-white/70">•</span>
+                  <span className="text-white">{item.title}</span>
+                  <span className="mx-8 text-blue-300/60">•</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -217,5 +272,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортир��ем также под старым именем для совместимости
+// Экспортируем также под старым именем для совместимости
 export { RssTicker as RSSTicker };
