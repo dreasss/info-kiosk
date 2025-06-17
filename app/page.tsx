@@ -84,9 +84,9 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-slate-50 to-gray-100">
       {/* Шапка с более мягким градиентом */}
-      <header className="bg-gradient-to-r from-blue-500 via-blue-400 to-sky-400 shadow-lg relative overflow-hidden">
+      <header className="bg-gradient-to-r from-blue-500/90 via-blue-600/95 to-sky-500/90 shadow-lg relative overflow-hidden">
         {/* Декоративные элементы */}
         <div className="absolute inset-0 bg-[url('/placeholder.svg?height=100&width=100')] opacity-5"></div>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-300 via-sky-300 to-indigo-300"></div>
@@ -97,12 +97,12 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <div className="relative group">
                 <div className="absolute inset-0 bg-white/30 rounded-full blur-lg scale-110 group-hover:scale-125 transition-transform duration-300"></div>
-                <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex items-center justify-center overflow-hidden group-hover:shadow-3xl transition-all duration-300">
+                <div className="relative w-24 h-24 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex items-center justify-center overflow-hidden group-hover:shadow-3xl transition-all duration-300">
                   <Image
                     src="https://cdn.builder.io/api/v1/assets/0968c4d4542442209a8c7e4e9ccf912f/img_2057-2-894a7e?format=webp&width=800"
                     alt="JINR Logo"
-                    width={70}
-                    height={70}
+                    width={85}
+                    height={85}
                     className="object-contain rounded-full scale-90 group-hover:scale-95 transition-transform duration-300"
                   />
                 </div>
@@ -112,7 +112,7 @@ export default function HomePage() {
                   className="text-xl md:text-2xl font-bold text-white"
                   style={{
                     textShadow:
-                      "2px 2px 0px rgba(0,0,0,1), -2px -2px 0px rgba(0,0,0,1), 2px -2px 0px rgba(0,0,0,1), -2px 2px 0px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)",
+                      "1px 1px 0px rgba(0,0,0,0.8), -1px -1px 0px rgba(0,0,0,0.8), 1px -1px 0px rgba(0,0,0,0.8), -1px 1px 0px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.3)",
                   }}
                 >
                   {isClient && language === "en"
