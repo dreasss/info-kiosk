@@ -110,11 +110,13 @@ export function CountdownTimer({ timer }: CountdownTimerProps) {
           {timer.image && (
             <div className="relative group">
               <div className="absolute inset-0 bg-white/10 rounded-xl blur-lg scale-110 group-hover:scale-125 transition-transform duration-300"></div>
-              <img
-                src={timer.image}
-                alt={timer.title}
-                className="relative w-full h-48 object-cover rounded-xl shadow-2xl border-2 border-white/20 group-hover:shadow-3xl transition-all duration-300"
-              />
+              <div className="relative w-full aspect-square max-w-sm mx-auto">
+                <img
+                  src={timer.image}
+                  alt={timer.title}
+                  className="w-full h-full object-contain rounded-xl shadow-2xl border-2 border-white/20 group-hover:shadow-3xl transition-all duration-300 bg-white/5"
+                />
+              </div>
             </div>
           )}
 
