@@ -6,7 +6,7 @@ import type { SystemSettings } from "@/types/settings";
 
 // Имя базы данных
 const DB_NAME = "interactive_map_db";
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 // Имена хранилищ (таблиц)
 const STORES = {
@@ -177,7 +177,7 @@ export function resetDBState(): void {
   console.log("Состояние базы данных сброшено");
 }
 
-// Функция для проверки состояния баз�� данных
+// Функция для проверки состояния базы данных
 export function getDBStatus() {
   return {
     hasCache: !!dbCache,
@@ -219,7 +219,7 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
   );
 
   try {
-    // Добавля��м базовый POI
+    // Добавляем базовый POI
     const poisStore = transaction.objectStore(STORES.POIS);
     poisStore.add({
       id: "1",
@@ -649,7 +649,7 @@ export async function getAlbumById(id: string): Promise<Album | null> {
     const request = store.get(id);
 
     request.onsuccess = () => resolve(request.result || null);
-    request.onerror = () => reject(new Error("Не удалось получить альбом"));
+    request.onerror = () => reject(new Error("Не удалось получи��ь альбом"));
   });
 }
 
@@ -693,7 +693,7 @@ export async function deleteAlbum(id: string): Promise<boolean> {
     mediaRequest.onsuccess = () => {
       const mediaItems = mediaRequest.result || [];
 
-      // Удаляем все медиафайлы
+      // Удаляе�� все медиафайлы
       mediaItems.forEach((media) => {
         mediaStore.delete(media.id);
       });
@@ -817,33 +817,94 @@ export async function uploadFile(file: File): Promise<string> {
 
 // Функции для работы с таймером
 export async function getTimerSettings(): Promise<any> {
-  const db = await initDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORES.TIMER, "readonly");
-    const store = transaction.objectStore(STORES.TIMER);
-    const request = store.get("timer-settings");
+  try {
+    const db = await initDB();
 
-    request.onsuccess = () =>
-      resolve(request.result || { id: "timer-settings", enabled: false });
-    request.onerror = () =>
-      reject(new Error("Не удалось получить настройки таймера"));
-  });
+    // Проверяем, что хранилище существует
+    if (!db.objectStoreNames.contains(STORES.TIMER)) {
+      console.warn("Timer store does not exist, returning default settings");
+      return { id: "timer-settings", enabled: false };
+    }
+
+    return new Promise((resolve, reject) => {
+      try {
+        const transaction = db.transaction(STORES.TIMER, "readonly");
+        const store = transaction.objectStore(STORES.TIMER);
+        const request = store.get("timer-settings");
+
+        request.onsuccess = () => {
+          const result = request.result || {
+            id: "timer-settings",
+            enabled: false,
+          };
+          resolve(result);
+        };
+
+        request.onerror = () => {
+          console.error("Timer settings request error:", request.error);
+          reject(new Error("Не удалось получить настройки таймера"));
+        };
+
+        transaction.onerror = () => {
+          console.error("Timer settings transaction error:", transaction.error);
+          reject(new Error("Ошибка транзакции при получении настроек таймера"));
+        };
+      } catch (transactionError) {
+        console.error("Error creating timer transaction:", transactionError);
+        resolve({ id: "timer-settings", enabled: false });
+      }
+    });
+  } catch (error) {
+    console.error("Error in getTimerSettings:", error);
+    return { id: "timer-settings", enabled: false };
+  }
 }
 
 export async function saveTimerSettings(settings: any): Promise<any> {
-  const db = await initDB();
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction(STORES.TIMER, "readwrite");
-    const store = transaction.objectStore(STORES.TIMER);
+  try {
+    const db = await initDB();
 
-    if (!settings.id) {
-      settings.id = "timer-settings";
+    // Проверяем, что хранилище существует
+    if (!db.objectStoreNames.contains(STORES.TIMER)) {
+      throw new Error("Timer store does not exist");
     }
 
-    const request = store.put(settings);
+    return new Promise((resolve, reject) => {
+      try {
+        const transaction = db.transaction(STORES.TIMER, "readwrite");
+        const store = transaction.objectStore(STORES.TIMER);
 
-    request.onsuccess = () => resolve(settings);
-    request.onerror = () =>
-      reject(new Error("Не удалось сохранить настройки таймера"));
-  });
+        if (!settings.id) {
+          settings.id = "timer-settings";
+        }
+
+        const request = store.put(settings);
+
+        request.onsuccess = () => resolve(settings);
+        request.onerror = () => {
+          console.error("Timer settings save error:", request.error);
+          reject(new Error("Не удалось сохранить настройки таймера"));
+        };
+
+        transaction.onerror = () => {
+          console.error(
+            "Timer settings save transaction error:",
+            transaction.error,
+          );
+          reject(
+            new Error("Ошибка транзакции при сохранении настроек таймера"),
+          );
+        };
+      } catch (transactionError) {
+        console.error(
+          "Error creating timer save transaction:",
+          transactionError,
+        );
+        reject(transactionError);
+      }
+    });
+  } catch (error) {
+    console.error("Error in saveTimerSettings:", error);
+    throw error;
+  }
 }
