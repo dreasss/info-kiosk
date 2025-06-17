@@ -223,15 +223,134 @@ export default function YandexMap() {
               iconCaption: "Вы находитесь здесь",
               balloonContentHeader: "📍 Вы находитесь здесь",
               balloonContentBody: `
-                <div style="text-align: center; padding: 20px; font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; margin: -8px;">
-                  <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #dc2626, #b91c1c); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);">
-                    <span style="color: white; font-size: 32px;">📍</span>
+                <div style="
+                  text-align: center;
+                  padding: 24px;
+                  font-family: 'Inter', sans-serif;
+                  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0f9ff 100%);
+                  border-radius: 20px;
+                  margin: -8px;
+                  position: relative;
+                  overflow: hidden;
+                  box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+                ">
+                  <!-- Декоративная верхняя полоска -->
+                  <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #dc2626, #ef4444, #dc2626);
+                  "></div>
+
+                  <!-- Современный значок -->
+                  <div style="
+                    width: 100px;
+                    height: 100px;
+                    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+                    border-radius: 50%;
+                    margin: 0 auto 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 15px 30px rgba(220, 38, 38, 0.4), inset 0 0 0 3px rgba(255,255,255,0.3);
+                    position: relative;
+                    overflow: hidden;
+                  ">
+                    <!-- Анимированный блик -->
+                    <div style="
+                      position: absolute;
+                      top: -50%;
+                      left: -50%;
+                      width: 200%;
+                      height: 200%;
+                      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+                      animation: shine 3s infinite;
+                    "></div>
+                    <span style="color: white; font-size: 40px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); position: relative; z-index: 2;">📍</span>
                   </div>
-                  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: 700; color: #dc2626;">Вы находитесь здесь</h3>
-                  <p style="margin: 0 0 4px 0; font-size: 14px; color: #7f1d1d; font-weight: 600;">Информационный киоск ОИЯИ</p>
-                  <p style="margin: 0; font-size: 12px; color: #991b1b;">ул. Жолио-Кюри, 6, Дубна</p>
-                  <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px;">
-                    <p style="margin: 0; font-size: 11px; color: #7f1d1d;">Выберите объект на карте для построения маршрута</p>
+
+                  <!-- Заголовок с градиентом -->
+                  <h3 style="
+                    margin: 0 0 12px 0;
+                    font-size: 22px;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #dc2626, #ef4444);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+                  ">Вы находитесь здесь</h3>
+
+                  <!-- Подзаголовок -->
+                  <p style="
+                    margin: 0 0 8px 0;
+                    font-size: 16px;
+                    color: #7f1d1d;
+                    font-weight: 700;
+                    background: rgba(255,255,255,0.6);
+                    padding: 8px 16px;
+                    border-radius: 12px;
+                    display: inline-block;
+                  ">Информационный киоск ОИЯИ</p>
+
+                  <!-- Адрес -->
+                  <p style="
+                    margin: 0 0 16px 0;
+                    font-size: 13px;
+                    color: #991b1b;
+                    font-weight: 600;
+                  ">ул. Жолио-Кюри, 6, Дубна</p>
+
+                  <!-- Информационный блок -->
+                  <div style="
+                    margin-top: 16px;
+                    padding: 16px;
+                    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
+                    border-radius: 16px;
+                    border: 2px solid rgba(220, 38, 38, 0.1);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                  ">
+                    <div style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      margin-bottom: 8px;
+                    ">
+                      <span style="
+                        background: #dc262620;
+                        padding: 6px;
+                        border-radius: 8px;
+                        margin-right: 8px;
+                        font-size: 16px;
+                      ">🗺️</span>
+                      <span style="
+                        font-size: 12px;
+                        color: #7f1d1d;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                      ">Навигация</span>
+                    </div>
+                    <p style="
+                      margin: 0;
+                      font-size: 12px;
+                      color: #7f1d1d;
+                      line-height: 1.4;
+                      font-weight: 600;
+                    ">Выберите объект на карте для построения маршрута</p>
+                  </div>
+
+                  <!-- Декоративные точки -->
+                  <div style="
+                    margin-top: 16px;
+                    display: flex;
+                    justify-content: center;
+                    gap: 4px;
+                  ">
+                    <div style="width: 6px; height: 6px; background: #dc2626; border-radius: 50%; opacity: 0.6;"></div>
+                    <div style="width: 6px; height: 6px; background: #dc2626; border-radius: 50%; opacity: 0.8;"></div>
+                    <div style="width: 6px; height: 6px; background: #dc2626; border-radius: 50%;"></div>
                   </div>
                 </div>
               `,
@@ -290,7 +409,7 @@ export default function YandexMap() {
         </Map>
       </YMaps>
 
-      {/* Кнопка домой и переключател�� языка */}
+      {/* Кнопка домой и переключатель языка */}
       <div className="absolute top-6 left-6 z-10 flex flex-col gap-4">
         <TouchButton
           asChild
