@@ -37,12 +37,7 @@ export function CategoryFilter({
   };
 
   return (
-    <div
-      className={cn(
-        "bg-white/95 backdrop-blur-sm rounded-xl shadow-lg p-3 border border-white/20",
-        className,
-      )}
-    >
+    <div className={cn("bg-transparent", className)}>
       <div className="flex items-center mb-3 px-1">
         <div className="p-1.5 bg-blue-100 rounded-lg mr-2">
           <Filter className="h-4 w-4 text-blue-600" />
