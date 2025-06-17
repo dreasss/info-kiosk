@@ -1,68 +1,83 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react"
-import type { NewsItem } from "@/types/news"
-import { useLanguage } from "@/lib/language-context"
-import Image from "next/image"
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight, Clock, ExternalLink } from "lucide-react";
+import type { NewsItem } from "@/types/news";
+import { useLanguage } from "@/lib/language-context";
+import Image from "next/image";
 
 interface NewsCarouselProps {
-  news: NewsItem[]
+  news: NewsItem[];
 }
 
 export function NewsCarousel({ news }: NewsCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const { language } = useLanguage()
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+  const { language } = useLanguage();
 
-  // Автоматическое переключение слайдов
+  // Ensure we only render language-dependent content after hydration
   useEffect(() => {
-    if (news.length <= 1) return
+    setIsClient(true);
+  }, []);
+
+  // Автоматическое перекл��чение слайдов
+  useEffect(() => {
+    if (news.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % news.length)
-    }, 5000) // Переключение каждые 5 секунд
+      setCurrentIndex((prev) => (prev + 1) % news.length);
+    }, 5000); // Переключение каждые 5 секунд
 
-    return () => clearInterval(interval)
-  }, [news.length])
+    return () => clearInterval(interval);
+  }, [news.length]);
 
   const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + news.length) % news.length)
-  }
+    setCurrentIndex((prev) => (prev - 1 + news.length) % news.length);
+  };
 
   const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % news.length)
-  }
+    setCurrentIndex((prev) => (prev + 1) % news.length);
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString(language === "ru" ? "ru-RU" : "en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    })
-  }
+    const date = new Date(dateString);
+    return date.toLocaleDateString(
+      isClient && language === "en" ? "en-US" : "ru-RU",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      },
+    );
+  };
 
   if (news.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">{language === "ru" ? "Нет новостей для отображения" : "No news to display"}</p>
+        <p className="text-gray-500">
+          {isClient && language === "en"
+            ? "No news to display"
+            : "Нет новостей для отображения"}
+        </p>
       </div>
-    )
+    );
   }
 
-  const currentNews = news[currentIndex]
+  const currentNews = news[currentIndex];
 
   return (
     <div className="relative">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="grid md:grid-cols-3 gap-0">
+      <Card className="overflow-hidden h-80">
+        <CardContent className="p-0 h-full">
+          <div className="grid md:grid-cols-3 gap-0 h-full">
             {/* Изображение */}
             <div className="relative h-48 md:h-auto">
               <Image
-                src={currentNews.image || "/placeholder.svg?height=200&width=300"}
+                src={
+                  currentNews.image || "/placeholder.svg?height=200&width=300"
+                }
                 alt={currentNews.title}
                 fill
                 className="object-cover"
@@ -78,8 +93,12 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
 
             {/* Контент */}
             <div className="md:col-span-2 p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">{currentNews.title}</h3>
-              <p className="text-gray-600 mb-4 line-clamp-3">{currentNews.content}</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                {currentNews.title}
+              </h3>
+              <p className="text-gray-600 mb-4 line-clamp-3">
+                {currentNews.content}
+              </p>
 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -90,7 +109,9 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
                         <button
                           key={index}
                           className={`w-2 h-2 rounded-full transition-colors ${
-                            index === currentIndex ? "bg-blue-600" : "bg-gray-300"
+                            index === currentIndex
+                              ? "bg-blue-600"
+                              : "bg-gray-300"
                           }`}
                           onClick={() => setCurrentIndex(index)}
                         />
@@ -102,9 +123,13 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
                 <div className="flex items-center gap-2">
                   {currentNews.url && (
                     <Button variant="outline" size="sm" asChild>
-                      <a href={currentNews.url} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={currentNews.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <ExternalLink className="h-4 w-4 mr-1" />
-                        {language === "ru" ? "Читать" : "Read"}
+                        {isClient && language === "en" ? "Read" : "Читать"}
                       </a>
                     </Button>
                   )}
@@ -112,7 +137,11 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
                   {/* Кнопки навигации */}
                   {news.length > 1 && (
                     <div className="flex gap-1">
-                      <Button variant="outline" size="sm" onClick={goToPrevious}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={goToPrevious}
+                      >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <Button variant="outline" size="sm" onClick={goToNext}>
@@ -134,5 +163,5 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
         </div>
       )}
     </div>
-  )
+  );
 }

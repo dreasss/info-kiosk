@@ -1,77 +1,101 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Clock, Calendar, MapPin } from "lucide-react"
-import Image from "next/image"
+import { useEffect, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Clock, Calendar, MapPin } from "lucide-react";
+import Image from "next/image";
+import { fetchSettings } from "@/lib/api";
+import type { SystemSettings } from "@/types/settings";
 
 interface IdleScreenProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export function IdleScreen({ children }: IdleScreenProps) {
-  const [isIdle, setIsIdle] = useState(false)
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const router = useRouter()
-  const pathname = usePathname()
+  const [isIdle, setIsIdle] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [settings, setSettings] = useState<SystemSettings | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Загружаем настройки при монтировании
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const systemSettings = await fetchSettings();
+        setSettings(systemSettings);
+      } catch (error) {
+        console.error("Error loading settings for idle screen:", error);
+      }
+    };
+
+    loadSettings();
+  }, []);
 
   // Обновляем время каждую секунду
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
+      setCurrentTime(new Date());
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [])
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: NodeJS.Timeout;
 
     const resetTimer = () => {
-      clearTimeout(timeoutId)
-      setIsIdle(false)
+      clearTimeout(timeoutId);
+      setIsIdle(false);
 
       // Не запускаем таймер на странице администратора
       if (pathname.startsWith("/admin")) {
-        return
+        return;
       }
 
       timeoutId = setTimeout(
         () => {
-          setIsIdle(true)
+          setIsIdle(true);
         },
-        5 * 60 * 1000,
-      ) // 5 минут
-    }
+        settings?.idleTimeout || 5 * 60 * 1000,
+      ); // Используем настройки из базы данных или 5 минут по умолчанию
+    };
 
     const handleActivity = () => {
-      resetTimer()
-    }
+      resetTimer();
+    };
 
     // События для отслеживания активности
-    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart", "click"]
+    const events = [
+      "mousedown",
+      "mousemove",
+      "keypress",
+      "scroll",
+      "touchstart",
+      "click",
+    ];
 
     events.forEach((event) => {
-      document.addEventListener(event, handleActivity, true)
-    })
+      document.addEventListener(event, handleActivity, true);
+    });
 
-    resetTimer()
+    resetTimer();
 
     return () => {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
       events.forEach((event) => {
-        document.removeEventListener(event, handleActivity, true)
-      })
-    }
-  }, [pathname])
+        document.removeEventListener(event, handleActivity, true);
+      });
+    };
+  }, [pathname, settings]);
 
   const handleReturnHome = () => {
-    setIsIdle(false)
-    router.push("/")
-  }
+    setIsIdle(false);
+    router.push("/");
+  };
 
   if (isIdle) {
     return (
@@ -88,8 +112,8 @@ export function IdleScreen({ children }: IdleScreenProps) {
           {/* Логотип */}
           <div className="mb-8">
             <Image
-              src="/images/jinr-logo.png"
-              alt="JINR Logo"
+              src={settings?.organizationInfo.logo || "/images/jinr-logo.png"}
+              alt={`${settings?.organizationInfo.name || "JINR"} Logo`}
               width={200}
               height={200}
               className="mx-auto drop-shadow-2xl animate-pulse"
@@ -97,8 +121,15 @@ export function IdleScreen({ children }: IdleScreenProps) {
           </div>
 
           {/* Название */}
-          <h1 className="text-5xl font-bold mb-4 text-white drop-shadow-lg">Объединенный Институт</h1>
-          <h2 className="text-4xl font-bold mb-8 text-blue-200 drop-shadow-lg">Ядерных Исследований</h2>
+          <h1 className="text-5xl font-bold mb-4 text-white drop-shadow-lg">
+            {settings?.organizationInfo.name || "Объединенный Институт"}
+          </h1>
+          <h2 className="text-4xl font-bold mb-8 text-blue-200 drop-shadow-lg">
+            {settings?.organizationInfo.fullName.replace(
+              settings?.organizationInfo.name,
+              "",
+            ) || "Ядерных Исследований"}
+          </h2>
 
           {/* Время и дата */}
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 mb-8 border border-white/20">
@@ -129,16 +160,23 @@ export function IdleScreen({ children }: IdleScreenProps) {
 
           {/* Информация */}
           <div className="mb-8">
-            <p className="text-xl mb-4 opacity-90">Добро пожаловать в информационную систему</p>
+            <p className="text-xl mb-4 opacity-90">
+              Добро пожаловать в информационную систему
+            </p>
             <div className="flex items-center justify-center gap-2 text-blue-200">
               <MapPin className="h-5 w-5" />
-              <span>г. Дубна, Московская область</span>
+              <span>
+                {settings?.organizationInfo.address ||
+                  "г. Дубна, Московская область"}
+              </span>
             </div>
           </div>
 
           {/* Кнопка */}
           <div className="space-y-4">
-            <p className="text-lg opacity-80">Коснитесь экрана для продолжения</p>
+            <p className="text-lg opacity-80">
+              Коснитесь экрана для продолжения
+            </p>
             <Button
               onClick={handleReturnHome}
               size="lg"
@@ -152,8 +190,8 @@ export function IdleScreen({ children }: IdleScreenProps) {
         {/* Декоративные элементы */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
       </div>
-    )
+    );
   }
 
-  return <>{children}</>
+  return <>{children}</>;
 }

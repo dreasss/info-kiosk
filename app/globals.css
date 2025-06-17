@@ -103,8 +103,21 @@ body {
   }
 }
 
+@keyframes scroll-slow {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 .animate-scroll {
   animation: scroll 60s linear infinite;
+}
+
+.animate-scroll-slow {
+  animation: scroll-slow 120s linear infinite;
 }
 
 .ticker-container {
@@ -115,4 +128,96 @@ body {
 .ticker-content {
   display: inline-block;
   white-space: nowrap;
+}
+
+/* Красивые объемные кнопки */
+.glass-button {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.glass-button:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
+}
+
+/* Плавные переходы для всех элементов */
+* {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+/* Анимация появления */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Анимация для карточек */
+@keyframes cardHover {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    transform: translateY(-3px) scale(1.01);
+  }
+}
+
+.card-hover:hover {
+  animation: cardHover 0.3s ease-out forwards;
+}
+
+/* Гlow эффект */
+.glow-on-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-on-hover::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.glow-on-hover:hover::before {
+  left: 100%;
 }
