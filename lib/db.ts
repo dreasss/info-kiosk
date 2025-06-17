@@ -38,6 +38,9 @@ export interface RssFeed {
 // Переменная для кеширования инициализированной базы данных
 let dbCache: IDBDatabase | null = null;
 
+// Кеш для промиса инициализации (предотвращает конкурентные запросы)
+let dbInitPromise: Promise<IDBDatabase> | null = null;
+
 // Флаг для отслеживания неудачных попыток инициализации
 let dbInitFailed = false;
 
@@ -46,6 +49,11 @@ export async function initDB(): Promise<IDBDatabase> {
   // Возвращаем кешированную БД если она уже инициализирована
   if (dbCache) {
     return dbCache;
+  }
+
+  // Если инициализация уже в процессе, возвращаем существующий промис
+  if (dbInitPromise) {
+    return dbInitPromise;
   }
 
   // Если предыдущие попытки не удались, возвращаем ошибку сразу
@@ -59,6 +67,23 @@ export async function initDB(): Promise<IDBDatabase> {
     throw new Error("IndexedDB не поддерживается в этом браузере");
   }
 
+  // Создаем промис инициализации и кешируем его
+  dbInitPromise = createDBInitPromise();
+
+  try {
+    const db = await dbInitPromise;
+    dbCache = db; // Кешируем успешно инициализированную БД
+    dbInitPromise = null; // Очищаем промис после успешной инициализации
+    return db;
+  } catch (error) {
+    dbInitPromise = null; // Очищаем промис в случае ошибки
+    dbInitFailed = true;
+    throw error;
+  }
+}
+
+// Отдельная функция для создания промиса инициализации
+function createDBInitPromise(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     let timeoutId: NodeJS.Timeout | null = null;
 
@@ -112,7 +137,7 @@ export async function initDB(): Promise<IDBDatabase> {
 
           resolve(db);
         } catch (error) {
-          console.error("Ошибка при обработке успешного открытия БД:", error);
+          console.error("Ошибка при обработке успешного откр��тия БД:", error);
           dbInitFailed = true;
           reject(error);
         }
@@ -163,7 +188,7 @@ export async function initDB(): Promise<IDBDatabase> {
             rssStore.createIndex("active", "active", { unique: false });
           }
 
-          // Инициализир��ем базу данными по умолчанию используя текущую транзакцию
+          // Инициализируем базу данными по умолчанию используя текущую транзакцию
           initializeDefaultData(transaction);
         } catch (error) {
           if (timeoutId) clearTimeout(timeoutId);
@@ -217,7 +242,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       name: "Дом ученых ОИЯИ",
       shortDescription: "Культурный центр для научного сообщества Дубны.",
       fullDescription:
-        "Дом ��ченых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
+        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
       coordinates: [56.743, 37.192],
       images: ["/placeholder.svg?height=200&width=300"],
       address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
@@ -229,13 +254,13 @@ function initializeDefaultData(transaction: IDBTransaction) {
       shortDescription:
         "Исследовательская лаборатория, специализирующаяся на синтезе новых элементов.",
       fullDescription:
-        "Лаборатория ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
+        "Лаборатор��я ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
       coordinates: [56.744, 37.187],
       images: [
         "/placeholder.svg?height=200&width=300",
         "/placeholder.svg?height=200&width=300",
       ],
-      address: "ул. Жолио-Кюри, 4, Дубна, Московская о��ласть",
+      address: "ул. Жолио-Кюри, 4, Дубна, Московская область",
       category: "building",
     },
   ];
@@ -262,7 +287,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
     },
   ];
 
-  // Де��о-данные для RSS-лент
+  // Демо-данные для RSS-лент
   const demoRssFeeds: RssFeed[] = [
     {
       id: "1",
@@ -513,7 +538,7 @@ export async function getAllMedia(): Promise<MediaItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения медиафайлов:", event);
-      reject(new Error("Не у��алось получить медиафайлы"));
+      reject(new Error("Не удалось получить медиафайлы"));
     };
   });
 }
@@ -555,7 +580,7 @@ export async function saveMedia(media: MediaItem): Promise<MediaItem> {
     };
 
     request.onerror = (event) => {
-      console.error("Ошибка сохра��ения медиафайла:", event);
+      console.error("Ошибка сохранения медиафайла:", event);
       reject(new Error("Не удалось сохранить медиафайл"));
     };
   });
@@ -774,7 +799,7 @@ export async function saveRssFeed(feed: RssFeed): Promise<RssFeed> {
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения RSS-ленты:", event);
-      reject(new Error("Не удалось сохранить RSS-ленту"));
+      reject(new Error("Н�� удалось сохранить RSS-ленту"));
     };
   });
 }
