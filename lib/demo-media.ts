@@ -1,5 +1,6 @@
-import { createMediaItem, createAlbum } from "@/lib/api";
+import { createMediaItem, createAlbum, createRssFeed } from "@/lib/api";
 import type { MediaItem, Album } from "@/types/media";
+import type { RssFeed } from "@/lib/db";
 
 // Функция для создания демо альбомов и медиафайлов
 export async function createDemoRssFeeds(): Promise<void> {
@@ -128,7 +129,7 @@ export async function createDemoMediaData(): Promise<void> {
         tags: ["экскурсия", "институт", "обзор"],
       },
       {
-        title: "Ускоритель частиц",
+        title: "Ускорител�� частиц",
         description: "Детальный обзор ускорительного комплекса",
         type: "image",
         category: "photo",
@@ -154,7 +155,7 @@ export async function createDemoMediaData(): Promise<void> {
       },
       {
         title: "Исторический архив",
-        description: "Редкие фотографии из истории института",
+        description: "Редкие фотографии и�� истории института",
         type: "image",
         category: "photo",
         url: "/placeholder.svg?height=600&width=800&text=Исторический+архив",
