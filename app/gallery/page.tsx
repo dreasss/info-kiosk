@@ -1,79 +1,64 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { fetchMedia, fetchAlbums, fetchMediaByAlbum } from "@/lib/api";
-import type { MediaItem, Album } from "@/types/media";
-import {
-  Search,
-  ImageIcon,
-  Video,
-  ArrowLeft,
-  Play,
-  Download,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { AlbumGrid } from "@/components/ui/album-grid";
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { fetchMedia, fetchAlbums, fetchMediaByAlbum } from "@/lib/api"
+import type { MediaItem, Album } from "@/types/media"
+import { Search, ImageIcon, Video, ArrowLeft, Play, Download } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { AlbumGrid } from "@/components/ui/album-grid"
 
 export default function GalleryPage() {
-  const [media, setMedia] = useState<MediaItem[]>([]);
-  const [albums, setAlbums] = useState<Album[]>([]);
-  const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeFilter, setActiveFilter] = useState<"all" | "photo" | "video">(
-    "all",
-  );
-  const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
-  const [viewMode, setViewMode] = useState<"albums" | "media">("albums");
-  const [loading, setLoading] = useState(true);
+  const [media, setMedia] = useState<MediaItem[]>([])
+  const [albums, setAlbums] = useState<Album[]>([])
+  const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [activeFilter, setActiveFilter] = useState<"all" | "photo" | "video">("all")
+  const [selectedAlbum, setSelectedAlbum] = useState<string>("all")
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
+  const [viewMode, setViewMode] = useState<"albums" | "media">("albums")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const loadMedia = async () => {
       try {
         const [mediaData, albumsData] = await Promise.all([
           fetchMedia(),
-          fetchAlbums(),
-        ]);
-        setMedia(mediaData);
-        setAlbums(albumsData);
-        setFilteredMedia(mediaData);
+          fetchAlbums()
+        ])
+        setMedia(mediaData)
+        setAlbums(albumsData)
+        setFilteredMedia(mediaData)
       } catch (error) {
-        console.error("Error loading media:", error);
+        console.error("Error loading media:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadMedia();
-  }, []);
+    loadMedia()
+  }, [])
 
   useEffect(() => {
-    let filtered = media;
+    let filtered = media
 
     // Фильтр по альбому
     if (selectedAlbum !== "all") {
       if (selectedAlbum === "none") {
-        filtered = filtered.filter((item) => !item.albumId);
+        filtered = filtered.filter((item) => !item.albumId)
       } else {
-        filtered = filtered.filter((item) => item.albumId === selectedAlbum);
+        filtered = filtered.filter((item) => item.albumId === selectedAlbum)
       }
     }
 
     // Фильтр по типу
     if (activeFilter !== "all") {
-      filtered = filtered.filter((item) => item.category === activeFilter);
+      filtered = filtered.filter((item) => item.category === activeFilter)
     }
 
     // Поиск
@@ -82,27 +67,27 @@ export default function GalleryPage() {
         (item) =>
           item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.description?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
+      )
     }
 
-    setFilteredMedia(filtered);
-  }, [media, activeFilter, searchTerm, selectedAlbum]);
+    setFilteredMedia(filtered)
+  }, [media, activeFilter, searchTerm, selectedAlbum])
 
   const handleDownload = (item: MediaItem) => {
-    const link = document.createElement("a");
-    link.href = item.url;
-    link.download = `${item.title}.${item.type === "image" ? "jpg" : "mp4"}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+    const link = document.createElement("a")
+    link.href = item.url
+    link.download = `${item.title}.${item.type === "image" ? "jpg" : "mp4"}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -119,12 +104,8 @@ export default function GalleryPage() {
                 </Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Фото и Видео галерея
-                </h1>
-                <p className="text-sm text-gray-600">
-                  Изображения и видеоматериалы ОИЯИ
-                </p>
+                <h1 className="text-2xl font-bold text-gray-900">Фото и Видео галерея</h1>
+                <p className="text-sm text-gray-600">Изображения и видеоматериалы ОИЯИ</p>
               </div>
             </div>
 
@@ -149,72 +130,90 @@ export default function GalleryPage() {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        {/* Filters and Search */}
-        <div className="space-y-4 mb-8">
-          {/* Albums Filter */}
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Альбом</label>
-              <Select value={selectedAlbum} onValueChange={setSelectedAlbum}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите альбом" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Все альбомы</SelectItem>
-                  <SelectItem value="none">Без альбома</SelectItem>
-                  {albums.map((album) => (
-                    <SelectItem key={album.id} value={album.id}>
-                      {album.name} ({album.itemCount})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        {viewMode === "albums" ? (
+          /* Albums View */
+          <div>
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">Альбомы ({albums.length})</h2>
+              <AlbumGrid
+                albums={albums}
+                mediaItems={media}
+                onAlbumSelect={(albumId) => {
+                  setSelectedAlbum(albumId)
+                  setViewMode("media")
+                }}
+              />
             </div>
+          </div>
+        ) : (
+          /* Media Files View */
+          <div>
+            {/* Filters and Search */}
+            <div className="space-y-4 mb-8">
+              {/* Albums Filter */}
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="text-sm font-medium mb-2 block">Альбом</label>
+                  <Select value={selectedAlbum} onValueChange={setSelectedAlbum}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите альбом" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все альбомы</SelectItem>
+                      <SelectItem value="none">Без альбома</SelectItem>
+                      {albums.map((album) => (
+                        <SelectItem key={album.id} value={album.id}>
+                          {album.name} ({album.itemCount})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Поиск</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Поиск по названию или описанию..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+                <div className="flex-1">
+                  <label className="text-sm font-medium mb-2 block">Поиск</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Поиск по названию или описанию..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Type Filter */}
+              <div className="flex gap-2">
+                <Button
+                  variant={activeFilter === "all" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("all")}
+                  className="flex items-center gap-2"
+                >
+                  Все ({filteredMedia.length})
+                </Button>
+                <Button
+                  variant={activeFilter === "photo" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("photo")}
+                  className="flex items-center gap-2"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  Фото ({media.filter((item) => item.category === "photo").length})
+                </Button>
+                <Button
+                  variant={activeFilter === "video" ? "default" : "outline"}
+                  onClick={() => setActiveFilter("video")}
+                  className="flex items-center gap-2"
+                >
+                  <Video className="h-4 w-4" />
+                  Видео ({media.filter((item) => item.category === "video").length})
+                </Button>
               </div>
             </div>
-          </div>
 
-          {/* Type Filter */}
-          <div className="flex gap-2">
-            <Button
-              variant={activeFilter === "all" ? "default" : "outline"}
-              onClick={() => setActiveFilter("all")}
-              className="flex items-center gap-2"
-            >
-              Все ({filteredMedia.length})
-            </Button>
-            <Button
-              variant={activeFilter === "photo" ? "default" : "outline"}
-              onClick={() => setActiveFilter("photo")}
-              className="flex items-center gap-2"
-            >
-              <ImageIcon className="h-4 w-4" />
-              Фото ({media.filter((item) => item.category === "photo").length})
-            </Button>
-            <Button
-              variant={activeFilter === "video" ? "default" : "outline"}
-              onClick={() => setActiveFilter("video")}
-              className="flex items-center gap-2"
-            >
-              <Video className="h-4 w-4" />
-              Видео ({media.filter((item) => item.category === "video").length})
-            </Button>
-          </div>
-        </div>
-
-        {/* Gallery Grid */}
-        {filteredMedia.length > 0 ? (
+            {/* Gallery Grid */}
+            {filteredMedia.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredMedia.map((item) => (
               <Card
@@ -241,9 +240,7 @@ export default function GalleryPage() {
                       <div
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
-                          item.type === "image"
-                            ? "bg-green-500 text-white"
-                            : "bg-red-500 text-white",
+                          item.type === "image" ? "bg-green-500 text-white" : "bg-red-500 text-white",
                         )}
                       >
                         {item.type === "image" ? "Фото" : "Видео"}
@@ -251,24 +248,16 @@ export default function GalleryPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
-                      {item.title}
-                    </h3>
-                    {item.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                        {item.description}
-                      </p>
-                    )}
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{item.title}</h3>
+                    {item.description && <p className="text-sm text-gray-600 line-clamp-2 mb-2">{item.description}</p>}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">
-                        {new Date(item.date).toLocaleDateString("ru-RU")}
-                      </span>
+                      <span className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString("ru-RU")}</span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownload(item);
+                          e.stopPropagation()
+                          handleDownload(item)
                         }}
                       >
                         <Download className="h-4 w-4" />
@@ -284,12 +273,8 @@ export default function GalleryPage() {
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
               <ImageIcon className="h-12 w-12 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Медиафайлы не найдены
-            </h3>
-            <p className="text-gray-600">
-              Попробуйте изменить параметры поиска или фильтры
-            </p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">Медиафайлы не найдены</h3>
+            <p className="text-gray-600">Попробуйте изменить параметры поиска или фильтры</p>
           </div>
         )}
       </main>
@@ -307,11 +292,7 @@ export default function GalleryPage() {
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">{selectedItem.title}</h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedItem(null)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
                   ✕
                 </Button>
               </div>
@@ -330,16 +311,12 @@ export default function GalleryPage() {
               ) : (
                 <video controls className="max-w-full max-h-[60vh]">
                   <source src={selectedItem.url} type="video/mp4" />
-                  Ваш браузер не ��оддерживает воспроизведение видео.
+                  Ваш браузер не ��оддерживает воспроизв��дение видео.
                 </video>
               )}
-              {selectedItem.description && (
-                <p className="text-gray-600 mt-4">{selectedItem.description}</p>
-              )}
+              {selectedItem.description && <p className="text-gray-600 mt-4">{selectedItem.description}</p>}
               <div className="flex items-center justify-between mt-4">
-                <span className="text-sm text-gray-500">
-                  {new Date(selectedItem.date).toLocaleDateString("ru-RU")}
-                </span>
+                <span className="text-sm text-gray-500">{new Date(selectedItem.date).toLocaleDateString("ru-RU")}</span>
                 <Button onClick={() => handleDownload(selectedItem)}>
                   <Download className="h-4 w-4 mr-2" />
                   Скачать
@@ -350,5 +327,5 @@ export default function GalleryPage() {
         </div>
       )}
     </div>
-  );
+  )
 }
