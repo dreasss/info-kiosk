@@ -68,8 +68,9 @@ export function RssTicker({ className }: RssTickerProps) {
         const feedsToLoad = [elementyRssFeed, ...activeFeeds];
         console.log(
           "RSS Ticker: Loading feeds:",
-          feedsToLoad.map((f) => f.name),
+          feedsToLoad.map((f) => `${f.name} (${f.url})`),
         );
+        console.log("RSS Ticker: Active feeds from DB:", activeFeeds.length);
 
         // Загружаем RSS данные
         const allNewsItems: RssItem[] = [];
@@ -318,5 +319,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым ��менем для совместимости
+// Экспортируем также под старым именем для совместимости
 export { RssTicker as RSSTicker };
