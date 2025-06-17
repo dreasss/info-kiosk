@@ -222,31 +222,16 @@ export function RssTicker({ className }: RssTickerProps) {
           );
           setNews(allNewsItems.slice(0, 10));
         } else {
-          // Если RSS не загрузился, показываем сообщение об ошибке
-          console.log("RSS Ticker: No RSS items loaded");
-          setNews([
-            {
-              title:
-                "Новости временно недоступны. Загрузка будет повторена автоматически.",
-              link: "#",
-              pubDate: new Date().toISOString(),
-              source: "Система",
-            },
-          ]);
+          // Если RSS не загрузился, показываем fallback новости
+          console.log("RSS Ticker: No RSS items loaded, using fallback news");
+          setNews(getFallbackNews());
         }
       } catch (error) {
         console.error("RSS Ticker: Error fetching RSS feeds:", error);
 
-        // В случае ошибки показываем сообщение об ошибке
-        setNews([
-          {
-            title:
-              "Новости временно недоступны. Повторная попытка через 15 минут.",
-            link: "#",
-            pubDate: new Date().toISOString(),
-            source: "Система",
-          },
-        ]);
+        // В случае ошибки показываем fallback новости
+        console.log("RSS Ticker: Using fallback news due to error");
+        setNews(getFallbackNews());
       } finally {
         setLoading(false);
       }
