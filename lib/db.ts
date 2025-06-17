@@ -13,6 +13,7 @@ const STORES = {
   POIS: "pois",
   NEWS: "news",
   MEDIA: "media",
+  ALBUMS: "albums",
   SETTINGS: "settings",
   ICONS: "icons",
   RSS_FEEDS: "rss_feeds",
@@ -205,7 +206,7 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
     poisStore.add({
       id: "1",
       name: "ОИЯИ",
-      shortDescription: "Гла��ное здание института",
+      shortDescription: "Главное здание института",
       fullDescription: "Объединенный институт ядерных исследований",
       coordinates: [56.7458, 37.189],
       images: [],
