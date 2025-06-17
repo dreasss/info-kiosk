@@ -262,6 +262,16 @@ export function resetDBState(): void {
   console.log("Состояние базы данных сброшено");
 }
 
+// Функция для проверки состояния базы данных
+export function getDBStatus() {
+  return {
+    hasCache: !!dbCache,
+    hasInitPromise: !!dbInitPromise,
+    initFailed: dbInitFailed,
+    supported: typeof window !== "undefined" && !!window.indexedDB,
+  };
+}
+
 // Инициализация базы данных демо-данными
 function initializeDefaultData(transaction: IDBTransaction) {
   // Демо-данные для POI
