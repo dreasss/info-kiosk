@@ -46,7 +46,7 @@ let dbInitFailed = false;
 
 // Инициализация базы данных
 export async function initDB(): Promise<IDBDatabase> {
-  // Возвращаем кешированную БД если она уже инициализирована
+  // Возвращаем кешированную БД если о��а уже инициализирована
   if (dbCache) {
     return dbCache;
   }
@@ -116,13 +116,10 @@ function createDBInitPromise(): Promise<IDBDatabase> {
       // Устанавливаем таймаут для предотвращения зависания
       timeoutId = setTimeout(() => {
         console.error("Таймаут инициализации IndexedDB");
-        dbInitFailed = true;
-        reject(new Error("Таймаут инициализации базы данных"));
+        safeReject(new Error("Таймаут инициализации базы данных"));
       }, 10000); // 10 секунд
 
       request.onerror = (event) => {
-        if (timeoutId) clearTimeout(timeoutId);
-
         console.error("Ошибка открытия базы данных:", event);
         const error = request.error;
         console.error("Детали ошибки:", error);
@@ -140,29 +137,36 @@ function createDBInitPromise(): Promise<IDBDatabase> {
           errorMessage.includes("incognito")
         ) {
           console.error("IndexedDB недоступна в режиме инкогнито");
+        } else if (errorMessage.includes("aborted")) {
+          console.error(
+            "Запрос к базе данных был прерван - возможно конфликт с другими запросами",
+          );
         }
 
-        dbInitFailed = true;
-        reject(new Error(`Не удалось открыть базу данных: ${errorMessage}`));
+        safeReject(
+          new Error(`Не удалось открыть базу данных: ${errorMessage}`),
+        );
       };
 
       request.onsuccess = (event) => {
-        if (timeoutId) clearTimeout(timeoutId);
-
         try {
           const db = (event.target as IDBOpenDBRequest).result;
-          dbCache = db; // Кешируем успешно инициализированную БД
 
           // Добавляем обработчик ошибок для будущих операций
           db.onerror = (errorEvent) => {
             console.error("Ошибка базы данных:", errorEvent);
           };
 
-          resolve(db);
+          // Добавляем обработчик закрытия базы данных
+          db.onclose = () => {
+            console.warn("База данных была закрыта");
+            dbCache = null; // Сбрасываем кеш при закрытии
+          };
+
+          safeResolve(db);
         } catch (error) {
           console.error("Ошибка при обработке успешного открытия БД:", error);
-          dbInitFailed = true;
-          reject(error);
+          safeReject(error instanceof Error ? error : new Error(String(error)));
         }
       };
 
@@ -257,7 +261,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
         "/placeholder.svg?height=200&width=300",
         "/placeholder.svg?height=200&width=300",
       ],
-      address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
+      address: "ул. Жолио-Кюри, 6, ��убна, Московская область",
       category: "building",
     },
     {
@@ -265,7 +269,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       name: "Дом ученых ОИЯИ",
       shortDescription: "Культурный центр для научного сообщества Дубны.",
       fullDescription:
-        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конфер��нции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
+        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
       coordinates: [56.743, 37.192],
       images: ["/placeholder.svg?height=200&width=300"],
       address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
@@ -338,7 +342,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
     },
   };
 
-  // Добавляем демо-данные в базу используя существующую тран��акцию
+  // Добавляем демо-данные в базу используя существующую транзакцию
   try {
     const poisStore = transaction.objectStore(STORES.POIS);
     demoPOIs.forEach((poi) => {
@@ -441,7 +445,7 @@ export async function savePOI(poi: POI): Promise<POI> {
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения POI:", event);
-      reject(new Error("Не удалось сохранить POI"));
+      reject(new Error("Не удалось сохрани��ь POI"));
     };
   });
 }
@@ -482,7 +486,7 @@ export async function getAllNews(): Promise<NewsItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения новостей:", event);
-      reject(new Error("Не удалось получить новости"));
+      reject(new Error("��е удалось получить новости"));
     };
   });
 }
@@ -763,7 +767,7 @@ export async function deleteIcon(id: string): Promise<boolean> {
   });
 }
 
-// Функции дл�� работы с RSS-лентами
+// Функции для работы с RSS-лентами
 export async function getAllRssFeeds(): Promise<RssFeed[]> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
