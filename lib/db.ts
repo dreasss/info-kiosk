@@ -86,10 +86,33 @@ export async function initDB(): Promise<IDBDatabase> {
 function createDBInitPromise(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     let timeoutId: NodeJS.Timeout | null = null;
+    let isResolved = false;
+
+    const cleanup = () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const safeResolve = (db: IDBDatabase) => {
+      if (!isResolved) {
+        isResolved = true;
+        cleanup();
+        resolve(db);
+      }
+    };
+
+    const safeReject = (error: Error) => {
+      if (!isResolved) {
+        isResolved = true;
+        cleanup();
+        reject(error);
+      }
+    };
 
     try {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-
       // Устанавливаем таймаут для предотвращения зависания
       timeoutId = setTimeout(() => {
         console.error("Таймаут инициализации IndexedDB");
@@ -137,7 +160,7 @@ function createDBInitPromise(): Promise<IDBDatabase> {
 
           resolve(db);
         } catch (error) {
-          console.error("Ошибка при обработке успешного откр��тия БД:", error);
+          console.error("Ошибка при обработке успешного открытия БД:", error);
           dbInitFailed = true;
           reject(error);
         }
@@ -242,7 +265,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       name: "Дом ученых ОИЯИ",
       shortDescription: "Культурный центр для научного сообщества Дубны.",
       fullDescription:
-        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конференции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
+        "Дом ученых ОИЯИ — культурный и общественный центр, где проводятся научные конфер��нции, концерты, выставки и другие мероприятия. Это место встречи научного сообщества города и проведения различных культурных мероприятий.",
       coordinates: [56.743, 37.192],
       images: ["/placeholder.svg?height=200&width=300"],
       address: "ул. Жолио-Кюри, 8, Дубна, Московская область",
@@ -254,7 +277,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
       shortDescription:
         "Исследовательская лаборатория, специализирующаяся на синтезе новых элементов.",
       fullDescription:
-        "Лаборатор��я ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
+        "Лаборатория ядерных реакций им. Г.Н. Флерова — одна из ведущих лабораторий ОИЯИ, где были синтезированы многие сверхтяжелые элементы таблицы Менделеева. Здесь находятся уникальные ускорители тяжелых ионов, позволяющие проводить эксперименты мирового уровня.",
       coordinates: [56.744, 37.187],
       images: [
         "/placeholder.svg?height=200&width=300",
@@ -315,7 +338,7 @@ function initializeDefaultData(transaction: IDBTransaction) {
     },
   };
 
-  // Добавляем демо-данные в базу используя существующую транзакцию
+  // Добавляем демо-данные в базу используя существующую тран��акцию
   try {
     const poisStore = transaction.objectStore(STORES.POIS);
     demoPOIs.forEach((poi) => {
@@ -740,7 +763,7 @@ export async function deleteIcon(id: string): Promise<boolean> {
   });
 }
 
-// Функции для работы с RSS-лентами
+// Функции дл�� работы с RSS-лентами
 export async function getAllRssFeeds(): Promise<RssFeed[]> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
@@ -799,7 +822,7 @@ export async function saveRssFeed(feed: RssFeed): Promise<RssFeed> {
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения RSS-ленты:", event);
-      reject(new Error("Н�� удалось сохранить RSS-ленту"));
+      reject(new Error("Не удалось сохранить RSS-ленту"));
     };
   });
 }
