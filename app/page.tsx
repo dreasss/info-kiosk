@@ -28,6 +28,12 @@ export default function HomePage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [isClient, setIsClient] = useState(false);
+
+  // Ensure we only render client-specific content after hydration
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     const loadNews = async () => {
@@ -109,9 +115,9 @@ export default function HomePage() {
                       "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
                   }}
                 >
-                  {language === "ru" || !language
-                    ? "Объединенный Институт Ядерных Исследований"
-                    : "Joint Institute for Nuclear Research"}
+                  {isClient && language === "en"
+                    ? "Joint Institute for Nuclear Research"
+                    : "Объединенный Институт Ядерных Исследований"}
                 </h1>
               </div>
             </div>
@@ -188,12 +194,12 @@ export default function HomePage() {
             style={{ animationDelay: "0.2s", animationFillMode: "both" }}
           >
             <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent mb-4 hover:scale-105 transition-transform duration-300">
-              {language === "ru" || !language ? "Добро пожаловать" : "Welcome"}
+              {isClient && language === "en" ? "Welcome" : "Добро пожаловать"}
             </h2>
             <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300">
-              {language === "ru" || !language
-                ? "Интерактивная информационная система ОИЯИ"
-                : "JINR Interactive Information System"}
+              {isClient && language === "en"
+                ? "JINR Interactive Information System"
+                : "Интерактивная информационная система ОИЯИ"}
             </p>
           </div>
 
@@ -202,7 +208,7 @@ export default function HomePage() {
             <TouchButton
               href="/map"
               icon={Map}
-              title={language === "ru" || !language ? "Карта" : "Map"}
+              title={isClient && language === "en" ? "Map" : "Карта"}
               className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-blue-400/30 hover:border-blue-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0s", animationFillMode: "both" }}
@@ -211,7 +217,7 @@ export default function HomePage() {
             <TouchButton
               href="/gallery"
               icon={ImageIcon}
-              title={language === "ru" || !language ? "Галерея" : "Gallery"}
+              title={isClient && language === "en" ? "Gallery" : "Галерея"}
               className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-purple-400/30 hover:border-purple-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.1s", animationFillMode: "both" }}
@@ -220,7 +226,7 @@ export default function HomePage() {
             <TouchButton
               href="/news"
               icon={Newspaper}
-              title={language === "ru" || !language ? "Новости" : "News"}
+              title={isClient && language === "en" ? "News" : "Новости"}
               className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-green-400/30 hover:border-green-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.2s", animationFillMode: "both" }}
@@ -230,9 +236,9 @@ export default function HomePage() {
               href="/infrastructure"
               icon={Building2}
               title={
-                language === "ru" || !language
-                  ? "Инфраструктура"
-                  : "Infrastructure"
+                isClient && language === "en"
+                  ? "Infrastructure"
+                  : "Инфраструктура"
               }
               className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-orange-400/30 hover:border-orange-300/50 group animate-fadeInUp"
               touchSize="lg"
@@ -242,7 +248,7 @@ export default function HomePage() {
             <TouchButton
               href="/events"
               icon={Calendar}
-              title={language === "ru" || !language ? "События" : "Events"}
+              title={isClient && language === "en" ? "Events" : "События"}
               className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-rose-400/30 hover:border-rose-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.4s", animationFillMode: "both" }}
@@ -251,7 +257,7 @@ export default function HomePage() {
             <TouchButton
               href="/about"
               icon={Info}
-              title={language === "ru" || !language ? "О ОИЯИ" : "About"}
+              title={isClient && language === "en" ? "About" : "О ОИЯИ"}
               className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-indigo-400/30 hover:border-indigo-300/50 group animate-fadeInUp"
               touchSize="lg"
               style={{ animationDelay: "0.5s", animationFillMode: "both" }}
@@ -269,9 +275,9 @@ export default function HomePage() {
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mr-3">
                     <Newspaper className="h-5 w-5 text-blue-600" />
                   </div>
-                  {language === "ru" || !language
-                    ? "Последние новости"
-                    : "Latest News"}
+                  {isClient && language === "en"
+                    ? "Latest News"
+                    : "Последние новости"}
                 </h3>
                 <NewsCarousel news={news} />
               </div>
@@ -295,9 +301,9 @@ export default function HomePage() {
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
               <span className="opacity-70 mr-2 text-lg">📍</span>
               <span>
-                {language === "ru" || !language
-                  ? "г. Дубна, Московская область"
-                  : "Dubna, Moscow Region"}
+                {isClient && language === "en"
+                  ? "Dubna, Moscow Region"
+                  : "г. Дубна, Московская область"}
               </span>
             </div>
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
