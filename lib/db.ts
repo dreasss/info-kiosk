@@ -265,7 +265,7 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
 
     albumsStore.add({
       id: "2",
-      name: "Видеоматериалы",
+      name: "Видеомат��риалы",
       description: "Видео презентации и документальные материалы",
       type: "video",
       createdAt: new Date().toISOString(),
@@ -744,20 +744,65 @@ async function updateAlbumItemCount(albumId: string): Promise<void> {
       reject(new Error("Не удалось получить альбом"));
   });
 }
+// Функции для работы с иконками
 export async function getAllIcons(): Promise<MarkerIcon[]> {
-  return [];
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ICONS, "readonly");
+    const store = transaction.objectStore(STORES.ICONS);
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(new Error("Не удалось получить иконки"));
+  });
 }
+
 export async function getIconsByCategory(
   category: string,
 ): Promise<MarkerIcon[]> {
-  return [];
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ICONS, "readonly");
+    const store = transaction.objectStore(STORES.ICONS);
+    const index = store.index("category");
+    const request = index.getAll(category);
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () =>
+      reject(new Error("Не удалось получить иконки по категории"));
+  });
 }
+
 export async function saveIcon(icon: MarkerIcon): Promise<MarkerIcon> {
-  return icon;
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ICONS, "readwrite");
+    const store = transaction.objectStore(STORES.ICONS);
+
+    if (!icon.id) {
+      icon.id = Date.now().toString();
+    }
+
+    const request = store.put(icon);
+
+    request.onsuccess = () => resolve(icon);
+    request.onerror = () => reject(new Error("Не удалось сохранить иконку"));
+  });
 }
+
 export async function deleteIcon(id: string): Promise<boolean> {
-  return true;
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ICONS, "readwrite");
+    const store = transaction.objectStore(STORES.ICONS);
+    const request = store.delete(id);
+
+    request.onsuccess = () => resolve(true);
+    request.onerror = () => reject(new Error("Не удалось удалить иконку"));
+  });
 }
+
+// Функция для загрузки файлов (создает blob URL)
 export async function uploadFile(file: File): Promise<string> {
   return URL.createObjectURL(file);
 }
