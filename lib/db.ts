@@ -108,6 +108,16 @@ export async function initDB(): Promise<IDBDatabase> {
           keyPath: "id",
         });
         mediaStore.createIndex("type", "type", { unique: false });
+        mediaStore.createIndex("category", "category", { unique: false });
+        mediaStore.createIndex("albumId", "albumId", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains(STORES.ALBUMS)) {
+        const albumsStore = db.createObjectStore(STORES.ALBUMS, {
+          keyPath: "id",
+        });
+        albumsStore.createIndex("type", "type", { unique: false });
+        albumsStore.createIndex("createdAt", "createdAt", { unique: false });
       }
 
       if (!db.objectStoreNames.contains(STORES.SETTINGS)) {
