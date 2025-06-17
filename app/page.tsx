@@ -67,7 +67,7 @@ export default function HomePage() {
     setRetryCount((prev) => prev + 1); // Перезапускаем useEffect
   };
 
-  // В режиме разработки добавляем функции БД в глоб��льную область
+  // В режиме разработки добавляем функции БД в глобальную область
   useEffect(() => {
     if (
       process.env.NODE_ENV === "development" &&
@@ -223,18 +223,28 @@ export default function HomePage() {
               href="/gallery"
               icon={ImageIcon}
               title={isClient && language === "en" ? "Gallery" : "Галерея"}
-              className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-purple-400/30 hover:border-purple-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-purple-500/90 to-purple-600/90 hover:from-purple-600 hover:to-purple-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-purple-400/50 hover:border-purple-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0.1s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0.1s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(147, 51, 234, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
 
             <TouchButton
               href="/news"
               icon={Newspaper}
               title={isClient && language === "en" ? "News" : "Новости"}
-              className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-green-400/30 hover:border-green-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-green-500/90 to-green-600/90 hover:from-green-600 hover:to-green-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-green-400/50 hover:border-green-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0.2s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0.2s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(34, 197, 94, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
 
             <TouchButton
@@ -245,27 +255,42 @@ export default function HomePage() {
                   ? "Infrastructure"
                   : "Инфраструктура"
               }
-              className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-orange-400/30 hover:border-orange-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-orange-500/90 to-orange-600/90 hover:from-orange-600 hover:to-orange-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-orange-400/50 hover:border-orange-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0.3s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0.3s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(249, 115, 22, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
 
             <TouchButton
               href="/events"
               icon={Calendar}
               title={isClient && language === "en" ? "Events" : "События"}
-              className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-rose-400/30 hover:border-rose-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-rose-500/90 to-rose-600/90 hover:from-rose-600 hover:to-rose-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-rose-400/50 hover:border-rose-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0.4s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0.4s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(244, 63, 94, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
 
             <TouchButton
               href="/about"
               icon={Info}
               title={isClient && language === "en" ? "About" : "О ОИЯИ"}
-              className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-indigo-400/30 hover:border-indigo-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-indigo-500/90 to-indigo-600/90 hover:from-indigo-600 hover:to-indigo-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-indigo-400/50 hover:border-indigo-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0.5s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0.5s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(99, 102, 241, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
           </div>
 
