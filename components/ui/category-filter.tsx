@@ -84,7 +84,7 @@ export function CategoryFilter({
               key={key}
               onClick={() => handleCategoryClick(key)}
               className={cn(
-                "group relative flex flex-col items-center justify-center p-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-md",
+                "group relative flex flex-col items-center justify-center px-3 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-md min-w-[80px]",
                 isActive
                   ? "text-white shadow-lg scale-105"
                   : "bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200",
@@ -99,7 +99,7 @@ export function CategoryFilter({
             >
               <div
                 className={cn(
-                  "w-8 h-8 rounded-lg flex items-center justify-center mb-1.5 transition-all duration-300",
+                  "w-6 h-6 rounded-lg flex items-center justify-center mb-1 transition-all duration-300",
                   isActive ? "bg-white/20" : "group-hover:scale-110",
                 )}
                 style={
@@ -109,7 +109,7 @@ export function CategoryFilter({
                 }
               >
                 <Icon
-                  className="w-4 h-4 transition-all duration-300"
+                  className="w-3 h-3 transition-all duration-300"
                   style={{ color: isActive ? "white" : category.color }}
                 />
               </div>
@@ -117,7 +117,7 @@ export function CategoryFilter({
                 {category.name}
               </span>
               {isActive && (
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse"></div>
               )}
             </button>
           );
