@@ -637,14 +637,16 @@ export async function updateOrganizationInfo(
 // API для работы с таймером
 export async function fetchTimerSettings(): Promise<any> {
   if (!isBrowser) {
-    return { enabled: false };
+    return { id: "timer-settings", enabled: false };
   }
 
   try {
-    return await getTimerSettings();
+    const settings = await getTimerSettings();
+    return settings || { id: "timer-settings", enabled: false };
   } catch (error) {
     console.error("Error fetching timer settings:", error);
-    return { enabled: false };
+    // Возвращаем безопасные настройки по умолчанию
+    return { id: "timer-settings", enabled: false };
   }
 }
 
