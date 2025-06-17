@@ -19,6 +19,44 @@ export function RssTicker({ className }: RssTickerProps) {
   const [news, setNews] = useState<RssItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Демо-данные для использования при ошибках
+  const getDemoNews = (): RssItem[] => [
+    {
+      title:
+        "ОИЯИ: Открытие нового сверхтяжелого элемента в лаборатории ядерных реакций",
+      link: "#",
+      pubDate: new Date().toISOString(),
+      source: "JINR News",
+    },
+    {
+      title: "Российские ученые создали новый тип квантового компьютера",
+      link: "#",
+      pubDate: new Date(Date.now() - 3600000).toISOString(),
+      source: "Science News",
+    },
+    {
+      title:
+        "Прорыв в области физики элементарных частиц: обнаружена новая частица",
+      link: "#",
+      pubDate: new Date(Date.now() - 7200000).toISOString(),
+      source: "Physics Today",
+    },
+    {
+      title:
+        "Дубна станет центром международных исследований в области ядерной физики",
+      link: "#",
+      pubDate: new Date(Date.now() - 10800000).toISOString(),
+      source: "JINR News",
+    },
+    {
+      title:
+        "Новый ускоритель частиц NICA готовится к запуску первых экспериментов",
+      link: "#",
+      pubDate: new Date(Date.now() - 14400000).toISOString(),
+      source: "JINR News",
+    },
+  ];
+
   useEffect(() => {
     const fetchRssNews = async () => {
       try {
@@ -29,44 +67,8 @@ export function RssTicker({ className }: RssTickerProps) {
 
         if (activeFeeds.length === 0) {
           // Если нет активных лент, показываем демо-данные
-          const mockNews: RssItem[] = [
-            {
-              title:
-                "Ученые обнаружили новый тип черных дыр в центре галактики",
-              link: "#",
-              pubDate: new Date().toISOString(),
-              source: "Naked Science",
-            },
-            {
-              title:
-                "Российские физики создали квантовый компьютер нового поколения",
-              link: "#",
-              pubDate: new Date(Date.now() - 3600000).toISOString(),
-              source: "Naked Science",
-            },
-            {
-              title:
-                "Найден способ увеличить эффективность солнечных батарей на 40%",
-              link: "#",
-              pubDate: new Date(Date.now() - 7200000).toISOString(),
-              source: "Naked Science",
-            },
-            {
-              title:
-                "Марсоход Perseverance обнаружил следы древней жизни на Марсе",
-              link: "#",
-              pubDate: new Date(Date.now() - 10800000).toISOString(),
-              source: "Naked Science",
-            },
-            {
-              title:
-                "Новый метод лечения рака показал эффективность в 95% случаев",
-              link: "#",
-              pubDate: new Date(Date.now() - 14400000).toISOString(),
-              source: "Naked Science",
-            },
-          ];
-          setNews(mockNews);
+          console.log("No active RSS feeds found, using demo data");
+          setNews(getDemoNews());
           return;
         }
 
@@ -128,7 +130,7 @@ export function RssTicker({ className }: RssTickerProps) {
           const mockNews: RssItem[] = [
             {
               title:
-                "Настройт�� RSS ленты в панели администратора для отображения актуальных новостей",
+                "Настройте RSS ленты в панели администратора для отображения актуальных новостей",
               link: "/admin",
               pubDate: new Date().toISOString(),
               source: "Система",
@@ -206,5 +208,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем ��акже под старым именем для совместимости
+// Экспортируем также под старым именем для совместимости
 export { RssTicker as RSSTicker };
