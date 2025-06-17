@@ -21,6 +21,12 @@ export async function GET(request: NextRequest) {
       "lenta.ru",
       "jinr.ru",
       "nplus1.ru",
+      "rt.com",
+      "tass.com",
+      "tass.ru",
+      "interfax.ru",
+      "regnum.ru",
+      "nauka.tass.ru",
     ];
 
     const urlObj = new URL(url);
@@ -28,9 +34,21 @@ export async function GET(request: NextRequest) {
       urlObj.hostname.includes(domain),
     );
 
+    console.log(
+      `RSS Proxy: Checking domain ${urlObj.hostname} against allowed domains`,
+    );
+
     if (!isAllowed) {
+      console.log(
+        `RSS Proxy: Domain ${urlObj.hostname} not in allowed list:`,
+        allowedDomains,
+      );
       return NextResponse.json(
-        { error: "Domain not allowed" },
+        {
+          error: "Domain not allowed",
+          domain: urlObj.hostname,
+          allowedDomains: allowedDomains,
+        },
         { status: 403 },
       );
     }
@@ -79,7 +97,7 @@ export async function GET(request: NextRequest) {
       console.warn(`RSS Proxy: Content preview:`, content.substring(0, 200));
     }
 
-    // Возвращаем RSS контент с п��авильными заголовками
+    // Возвращаем RSS контент с правильными заголовками
     return new NextResponse(content, {
       status: 200,
       headers: {
