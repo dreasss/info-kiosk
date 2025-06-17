@@ -64,13 +64,36 @@ export function RssTicker({ className }: RssTickerProps) {
         console.log("RSS Ticker: Fetching RSS feeds...");
         let activeFeeds = await fetchActiveRssFeeds();
 
+        // Фильтруем только рабочие домены
+        const workingDomains = [
+          "elementy.ru",
+          "ria.ru",
+          "jinr.ru",
+          "nplus1.ru",
+          "tass.ru",
+        ];
+        const filteredFeeds = activeFeeds.filter((feed) => {
+          try {
+            const url = new URL(feed.url);
+            return workingDomains.some((domain) =>
+              url.hostname.includes(domain),
+            );
+          } catch {
+            return false;
+          }
+        });
+
         // Всегда добавляем elementy.ru как основную ленту
-        const feedsToLoad = [elementyRssFeed, ...activeFeeds];
+        const feedsToLoad = [elementyRssFeed, ...filteredFeeds];
         console.log(
           "RSS Ticker: Loading feeds:",
           feedsToLoad.map((f) => `${f.name} (${f.url})`),
         );
-        console.log("RSS Ticker: Active feeds from DB:", activeFeeds.length);
+        console.log(
+          "RSS Ticker: Filtered out problematic feeds, using",
+          feedsToLoad.length,
+          "feeds",
+        );
 
         // Загружаем RSS данные
         const allNewsItems: RssItem[] = [];
