@@ -48,10 +48,18 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
-      console.error(`RSS Proxy: HTTP ${response.status} for ${url}`);
+      console.error(
+        `RSS Proxy: HTTP ${response.status} ${response.statusText} for ${url}`,
+      );
+      const errorText = await response
+        .text()
+        .catch(() => "Unable to read error response");
+      console.error(`RSS Proxy: Error details:`, errorText.substring(0, 200));
+
       return NextResponse.json(
         {
-          error: `HTTP ${response.status}`,
+          error: `HTTP ${response.status}: ${response.statusText}`,
+          details: errorText.substring(0, 100),
         },
         { status: response.status },
       );
@@ -62,7 +70,16 @@ export async function GET(request: NextRequest) {
       `RSS Proxy: Successfully fetched ${content.length} bytes from ${url}`,
     );
 
-    // Возвращаем RSS контент с правильными заголовками
+    // Проверяем, что контент похож на XML
+    if (
+      !content.trim().startsWith("<?xml") &&
+      !content.trim().startsWith("<rss")
+    ) {
+      console.warn(`RSS Proxy: Content doesn't look like XML for ${url}`);
+      console.warn(`RSS Proxy: Content preview:`, content.substring(0, 200));
+    }
+
+    // Возвращаем RSS контент с п��авильными заголовками
     return new NextResponse(content, {
       status: 200,
       headers: {
