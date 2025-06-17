@@ -61,21 +61,16 @@ export default function HomePage() {
     setRetryCount((prev) => prev + 1); // Перезапускаем useEffect
   };
 
-  // В режиме разработки добавляем диагностические функции в глобальную область
+  // В режиме разработки добавляем функцию сброса БД в глобальную область
   useEffect(() => {
     if (
       process.env.NODE_ENV === "development" &&
       typeof window !== "undefined"
     ) {
-      // Добавляем функции в глобальную область для отладки
-      (window as any).dbDiagnose =
-        diagnoseDatabaseIssues(window as any).dbTest =
-        testDatabaseConnection(window as any).dbReset =
-          resetDBState;
+      // Добавляем функцию сброса в глобальную область для отладки
+      (window as any).dbReset = resetDBState;
 
-      console.log("🔧 Database debugging tools available:");
-      console.log("  - window.dbDiagnose() - Диагностика проблем с IndexedDB");
-      console.log("  - window.dbTest() - Тест соединения с базой данных");
+      console.log("🔧 Database debugging tool available:");
       console.log("  - window.dbReset() - Сброс состояния базы данных");
     }
   }, []);
