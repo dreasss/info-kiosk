@@ -67,7 +67,7 @@ export default function HomePage() {
     setRetryCount((prev) => prev + 1); // Перезапускаем useEffect
   };
 
-  // В режиме разработки добавляем функции БД в глобальную область
+  // В режиме разработки добавляем функции БД в глоб��льную область
   useEffect(() => {
     if (
       process.env.NODE_ENV === "development" &&
@@ -99,11 +99,11 @@ export default function HomePage() {
                 <div className="absolute inset-0 bg-white/30 rounded-full blur-lg scale-110 group-hover:scale-125 transition-transform duration-300"></div>
                 <div className="relative w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/40 shadow-2xl flex items-center justify-center overflow-hidden group-hover:shadow-3xl transition-all duration-300">
                   <Image
-                    src="/placeholder-logo.svg"
+                    src="https://cdn.builder.io/api/v1/assets/0968c4d4542442209a8c7e4e9ccf912f/img_197998201-1b075a?format=webp&width=800"
                     alt="JINR Logo"
                     width={70}
                     height={70}
-                    className="object-cover rounded-full scale-90 group-hover:scale-95 transition-transform duration-300"
+                    className="object-contain rounded-full scale-90 group-hover:scale-95 transition-transform duration-300"
                   />
                 </div>
               </div>
@@ -112,7 +112,7 @@ export default function HomePage() {
                   className="text-xl md:text-2xl font-bold text-white"
                   style={{
                     textShadow:
-                      "1px 1px 2px rgba(0,0,0,0.5), 0 0 5px rgba(0,0,0,0.2)",
+                      "2px 2px 0px rgba(0,0,0,1), -2px -2px 0px rgba(0,0,0,1), 2px -2px 0px rgba(0,0,0,1), -2px 2px 0px rgba(0,0,0,1), 0 0 10px rgba(0,0,0,0.5)",
                   }}
                 >
                   {isClient && language === "en"
@@ -209,9 +209,14 @@ export default function HomePage() {
               href="/map"
               icon={Map}
               title={isClient && language === "en" ? "Map" : "Карта"}
-              className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-xl hover:shadow-2xl backdrop-blur-sm border border-blue-400/30 hover:border-blue-300/50 group animate-fadeInUp"
+              className="bg-gradient-to-br from-blue-500/90 to-blue-600/90 hover:from-blue-600 hover:to-blue-700 text-white h-32 md:h-36 shadow-2xl hover:shadow-3xl backdrop-blur-sm border-2 border-blue-400/50 hover:border-blue-300/70 group animate-fadeInUp transform hover:scale-105 hover:-translate-y-2 transition-all duration-300"
               touchSize="lg"
-              style={{ animationDelay: "0s", animationFillMode: "both" }}
+              style={{
+                animationDelay: "0s",
+                animationFillMode: "both",
+                boxShadow:
+                  "0 20px 40px rgba(59, 130, 246, 0.3), 0 10px 20px rgba(0, 0, 0, 0.2)",
+              }}
             />
 
             <TouchButton

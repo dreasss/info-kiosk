@@ -69,9 +69,9 @@ export function NewsCarousel({ news }: NewsCarouselProps) {
 
   return (
     <div className="relative">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <div className="grid md:grid-cols-3 gap-0">
+      <Card className="overflow-hidden h-80">
+        <CardContent className="p-0 h-full">
+          <div className="grid md:grid-cols-3 gap-0 h-full">
             {/* Изображение */}
             <div className="relative h-48 md:h-auto">
               <Image

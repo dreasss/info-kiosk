@@ -18,7 +18,7 @@ body {
   }
 
   .animate-scroll-slow {
-    animation: scroll 120s linear infinite;
+    animation: scroll 180s linear infinite;
   }
 
   /* Line clamp utilities */
