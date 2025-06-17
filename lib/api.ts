@@ -256,6 +256,267 @@ export async function fetchMediaByType(type: string): Promise<MediaItem[]> {
   }
 }
 
+export async function fetchMediaByCategory(
+  category: "photo" | "video",
+): Promise<MediaItem[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    return await getMediaByCategory(category);
+  } catch (error) {
+    console.error("Error fetching media by category:", error);
+    return [];
+  }
+}
+
+export async function fetchMediaByAlbum(albumId: string): Promise<MediaItem[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    return await getMediaByAlbum(albumId);
+  } catch (error) {
+    console.error("Error fetching media by album:", error);
+    return [];
+  }
+}
+
+export async function createMediaItem(
+  media: Omit<MediaItem, "id" | "date">,
+): Promise<MediaItem> {
+  if (!isBrowser) {
+    throw new Error("Cannot create media item on server side");
+  }
+
+  try {
+    const fullMedia: MediaItem = {
+      ...media,
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+    };
+    return await saveMedia(fullMedia);
+  } catch (error) {
+    console.error("Error creating media item:", error);
+    throw error;
+  }
+}
+
+export async function updateMediaItem(media: MediaItem): Promise<MediaItem> {
+  if (!isBrowser) {
+    throw new Error("Cannot update media item on server side");
+  }
+
+  try {
+    return await saveMedia(media);
+  } catch (error) {
+    console.error("Error updating media item:", error);
+    throw error;
+  }
+}
+
+export async function removeMediaItem(id: string): Promise<boolean> {
+  if (!isBrowser) {
+    return false;
+  }
+
+  try {
+    return await deleteMedia(id);
+  } catch (error) {
+    console.error("Error removing media item:", error);
+    return false;
+  }
+}
+
+// API функции для работы с альбомами
+export async function fetchAlbums(): Promise<Album[]> {
+  if (!isBrowser) {
+    return [];
+  }
+
+  try {
+    return await getAllAlbums();
+  } catch (error) {
+    console.error("Error fetching albums:", error);
+    return [];
+  }
+}
+
+export async function fetchAlbumById(id: string): Promise<Album | null> {
+  if (!isBrowser) {
+    return null;
+  }
+
+  try {
+    return await getAlbumById(id);
+  } catch (error) {
+    console.error("Error fetching album:", error);
+    return null;
+  }
+}
+
+export async function createAlbum(
+  album: Omit<Album, "id" | "createdAt" | "updatedAt">,
+): Promise<Album> {
+  if (!isBrowser) {
+    throw new Error("Cannot create album on server side");
+  }
+
+  try {
+    const fullAlbum: Album = {
+      ...album,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      itemCount: 0,
+    };
+    return await saveAlbum(fullAlbum);
+  } catch (error) {
+    console.error("Error creating album:", error);
+    throw error;
+  }
+}
+
+export async function updateAlbum(album: Album): Promise<Album> {
+  if (!isBrowser) {
+    throw new Error("Cannot update album on server side");
+  }
+
+  try {
+    return await saveAlbum(album);
+  } catch (error) {
+    console.error("Error updating album:", error);
+    throw error;
+  }
+}
+
+export async function removeAlbum(id: string): Promise<boolean> {
+  if (!isBrowser) {
+    return false;
+  }
+
+  try {
+    return await deleteAlbum(id);
+  } catch (error) {
+    console.error("Error removing album:", error);
+    return false;
+  }
+}
+
+// Улучшенная функция загрузки файлов с поддержкой превью
+export async function uploadMediaFile(
+  file: File,
+  albumId?: string,
+  description?: string,
+): Promise<MediaItem> {
+  if (!isBrowser) {
+    throw new Error("Cannot upload file on server side");
+  }
+
+  try {
+    // Создаем URL для файла
+    const url = URL.createObjectURL(file);
+
+    // Определяем тип и категорию файла
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
+    if (!isVideo && !isImage) {
+      throw new Error("Поддерживаются только изображения и видео файлы");
+    }
+
+    // Получаем размеры для изображений
+    let dimensions: { width: number; height: number } | undefined;
+    let thumbnail: string | undefined;
+
+    if (isImage) {
+      dimensions = await getImageDimensions(file);
+      thumbnail = url; // Для изображений превью = само изображение
+    } else if (isVideo) {
+      thumbnail = await generateVideoThumbnail(file);
+    }
+
+    const mediaItem: Omit<MediaItem, "id" | "date"> = {
+      title: file.name.split(".").slice(0, -1).join("."), // Убираем расширение
+      description: description || "",
+      type: isImage ? "image" : "video",
+      category: isImage ? "photo" : "video",
+      url: url,
+      thumbnail: thumbnail,
+      albumId: albumId,
+      fileSize: file.size,
+      dimensions: dimensions,
+      tags: [],
+    };
+
+    if (isVideo) {
+      mediaItem.duration = await getVideoDuration(file);
+    }
+
+    return await createMediaItem(mediaItem);
+  } catch (error) {
+    console.error("Error uploading media file:", error);
+    throw error;
+  }
+}
+
+// Вспомогательные функции
+async function getImageDimensions(
+  file: File,
+): Promise<{ width: number; height: number }> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function getVideoDuration(file: File): Promise<number> {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    video.onloadedmetadata = () => {
+      resolve(video.duration);
+    };
+    video.src = URL.createObjectURL(file);
+  });
+}
+
+async function generateVideoThumbnail(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const video = document.createElement("video");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    video.onloadeddata = () => {
+      video.currentTime = 1; // Получаем кадр на 1 секунде
+    };
+
+    video.onseeked = () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx?.drawImage(video, 0, 0);
+
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(URL.createObjectURL(blob));
+          } else {
+            resolve(""); // Fallback
+          }
+        },
+        "image/jpeg",
+        0.7,
+      );
+    };
+
+    video.src = URL.createObjectURL(file);
+  });
+}
+
 export async function createMedia(
   mediaItem: Omit<MediaItem, "id">,
 ): Promise<MediaItem> {
