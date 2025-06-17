@@ -33,6 +33,22 @@ export function RssTicker({ className }: RssTickerProps) {
     active: true,
   };
 
+  // Fallback новости если RSS не загружается
+  const getFallbackNews = (): RssItem[] => [
+    {
+      title: "Добро пожаловать в информационную систему ОИЯИ",
+      link: "https://www.jinr.ru",
+      pubDate: new Date().toISOString(),
+      source: "ОИЯИ",
+    },
+    {
+      title: "Последние научные открытия и исследования института",
+      link: "https://www.jinr.ru/news/",
+      pubDate: new Date(Date.now() - 3600000).toISOString(),
+      source: "ОИЯИ",
+    },
+  ];
+
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -311,5 +327,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым име��ем для совместимости
+// Экспортируем также под старым именем для совместимости
 export { RssTicker as RSSTicker };
