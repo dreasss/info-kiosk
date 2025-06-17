@@ -99,6 +99,11 @@ export default function AdminPage() {
   const [pois, setPois] = useState<POI[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
+  const [albumForm, setAlbumForm] = useState<Partial<Album>>({});
+  const [editingAlbum, setEditingAlbum] = useState<Album | null>(null);
+  const [showAlbumForm, setShowAlbumForm] = useState(false);
   const [settings, setSettings] = useState<SystemSettings | null>(null);
   const [rssFeeds, setRssFeeds] = useState<RssFeed[]>([]);
   const [icons, setIcons] = useState<MarkerIcon[]>([]);
@@ -376,7 +381,7 @@ export default function AdminPage() {
   const handleDeleteMedia = async (id: string) => {
     try {
       await removeMedia(id);
-      toast({ title: "Медиафайл удален" });
+      toast({ title: "Медиаф��йл удален" });
       loadData();
     } catch (error) {
       toast({ title: "Ошибка удаления", variant: "destructive" });
