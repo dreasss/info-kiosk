@@ -403,7 +403,7 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
 
             <div className="flex-1">
               <Label>Загрузить файл</Label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center space-y-2">
                 <input
                   type="file"
                   onChange={handleFileUpload}
@@ -419,6 +419,15 @@ export function MediaManager({ onDataChange }: MediaManagerProps) {
                     </span>
                   </Button>
                 </Label>
+                <div className="text-xs text-gray-500">или</div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCreateDemoData}
+                  className="text-xs"
+                >
+                  Создать демо-данные
+                </Button>
               </div>
             </div>
           </div>
