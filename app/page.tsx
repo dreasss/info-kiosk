@@ -102,7 +102,7 @@ export default function HomePage() {
         }
       };
 
-      console.log("�� Database debugging tools available:");
+      console.log("🔧 Database debugging tools available:");
       console.log("  - window.dbReset() - Сброс состояния базы данных");
       console.log("  - window.dbStatus() - Проверка состояния базы данных");
       console.log(
@@ -144,9 +144,10 @@ export default function HomePage() {
                       "1px 1px 0px rgba(0,0,0,0.8), -1px -1px 0px rgba(0,0,0,0.8), 1px -1px 0px rgba(0,0,0,0.8), -1px 1px 0px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.3)",
                   }}
                 >
-                  {isClient && language === "en"
-                    ? "Joint Institute for Nuclear Research"
-                    : "Объединенный Институт Ядерных Исследований"}
+                  {getText(
+                    "Joint Institute for Nuclear Research",
+                    "Объединенный Институт Ядерных Исследований",
+                  )}
                 </h1>
               </div>
             </div>
