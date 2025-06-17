@@ -29,6 +29,8 @@ import {
   saveIcon,
   deleteIcon,
   uploadFile,
+  getTimerSettings,
+  saveTimerSettings,
   type RssFeed,
   type MarkerIcon,
 } from "@/lib/db";
@@ -617,22 +619,47 @@ export async function updateSettings(
 
 export async function updateOrganizationInfo(
   info: Partial<OrganizationInfo>,
-): Promise<OrganizationInfo> {
+): Promise<SystemSettings> {
   if (!isBrowser) {
-    throw new Error("Browser API not available");
+    throw new Error("Cannot update organization info on server side");
   }
 
   try {
     const settings = await fetchSettings();
     const updatedInfo = { ...settings.organizationInfo, ...info };
-    await updateSettings({ organizationInfo: updatedInfo });
-    return updatedInfo;
+    return await updateSettings({ organizationInfo: updatedInfo });
   } catch (error) {
     console.error("Error updating organization info:", error);
     throw error;
   }
 }
 
+// API для работы с таймером
+export async function fetchTimerSettings(): Promise<any> {
+  if (!isBrowser) {
+    return { enabled: false };
+  }
+
+  try {
+    return await getTimerSettings();
+  } catch (error) {
+    console.error("Error fetching timer settings:", error);
+    return { enabled: false };
+  }
+}
+
+export async function updateTimerSettings(settings: any): Promise<any> {
+  if (!isBrowser) {
+    throw new Error("Cannot update timer settings on server side");
+  }
+
+  try {
+    return await saveTimerSettings(settings);
+  } catch (error) {
+    console.error("Error updating timer settings:", error);
+    throw error;
+  }
+}
 // API для работы с RSS лентами
 export async function fetchRssFeeds(): Promise<RssFeed[]> {
   if (!isBrowser) {

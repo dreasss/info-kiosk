@@ -8,6 +8,7 @@ import { ClockDate } from "@/components/ui/clock-date";
 import { RssTicker } from "@/components/ui/rss-ticker";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
 import { NewsCarousel } from "@/components/ui/news-carousel";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import {
   Map,
   ImageIcon,
@@ -19,7 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useLanguage } from "@/lib/language-context";
-import { fetchNews } from "@/lib/api";
+import { fetchNews, fetchTimerSettings } from "@/lib/api";
 import { resetDBState, getDBStatus } from "@/lib/db";
 import type { NewsItem } from "@/types/news";
 
@@ -29,6 +30,7 @@ export default function HomePage() {
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [timerSettings, setTimerSettings] = useState<any>(null);
 
   // Ensure we only render client-specific content after hydration
   useEffect(() => {
@@ -36,13 +38,19 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const loadNews = async () => {
+    const loadData = async () => {
       try {
         setDbError(null); // Сбрасываем ошибку перед попыткой
-        const data = await fetchNews();
-        setNews(data.slice(0, 5)); // Берем только 5 последних новостей
+
+        // Загружаем новости
+        const newsData = await fetchNews();
+        setNews(newsData.slice(0, 5)); // Берем только 5 последних но��остей
+
+        // Загружаем настройки таймера
+        const timerData = await fetchTimerSettings();
+        setTimerSettings(timerData);
       } catch (error) {
-        console.error("Error loading news:", error);
+        console.error("Error loading data:", error);
 
         // Устанавливаем сообщение об ошибке
         const errorMessage =
@@ -58,7 +66,7 @@ export default function HomePage() {
       }
     };
 
-    loadNews();
+    loadData();
   }, [retryCount]);
 
   const handleRetryDatabase = () => {
@@ -117,7 +125,7 @@ export default function HomePage() {
                 >
                   {isClient && language === "en"
                     ? "Joint Institute for Nuclear Research"
-                    : "Объединенный Институт Ядерных Исследований"}
+                    : "Объединенный Институт Яде��ных Исследований"}
                 </h1>
               </div>
             </div>
@@ -293,6 +301,16 @@ export default function HomePage() {
               }}
             />
           </div>
+
+          {/* Таймер обратного отсчета */}
+          {isClient && timerSettings?.enabled && timerSettings?.timer && (
+            <div
+              className="mb-8 animate-fadeInUp"
+              style={{ animationDelay: "0.6s", animationFillMode: "both" }}
+            >
+              <CountdownTimer timer={timerSettings.timer} />
+            </div>
+          )}
 
           {/* Карусель новостей */}
           <div
