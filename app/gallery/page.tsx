@@ -131,25 +131,49 @@ export default function GalleryPage() {
 
       <main className="container mx-auto px-6 py-8">
         {/* Filters and Search */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Поиск по названию или описанию..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+        <div className="space-y-4 mb-8">
+          {/* Albums Filter */}
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">Альбом</label>
+              <Select value={selectedAlbum} onValueChange={setSelectedAlbum}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите альбом" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все альбомы</SelectItem>
+                  <SelectItem value="none">Без альбома</SelectItem>
+                  {albums.map((album) => (
+                    <SelectItem key={album.id} value={album.id}>
+                      {album.name} ({album.itemCount})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-2 block">Поиск</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Поиск по названию или описанию..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
           </div>
+
+          {/* Type Filter */}
           <div className="flex gap-2">
             <Button
               variant={activeFilter === "all" ? "default" : "outline"}
               onClick={() => setActiveFilter("all")}
               className="flex items-center gap-2"
             >
-              Все ({media.length})
+              Все ({filteredMedia.length})
             </Button>
             <Button
               variant={activeFilter === "photo" ? "default" : "outline"}
