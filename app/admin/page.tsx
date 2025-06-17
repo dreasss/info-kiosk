@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { TouchButton } from "@/components/ui/touch-button";
+import { MediaManager } from "@/components/admin/media-manager";
 import type { POI } from "@/types/poi";
 import type { NewsItem } from "@/types/news";
 import type { MediaItem, Album } from "@/types/media";
@@ -552,7 +553,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="poi-short">Кратк��е описание</Label>
+                    <Label htmlFor="poi-short">Краткое описание</Label>
                     <Textarea
                       id="poi-short"
                       value={poiForm.shortDescription}
@@ -1050,7 +1051,7 @@ export default function AdminPage() {
                     onChange={(e) =>
                       setIconForm({ ...iconForm, name: e.target.value })
                     }
-                    placeholder="Назван��е иконки"
+                    placeholder="Название иконки"
                   />
                 </div>
                 <div>
