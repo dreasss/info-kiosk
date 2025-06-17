@@ -6,7 +6,7 @@ import type { SystemSettings } from "@/types/settings";
 
 // Имя базы данных
 const DB_NAME = "interactive_map_db";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 // Имена хранилищ (таблиц)
 const STORES = {
@@ -57,7 +57,7 @@ export async function initDB(): Promise<IDBDatabase> {
 
   if (typeof window === "undefined" || !window.indexedDB) {
     dbInitFailed = true;
-    throw new Error("IndexedDB не поддерживается в это�� браузере");
+    throw new Error("IndexedDB не поддерживается в этом браузере");
   }
 
   dbInitPromise = new Promise((resolve, reject) => {
@@ -601,7 +601,7 @@ export async function deleteMedia(id: string): Promise<boolean> {
       const deleteRequest = store.delete(id);
 
       deleteRequest.onsuccess = async () => {
-        // ��бновляем счетчик альбома
+        // Обновляем счетчик альбома
         if (media?.albumId) {
           try {
             await updateAlbumItemCount(media.albumId);
