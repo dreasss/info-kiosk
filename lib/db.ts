@@ -251,6 +251,28 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
       active: true,
     });
 
+    // Добавляем базовые альбомы
+    const albumsStore = transaction.objectStore(STORES.ALBUMS);
+    albumsStore.add({
+      id: "1",
+      name: "Общие фотографии",
+      description: "Основная коллекция фотографий ОИЯИ",
+      type: "photo",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      itemCount: 0,
+    });
+
+    albumsStore.add({
+      id: "2",
+      name: "Видеоматериалы",
+      description: "Видео презентации и документальные материалы",
+      type: "video",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      itemCount: 0,
+    });
+
     console.log("Базовые данные добавлены");
   } catch (error) {
     console.warn("Ошибка добавления базовых данных:", error);
