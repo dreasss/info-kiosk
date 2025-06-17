@@ -216,12 +216,14 @@ function createDBInitPromise(): Promise<IDBDatabase> {
           // Инициализируем базу данными по умолчанию только если это новая база данных
           if (event.oldVersion === 0) {
             console.log("Инициализируем новую базу данных демо-данными")
-            try {
-              initializeDefaultData(transaction)
-            } catch (dataError) {
-              console.error("Ошибка при инициализации демо-данных:", dataError)
-              // Не прерываем создание схемы из-за ошибок в демо-данных
-            }
+            // Выполняем инициализацию в следующем тике, чтобы не блокировать транзакцию
+            setTimeout(() => {
+              try {
+                initializeDefaultData(transaction)
+              } catch (dataError) {
+                console.error("Ошибка при инициализации демо-данных:", dataError)
+              }
+            }, 0)
           }
         } catch (error) {
           console.error("Ошибка при создании схемы базы данных:", error)
@@ -294,7 +296,7 @@ async function initializeDemoDataSeparately(db: IDBDatabase): Promise<void> {
     try {
       initializeDefaultData(transaction)
     } catch (error) {
-      console.error("Ошибка при инициализации демо-данных:", error)
+      console.error("Ошибка при инициализаци�� демо-данных:", error)
       reject(error)
     }
   })
@@ -536,7 +538,7 @@ export async function savePOI(poi: POI): Promise<POI> {
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения POI:", event)
-      reject(new Error("Не удалось сохранить POI"))
+      reject(new Error("Не удалось сохрани��ь POI"))
     }
   })
 }
@@ -828,7 +830,7 @@ export async function saveIcon(icon: MarkerIcon, iconBlob?: Blob): Promise<Marke
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения иконки:", event)
-      reject(new Error("Не удалось сохранить иконку"))
+      reject(new Error("Не удал��сь сохранить иконку"))
     }
   })
 }
@@ -897,7 +899,7 @@ export async function saveRssFeed(feed: RssFeed): Promise<RssFeed> {
     const transaction = db.transaction(STORES.RSS_FEEDS, "readwrite")
     const store = transaction.objectStore(STORES.RSS_FEEDS)
 
-    // Если ID не указан, генерируем новый
+    // Если ID не указан, генери��уем новый
     if (!feed.id) {
       feed.id = Date.now().toString()
     }
