@@ -110,12 +110,20 @@ export function RssTicker({ className }: RssTickerProps) {
                 headers: {
                   Accept: "application/xml, text/xml, */*",
                 },
-                // Таймаут 20 секунд
-                signal: AbortSignal.timeout(20000),
+                // Таймаут 10 секунд для быстрой отработки
+                signal: AbortSignal.timeout(10000),
               },
             );
 
             if (!response.ok) {
+              // Получаем детали ошибки
+              const errorDetails = await response
+                .text()
+                .catch(() => "Unknown error");
+              console.error(
+                `RSS Ticker: API error for ${feed.name}:`,
+                errorDetails,
+              );
               throw new Error(
                 `API returned ${response.status}: ${response.statusText}`,
               );
