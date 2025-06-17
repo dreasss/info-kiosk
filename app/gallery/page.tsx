@@ -20,11 +20,13 @@ import { cn } from "@/lib/utils";
 
 export default function GalleryPage() {
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
   const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeFilter, setActiveFilter] = useState<"all" | "photo" | "video">(
     "all",
   );
+  const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
   const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
   const [loading, setLoading] = useState(true);
 
