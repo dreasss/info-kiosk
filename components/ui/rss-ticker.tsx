@@ -211,7 +211,7 @@ export function RssTicker({ className }: RssTickerProps) {
           setNews([
             {
               title:
-                "Не удалось загрузить новости. Проверьте подключение к интернету.",
+                "Новости временно недоступны. Загрузка будет повторена автоматически.",
               link: "#",
               pubDate: new Date().toISOString(),
               source: "Система",
@@ -225,7 +225,7 @@ export function RssTicker({ className }: RssTickerProps) {
         setNews([
           {
             title:
-              "Ошибка загрузки RSS лент. Проверьте подключение к интернету.",
+              "Новости временно недоступны. Повторная попытка через 15 минут.",
             link: "#",
             pubDate: new Date().toISOString(),
             source: "Система",
@@ -311,5 +311,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым именем для совместимости
+// Экспортируем также под старым име��ем для совместимости
 export { RssTicker as RSSTicker };
