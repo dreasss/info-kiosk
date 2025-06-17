@@ -1,46 +1,55 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { fetchMedia } from "@/lib/api"
-import type { MediaItem } from "@/types/media"
-import { Search, ImageIcon, Video, ArrowLeft, Play, Download } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { fetchMedia, fetchAlbums, fetchMediaByAlbum } from "@/lib/api";
+import type { MediaItem, Album } from "@/types/media";
+import {
+  Search,
+  ImageIcon,
+  Video,
+  ArrowLeft,
+  Play,
+  Download,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function GalleryPage() {
-  const [media, setMedia] = useState<MediaItem[]>([])
-  const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [activeFilter, setActiveFilter] = useState<"all" | "photo" | "video">("all")
-  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [filteredMedia, setFilteredMedia] = useState<MediaItem[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilter, setActiveFilter] = useState<"all" | "photo" | "video">(
+    "all",
+  );
+  const [selectedItem, setSelectedItem] = useState<MediaItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadMedia = async () => {
       try {
-        const data = await fetchMedia()
-        setMedia(data)
-        setFilteredMedia(data)
+        const data = await fetchMedia();
+        setMedia(data);
+        setFilteredMedia(data);
       } catch (error) {
-        console.error("Error loading media:", error)
+        console.error("Error loading media:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadMedia()
-  }, [])
+    loadMedia();
+  }, []);
 
   useEffect(() => {
-    let filtered = media
+    let filtered = media;
 
     // Фильтр по типу
     if (activeFilter !== "all") {
-      filtered = filtered.filter((item) => item.category === activeFilter)
+      filtered = filtered.filter((item) => item.category === activeFilter);
     }
 
     // Поиск
@@ -49,27 +58,27 @@ export default function GalleryPage() {
         (item) =>
           item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           item.description?.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
+      );
     }
 
-    setFilteredMedia(filtered)
-  }, [media, activeFilter, searchTerm])
+    setFilteredMedia(filtered);
+  }, [media, activeFilter, searchTerm]);
 
   const handleDownload = (item: MediaItem) => {
-    const link = document.createElement("a")
-    link.href = item.url
-    link.download = `${item.title}.${item.type === "image" ? "jpg" : "mp4"}`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = item.url;
+    link.download = `${item.title}.${item.type === "image" ? "jpg" : "mp4"}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -86,8 +95,12 @@ export default function GalleryPage() {
                 </Link>
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Фото и Видео галерея</h1>
-                <p className="text-sm text-gray-600">Изображения и видеоматериалы ОИЯИ</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Фото и Видео галерея
+                </h1>
+                <p className="text-sm text-gray-600">
+                  Изображения и видеоматериалы ОИЯИ
+                </p>
               </div>
             </div>
           </div>
@@ -163,7 +176,9 @@ export default function GalleryPage() {
                       <div
                         className={cn(
                           "px-2 py-1 rounded-full text-xs font-medium",
-                          item.type === "image" ? "bg-green-500 text-white" : "bg-red-500 text-white",
+                          item.type === "image"
+                            ? "bg-green-500 text-white"
+                            : "bg-red-500 text-white",
                         )}
                       >
                         {item.type === "image" ? "Фото" : "Видео"}
@@ -171,16 +186,24 @@ export default function GalleryPage() {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">{item.title}</h3>
-                    {item.description && <p className="text-sm text-gray-600 line-clamp-2 mb-2">{item.description}</p>}
+                    <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
+                      {item.title}
+                    </h3>
+                    {item.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                        {item.description}
+                      </p>
+                    )}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString("ru-RU")}</span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(item.date).toLocaleDateString("ru-RU")}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleDownload(item)
+                          e.stopPropagation();
+                          handleDownload(item);
                         }}
                       >
                         <Download className="h-4 w-4" />
@@ -196,8 +219,12 @@ export default function GalleryPage() {
             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
               <ImageIcon className="h-12 w-12 text-gray-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Медиафайлы не найдены</h3>
-            <p className="text-gray-600">Попробуйте изменить параметры поиска или фильтры</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Медиафайлы не найдены
+            </h3>
+            <p className="text-gray-600">
+              Попробуйте изменить параметры поиска или фильтры
+            </p>
           </div>
         )}
       </main>
@@ -215,7 +242,11 @@ export default function GalleryPage() {
             <div className="p-4 border-b">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">{selectedItem.title}</h3>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedItem(null)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedItem(null)}
+                >
                   ✕
                 </Button>
               </div>
@@ -234,12 +265,16 @@ export default function GalleryPage() {
               ) : (
                 <video controls className="max-w-full max-h-[60vh]">
                   <source src={selectedItem.url} type="video/mp4" />
-                  Ваш браузер не поддерживает воспроизведение видео.
+                  Ваш браузер не ��оддерживает воспроизведение видео.
                 </video>
               )}
-              {selectedItem.description && <p className="text-gray-600 mt-4">{selectedItem.description}</p>}
+              {selectedItem.description && (
+                <p className="text-gray-600 mt-4">{selectedItem.description}</p>
+              )}
               <div className="flex items-center justify-between mt-4">
-                <span className="text-sm text-gray-500">{new Date(selectedItem.date).toLocaleDateString("ru-RU")}</span>
+                <span className="text-sm text-gray-500">
+                  {new Date(selectedItem.date).toLocaleDateString("ru-RU")}
+                </span>
                 <Button onClick={() => handleDownload(selectedItem)}>
                   <Download className="h-4 w-4 mr-2" />
                   Скачать
@@ -250,5 +285,5 @@ export default function GalleryPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
