@@ -57,7 +57,7 @@ export async function initDB(): Promise<IDBDatabase> {
 
   if (typeof window === "undefined" || !window.indexedDB) {
     dbInitFailed = true;
-    throw new Error("IndexedDB не поддерживается в этом браузере");
+    throw new Error("IndexedDB не поддерживается в это�� браузере");
   }
 
   dbInitPromise = new Promise((resolve, reject) => {
@@ -492,18 +492,257 @@ export async function deleteRssFeed(id: string): Promise<boolean> {
   });
 }
 
-// Упрощенные заглушки для остальных функций
+// Функции для работы с медиафайлами
 export async function getAllMedia(): Promise<MediaItem[]> {
-  return [];
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.MEDIA, "readonly");
+    const store = transaction.objectStore(STORES.MEDIA);
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(new Error("Не удалось получить медиафайлы"));
+  });
 }
+
 export async function getMediaByType(type: string): Promise<MediaItem[]> {
-  return [];
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.MEDIA, "readonly");
+    const store = transaction.objectStore(STORES.MEDIA);
+    const index = store.index("type");
+    const request = index.getAll(type);
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () =>
+      reject(new Error("Не удалось получить медиафайлы по типу"));
+  });
 }
+
+export async function getMediaByCategory(
+  category: "photo" | "video",
+): Promise<MediaItem[]> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.MEDIA, "readonly");
+    const store = transaction.objectStore(STORES.MEDIA);
+    const index = store.index("category");
+    const request = index.getAll(category);
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () =>
+      reject(new Error("Не удалось получить медиафайлы по категории"));
+  });
+}
+
+export async function getMediaByAlbum(albumId: string): Promise<MediaItem[]> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.MEDIA, "readonly");
+    const store = transaction.objectStore(STORES.MEDIA);
+    const index = store.index("albumId");
+    const request = index.getAll(albumId);
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () =>
+      reject(new Error("Не удалось получить медиафайлы альбома"));
+  });
+}
+
 export async function saveMedia(media: MediaItem): Promise<MediaItem> {
-  return media;
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [STORES.MEDIA, STORES.ALBUMS],
+      "readwrite",
+    );
+    const store = transaction.objectStore(STORES.MEDIA);
+
+    if (!media.id) {
+      media.id = Date.now().toString();
+    }
+
+    if (!media.date) {
+      media.date = new Date().toISOString();
+    }
+
+    const request = store.put(media);
+
+    request.onsuccess = async () => {
+      // Обновляем счетчик альбома
+      if (media.albumId) {
+        try {
+          await updateAlbumItemCount(media.albumId);
+        } catch (error) {
+          console.warn("Не удалось обновить счетчик альбома:", error);
+        }
+      }
+      resolve(media);
+    };
+
+    request.onerror = () => reject(new Error("Не удалось сохранить медиафайл"));
+  });
 }
+
 export async function deleteMedia(id: string): Promise<boolean> {
-  return true;
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [STORES.MEDIA, STORES.ALBUMS],
+      "readwrite",
+    );
+    const store = transaction.objectStore(STORES.MEDIA);
+
+    // Сначала получаем медиафайл для получения albumId
+    const getRequest = store.get(id);
+
+    getRequest.onsuccess = () => {
+      const media = getRequest.result;
+      const deleteRequest = store.delete(id);
+
+      deleteRequest.onsuccess = async () => {
+        // ��бновляем счетчик альбома
+        if (media?.albumId) {
+          try {
+            await updateAlbumItemCount(media.albumId);
+          } catch (error) {
+            console.warn("Не удалось обновить счетчик альбома:", error);
+          }
+        }
+        resolve(true);
+      };
+
+      deleteRequest.onerror = () =>
+        reject(new Error("Не удалось удалить медиафайл"));
+    };
+
+    getRequest.onerror = () => reject(new Error("Не удалось найти медиафайл"));
+  });
+}
+
+// Функции для работы с альбомами
+export async function getAllAlbums(): Promise<Album[]> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ALBUMS, "readonly");
+    const store = transaction.objectStore(STORES.ALBUMS);
+    const request = store.getAll();
+
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(new Error("Не удалось получить альбомы"));
+  });
+}
+
+export async function getAlbumById(id: string): Promise<Album | null> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ALBUMS, "readonly");
+    const store = transaction.objectStore(STORES.ALBUMS);
+    const request = store.get(id);
+
+    request.onsuccess = () => resolve(request.result || null);
+    request.onerror = () => reject(new Error("Не удалось получить альбом"));
+  });
+}
+
+export async function saveAlbum(album: Album): Promise<Album> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.ALBUMS, "readwrite");
+    const store = transaction.objectStore(STORES.ALBUMS);
+
+    if (!album.id) {
+      album.id = Date.now().toString();
+    }
+
+    if (!album.createdAt) {
+      album.createdAt = new Date().toISOString();
+    }
+
+    album.updatedAt = new Date().toISOString();
+
+    const request = store.put(album);
+
+    request.onsuccess = () => resolve(album);
+    request.onerror = () => reject(new Error("Не удалось сохранить альбом"));
+  });
+}
+
+export async function deleteAlbum(id: string): Promise<boolean> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [STORES.ALBUMS, STORES.MEDIA],
+      "readwrite",
+    );
+    const albumsStore = transaction.objectStore(STORES.ALBUMS);
+    const mediaStore = transaction.objectStore(STORES.MEDIA);
+    const mediaIndex = mediaStore.index("albumId");
+
+    // Сначала удаляем все медиафайлы из альбома
+    const mediaRequest = mediaIndex.getAll(id);
+
+    mediaRequest.onsuccess = () => {
+      const mediaItems = mediaRequest.result || [];
+
+      // Удаляем все медиафайлы
+      mediaItems.forEach((media) => {
+        mediaStore.delete(media.id);
+      });
+
+      // Затем удаляем сам альбом
+      const albumRequest = albumsStore.delete(id);
+
+      albumRequest.onsuccess = () => resolve(true);
+      albumRequest.onerror = () =>
+        reject(new Error("Не удалось удалить альбом"));
+    };
+
+    mediaRequest.onerror = () =>
+      reject(new Error("Не удалось получить медиафайлы альбома"));
+  });
+}
+
+// Вспомогательная функция для обновления счетчика элементов в альбоме
+async function updateAlbumItemCount(albumId: string): Promise<void> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(
+      [STORES.ALBUMS, STORES.MEDIA],
+      "readwrite",
+    );
+    const albumsStore = transaction.objectStore(STORES.ALBUMS);
+    const mediaStore = transaction.objectStore(STORES.MEDIA);
+    const mediaIndex = mediaStore.index("albumId");
+
+    const albumRequest = albumsStore.get(albumId);
+
+    albumRequest.onsuccess = () => {
+      const album = albumRequest.result;
+      if (!album) {
+        reject(new Error("Альбом не найден"));
+        return;
+      }
+
+      const countRequest = mediaIndex.count(albumId);
+
+      countRequest.onsuccess = () => {
+        album.itemCount = countRequest.result;
+        album.updatedAt = new Date().toISOString();
+
+        const updateRequest = albumsStore.put(album);
+        updateRequest.onsuccess = () => resolve();
+        updateRequest.onerror = () =>
+          reject(new Error("Не удалось обновить альбом"));
+      };
+
+      countRequest.onerror = () =>
+        reject(new Error("Не удалось подсчитать элементы"));
+    };
+
+    albumRequest.onerror = () =>
+      reject(new Error("Не удалось получить альбом"));
+  });
 }
 export async function getAllIcons(): Promise<MarkerIcon[]> {
   return [];
