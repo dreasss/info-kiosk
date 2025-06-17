@@ -18,16 +18,21 @@ export class SoundSystem {
   }
 
   private async getAudioContext(): Promise<AudioContext> {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
-    }
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+      }
 
-    if (this.audioContext.state === "suspended") {
-      await this.audioContext.resume();
-    }
+      if (this.audioContext.state === "suspended") {
+        await this.audioContext.resume();
+      }
 
-    return this.audioContext;
+      return this.audioContext;
+    } catch (error) {
+      console.warn("AudioContext creation failed:", error);
+      throw error;
+    }
   }
 
   private async createBeep(
