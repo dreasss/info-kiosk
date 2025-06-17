@@ -30,6 +30,7 @@ export default function HomePage() {
   const [dbError, setDbError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const [isClient, setIsClient] = useState(false);
+  const [timerSettings, setTimerSettings] = useState<any>(null);
 
   // Ensure we only render client-specific content after hydration
   useEffect(() => {
@@ -58,7 +59,7 @@ export default function HomePage() {
 
         // Устанавливаем сообщение об ошибке
         const errorMessage =
-          error instanceof Error ? error.message : "Неизвестная ошибка";
+          error instanceof Error ? error.message : "Неиз��естная ошибка";
         if (
           errorMessage.includes("IndexedDB") ||
           errorMessage.includes("база данных")
@@ -380,7 +381,7 @@ export default function HomePage() {
               </span>
             </div>
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
-              <span className="opacity-70 mr-2 text-lg">����</span>
+              <span className="opacity-70 mr-2 text-lg">📞</span>
               <span>+7 (496) 216-50-59</span>
             </div>
             <div className="flex items-center hover:scale-105 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-300 cursor-pointer">
