@@ -154,6 +154,15 @@ export function RssTicker({ className }: RssTickerProps) {
               feedError,
             );
             console.error(`RSS Ticker: Feed URL was: ${feed.url}`);
+
+            // Если ошибка связана с нашим API, логируем подробности
+            if (feedError instanceof Error) {
+              if (feedError.message.includes("API returned")) {
+                console.error(`RSS Ticker: Server-side error for ${feed.name}`);
+              } else if (feedError.message.includes("timeout")) {
+                console.error(`RSS Ticker: Timeout loading ${feed.name}`);
+              }
+            }
             continue;
           }
         }
@@ -309,5 +318,5 @@ export function RssTicker({ className }: RssTickerProps) {
   );
 }
 
-// Экспортируем также под старым именем для совместимости
+// Экспортируем также под старым ��менем для совместимости
 export { RssTicker as RSSTicker };
