@@ -44,7 +44,7 @@ export default function HomePage() {
 
         // Загружаем новости
         const newsData = await fetchNews();
-        setNews(newsData.slice(0, 5)); // Берем только 5 последних но��остей
+        setNews(newsData.slice(0, 5)); // Берем только 5 последних новостей
 
         // Загружаем настройки таймера
         const timerData = await fetchTimerSettings();
@@ -84,10 +84,26 @@ export default function HomePage() {
       // Добавляем функции в глобальную область для отладки
       (window as any).dbReset = resetDBState;
       (window as any).dbStatus = getDBStatus;
+      (window as any).dbForceReset = () => {
+        // Полный сброс базы данных
+        if (typeof window !== "undefined") {
+          const deleteReq = indexedDB.deleteDatabase("interactive_map_db");
+          deleteReq.onsuccess = () => {
+            console.log("Database deleted successfully");
+            window.location.reload();
+          };
+          deleteReq.onerror = () => {
+            console.error("Error deleting database");
+          };
+        }
+      };
 
       console.log("🔧 Database debugging tools available:");
       console.log("  - window.dbReset() - Сброс состояния базы данных");
       console.log("  - window.dbStatus() - Проверка состояния базы данных");
+      console.log(
+        "  - window.dbForceReset() - Полное удаление и пересоздание БД",
+      );
     }
   }, []);
 
@@ -125,7 +141,7 @@ export default function HomePage() {
                 >
                   {isClient && language === "en"
                     ? "Joint Institute for Nuclear Research"
-                    : "Объединенный Институт Яде��ных Исследований"}
+                    : "Объединенный Институт Ядерных Исследований"}
                 </h1>
               </div>
             </div>
