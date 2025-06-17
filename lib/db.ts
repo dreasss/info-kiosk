@@ -206,7 +206,7 @@ async function addBasicDataIfNeeded(db: IDBDatabase): Promise<void> {
 
 async function addBasicData(db: IDBDatabase): Promise<void> {
   const transaction = db.transaction(
-    [STORES.POIS, STORES.SETTINGS, STORES.RSS_FEEDS],
+    [STORES.POIS, STORES.SETTINGS, STORES.RSS_FEEDS, STORES.ALBUMS],
     "readwrite",
   );
 
