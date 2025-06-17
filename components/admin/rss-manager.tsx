@@ -1,103 +1,92 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { Rss, Edit, Trash2, Plus, Save, ExternalLink } from "lucide-react";
-import {
-  fetchRssFeeds,
-  createRssFeed,
-  updateRssFeed,
-  removeRssFeed,
-  type RssFeed,
-} from "@/lib/api";
+import React, { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Switch } from "@/components/ui/switch"
+import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
+import { Rss, Edit, Trash2, Plus, Save, ExternalLink } from "lucide-react"
+import { fetchRssFeeds, createRssFeed, updateRssFeed, removeRssFeed, type RssFeed } from "@/lib/api"
+import { createDemoRssFeeds } from "@/lib/demo-media"
 
 interface RssManagerProps {
-  onDataChange?: () => void;
+  onDataChange?: () => void
 }
 
 export function RssManager({ onDataChange }: RssManagerProps) {
-  const [rssFeeds, setRssFeeds] = useState<RssFeed[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingFeed, setEditingFeed] = useState<RssFeed | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
+  const [rssFeeds, setRssFeeds] = useState<RssFeed[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editingFeed, setEditingFeed] = useState<RssFeed | null>(null)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const { toast } = useToast()
 
   const [formData, setFormData] = useState({
     name: "",
     url: "",
-    active: true,
-  });
+    active: true
+  })
 
   const loadRssFeeds = async () => {
     try {
-      setIsLoading(true);
-      const data = await fetchRssFeeds();
-      setRssFeeds(data);
+      setIsLoading(true)
+      const data = await fetchRssFeeds()
+      setRssFeeds(data)
     } catch (error) {
-      console.error("Error loading RSS feeds:", error);
+      console.error("Error loading RSS feeds:", error)
       toast({
         variant: "destructive",
         title: "Ошибка",
-        description: "Не удалось загрузить RSS ленты",
-      });
+        description: "Не удалось загрузить RSS ленты"
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    loadRssFeeds();
-  }, []);
+    loadRssFeeds()
+  }, [])
 
   const resetForm = () => {
     setFormData({
       name: "",
       url: "",
-      active: true,
-    });
-    setEditingFeed(null);
-    setIsEditing(false);
-  };
+      active: true
+    })
+    setEditingFeed(null)
+    setIsEditing(false)
+  }
 
   const handleEdit = (feed: RssFeed) => {
-    setEditingFeed(feed);
+    setEditingFeed(feed)
     setFormData({
       name: feed.name,
       url: feed.url,
-      active: feed.active,
-    });
-    setIsEditing(true);
-    setIsDialogOpen(true);
-  };
+      active: feed.active
+    })
+    setIsEditing(true)
+    setIsDialogOpen(true)
+  }
 
   const handleCreate = () => {
-    resetForm();
-    setIsDialogOpen(true);
-  };
+    resetForm()
+    setIsDialogOpen(true)
+  }
 
   const validateUrl = (url: string): boolean => {
     try {
-      new URL(url);
-      return true;
+      new URL(url)
+      return true
     } catch {
-      return false;
+      return false
     }
-  };
+  }
 
   const handleSave = async () => {
     try {
@@ -105,103 +94,121 @@ export function RssManager({ onDataChange }: RssManagerProps) {
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: "Название и URL обязательны для заполнения",
-        });
-        return;
+          description: "Название и URL обязательны для заполнения"
+        })
+        return
       }
 
       if (!validateUrl(formData.url)) {
         toast({
           variant: "destructive",
           title: "Ошибка",
-          description: "Введите корректный URL",
-        });
-        return;
+          description: "Введите корректный URL"
+        })
+        return
       }
 
       const feedData = {
         name: formData.name,
         url: formData.url,
-        active: formData.active,
-      };
-
-      if (isEditing && editingFeed) {
-        await updateRssFeed(editingFeed.id, feedData);
-        toast({
-          title: "Успех",
-          description: "RSS лента успешно обновлена",
-        });
-      } else {
-        await createRssFeed(feedData);
-        toast({
-          title: "Успех",
-          description: "RSS лента успешно создана",
-        });
+        active: formData.active
       }
 
-      await loadRssFeeds();
-      setIsDialogOpen(false);
-      resetForm();
-      onDataChange?.();
+      if (isEditing && editingFeed) {
+        await updateRssFeed(editingFeed.id, feedData)
+        toast({
+          title: "Успех",
+          description: "RSS лента успешно обновлена"
+        })
+      } else {
+        await createRssFeed(feedData)
+        toast({
+          title: "Успех",
+          description: "RSS лента успешно создана"
+        })
+      }
+
+      await loadRssFeeds()
+      setIsDialogOpen(false)
+      resetForm()
+      onDataChange?.()
     } catch (error) {
-      console.error("Error saving RSS feed:", error);
+      console.error("Error saving RSS feed:", error)
       toast({
         variant: "destructive",
         title: "Ошибка",
-        description: "Не удалось сохранить RSS ленту",
-      });
+        description: "Не удалось сохранить RSS ленту"
+      })
     }
-  };
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm("Вы уверены, что хотите удалить эту RSS ленту?")) {
-      return;
+      return
     }
 
     try {
-      await removeRssFeed(id);
-      await loadRssFeeds();
+      await removeRssFeed(id)
+      await loadRssFeeds()
       toast({
         title: "Успех",
-        description: "RSS лента успешно удалена",
-      });
-      onDataChange?.();
+        description: "RSS лента успешно удалена"
+      })
+      onDataChange?.()
     } catch (error) {
-      console.error("Error deleting RSS feed:", error);
+      console.error("Error deleting RSS feed:", error)
       toast({
         variant: "destructive",
         title: "Ошибка",
-        description: "Не удалось удалить RSS ленту",
-      });
+        description: "Не удалось удалить RSS ленту"
+      })
     }
-  };
+  }
+
+  const createDemoFeeds = async () => {
+    try {
+      await createDemoRssFeeds()
+      await loadRssFeeds()
+      toast({
+        title: "Успех",
+        description: "Демо RSS ленты созданы"
+      })
+      onDataChange?.()
+    } catch (error) {
+      console.error("Error creating demo RSS feeds:", error)
+      toast({
+        variant: "destructive",
+        title: "Ошибка",
+        description: "Не удалось создать демо RSS ленты"
+      })
+    }
+  }
 
   const toggleFeedActive = async (feed: RssFeed) => {
     try {
-      await updateRssFeed(feed.id, { ...feed, active: !feed.active });
-      await loadRssFeeds();
+      await updateRssFeed(feed.id, { ...feed, active: !feed.active })
+      await loadRssFeeds()
       toast({
         title: "Успех",
-        description: `RSS лента ${!feed.active ? "активирована" : "деактивирована"}`,
-      });
-      onDataChange?.();
+        description: `RSS лента ${!feed.active ? "активирована" : "деактивирована"}`
+      })
+      onDataChange?.()
     } catch (error) {
-      console.error("Error toggling RSS feed:", error);
+      console.error("Error toggling RSS feed:", error)
       toast({
         variant: "destructive",
         title: "Ошибка",
-        description: "Не удалось изменить статус RSS ленты",
-      });
+        description: "Не удалось изменить статус RSS ленты"
+      })
     }
-  };
+  }
 
-  const filteredFeeds = rssFeeds.filter(
-    (feed) =>
-      feed.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      feed.url.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredFeeds = rssFeeds.filter(feed =>
+    feed.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    feed.url.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
-  const activeFeeds = rssFeeds.filter((feed) => feed.active);
+  const activeFeeds = rssFeeds.filter(feed => feed.active)
 
   if (isLoading) {
     return (
@@ -213,7 +220,7 @@ export function RssManager({ onDataChange }: RssManagerProps) {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -232,12 +239,17 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                   Добавить RSS ленту
                 </Button>
               </DialogTrigger>
+              <Button
+                variant="outline"
+                onClick={() => createDemoFeeds()}
+              >
+                Создать демо ленты
+              </Button>
+              </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader>
                   <DialogTitle>
-                    {isEditing
-                      ? "Редактировать RSS ленту"
-                      : "Создать новую RSS ленту"}
+                    {isEditing ? "Редактировать RSS ленту" : "Создать новую RSS ленту"}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -246,12 +258,7 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="Название RSS ленты"
                     />
                   </div>
@@ -261,12 +268,7 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                     <Input
                       id="url"
                       value={formData.url}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          url: e.target.value,
-                        }))
-                      }
+                      onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
                       placeholder="https://example.com/rss.xml"
                     />
                   </div>
@@ -275,18 +277,13 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                     <Switch
                       id="active"
                       checked={formData.active}
-                      onCheckedChange={(checked) =>
-                        setFormData((prev) => ({ ...prev, active: checked }))
-                      }
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, active: checked }))}
                     />
                     <Label htmlFor="active">Активная лента</Label>
                   </div>
 
                   <div className="flex justify-end space-x-2 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
+                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                       Отмена
                     </Button>
                     <Button onClick={handleSave}>
@@ -319,8 +316,7 @@ export function RssManager({ onDataChange }: RssManagerProps) {
               <h4 className="font-medium mb-2">Информация о бегущей строке</h4>
               <p className="text-sm text-gray-600">
                 RSS ленты отображаются в виде бегущей строки на главном экране.
-                Активные ленты автоматически обновляются и показывают последние
-                новости.
+                Активные ленты автоматически обновляются и показывают последние новости.
               </p>
             </div>
           )}
@@ -332,8 +328,7 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                   <div>
                     <p className="mb-4">RSS ленты не найдены</p>
                     <p className="text-sm">
-                      Добавьте RSS ленты для отображения новостей в бегущей
-                      строке на главном экране
+                      Добавьте RSS ленты для отображения новостей в бегущей строке на главном экране
                     </p>
                   </div>
                 ) : (
@@ -369,18 +364,10 @@ export function RssManager({ onDataChange }: RssManagerProps) {
                         onCheckedChange={() => toggleFeedActive(feed)}
                         size="sm"
                       />
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(feed)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => handleEdit(feed)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDelete(feed.id)}
-                      >
+                      <Button size="sm" variant="outline" onClick={() => handleDelete(feed.id)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -392,5 +379,5 @@ export function RssManager({ onDataChange }: RssManagerProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }
