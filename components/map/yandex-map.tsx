@@ -295,7 +295,7 @@ export default function YandexMap() {
         <TouchButton
           asChild
           touchSize="lg"
-          className="bg-white shadow-xl border-2 border-gray-200 text-gray-800 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-300"
+          className="bg-white shadow-xl border-2 border-white text-gray-800 hover:bg-gray-50 hover:text-gray-900 hover:border-gray-100"
         >
           <Link href="/">
             <Home className="h-6 w-6 mr-2 text-gray-700" />
