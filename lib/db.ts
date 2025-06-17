@@ -51,7 +51,7 @@ export async function initDB(): Promise<IDBDatabase> {
     return dbCache;
   }
 
-  // Если инициализация уже в процессе, возвращаем существующий промис
+  // Если инициализация уже в проце��се, возвращаем существующий промис
   if (dbInitPromise) {
     return dbInitPromise;
   }
@@ -268,7 +268,7 @@ export function getDBStatus() {
   };
 }
 
-// Функции для работы с POI
+// Working POI functions start here
 export async function getAllPOIs(): Promise<POI[]> {
   // Демо-данные для POI
   const demoPOIs: POI[] = [
@@ -357,7 +357,7 @@ export async function getAllPOIs(): Promise<POI[]> {
       fullName: "Объединенный институт ядерных исследований",
       logo: "/images/jinr-logo.png",
       description:
-        "Международная межправительственная научно-исследовательская организация",
+        "Международная м��жправительственная научно-исследовательская организация",
       address: "ул. Жолио-Кюри, 6, Дубна, Московская область",
       phone: "+7 (496) 216-50-59",
       email: "post@jinr.ru",
@@ -539,7 +539,7 @@ export async function getAllNews(): Promise<NewsItem[]> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения новостей:", event);
-      reject(new Error("Не удалось получить новости"));
+      reject(new Error("Не удалось пол��чить новости"));
     };
   });
 }
