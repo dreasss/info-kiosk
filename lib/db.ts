@@ -17,6 +17,7 @@ const STORES = {
   SETTINGS: "settings",
   ICONS: "icons",
   RSS_FEEDS: "rss_feeds",
+  TIMER: "timer",
 };
 
 // Интерфейс для иконок маркеров
@@ -137,6 +138,13 @@ export async function initDB(): Promise<IDBDatabase> {
         });
         rssStore.createIndex("active", "active", { unique: false });
       }
+
+      if (!db.objectStoreNames.contains(STORES.TIMER)) {
+        const timerStore = db.createObjectStore(STORES.TIMER, {
+          keyPath: "id",
+        });
+        timerStore.createIndex("enabled", "enabled", { unique: false });
+      }
     };
 
     request.onblocked = () => {
@@ -169,7 +177,7 @@ export function resetDBState(): void {
   console.log("Состояние базы данных сброшено");
 }
 
-// Функция для проверки состояния базы данных
+// Функция для проверки состояния баз�� данных
 export function getDBStatus() {
   return {
     hasCache: !!dbCache,
@@ -211,7 +219,7 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
   );
 
   try {
-    // Добавляем базовый POI
+    // Добавля��м базовый POI
     const poisStore = transaction.objectStore(STORES.POIS);
     poisStore.add({
       id: "1",
@@ -265,7 +273,7 @@ async function addBasicData(db: IDBDatabase): Promise<void> {
 
     albumsStore.add({
       id: "2",
-      name: "Видеомат��риалы",
+      name: "Видеоматериалы",
       description: "Видео презентации и документальные материалы",
       type: "video",
       createdAt: new Date().toISOString(),
@@ -805,4 +813,37 @@ export async function deleteIcon(id: string): Promise<boolean> {
 // Функция для загрузки файлов (создает blob URL)
 export async function uploadFile(file: File): Promise<string> {
   return URL.createObjectURL(file);
+}
+
+// Функции для работы с таймером
+export async function getTimerSettings(): Promise<any> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.TIMER, "readonly");
+    const store = transaction.objectStore(STORES.TIMER);
+    const request = store.get("timer-settings");
+
+    request.onsuccess = () =>
+      resolve(request.result || { id: "timer-settings", enabled: false });
+    request.onerror = () =>
+      reject(new Error("Не удалось получить настройки таймера"));
+  });
+}
+
+export async function saveTimerSettings(settings: any): Promise<any> {
+  const db = await initDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORES.TIMER, "readwrite");
+    const store = transaction.objectStore(STORES.TIMER);
+
+    if (!settings.id) {
+      settings.id = "timer-settings";
+    }
+
+    const request = store.put(settings);
+
+    request.onsuccess = () => resolve(settings);
+    request.onerror = () =>
+      reject(new Error("Не удалось сохранить настройки таймера"));
+  });
 }

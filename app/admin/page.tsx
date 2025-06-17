@@ -13,6 +13,7 @@ import {
   ImageIcon,
   Rss,
   Building,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 import { TouchButton } from "@/components/ui/touch-button";
@@ -22,6 +23,7 @@ import { NewsManager } from "@/components/admin/news-manager";
 import { RssManager } from "@/components/admin/rss-manager";
 import { IconManager } from "@/components/admin/icon-manager";
 import { SettingsManager } from "@/components/admin/settings-manager";
+import { TimerManager } from "@/components/admin/timer-manager";
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("media");
@@ -77,7 +79,7 @@ export default function AdminPage() {
           onValueChange={setActiveTab}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="pois">
               <MapPin className="h-4 w-4 mr-2" />
               Объекты
@@ -93,6 +95,10 @@ export default function AdminPage() {
             <TabsTrigger value="rss">
               <Rss className="h-4 w-4 mr-2" />
               RSS
+            </TabsTrigger>
+            <TabsTrigger value="timer">
+              <Clock className="h-4 w-4 mr-2" />
+              Таймер
             </TabsTrigger>
             <TabsTrigger value="icons">
               <Building className="h-4 w-4 mr-2" />
@@ -122,6 +128,11 @@ export default function AdminPage() {
           {/* RSS Tab */}
           <TabsContent value="rss" className="space-y-6">
             <RssManager onDataChange={loadData} />
+          </TabsContent>
+
+          {/* Timer Tab */}
+          <TabsContent value="timer" className="space-y-6">
+            <TimerManager onDataChange={loadData} />
           </TabsContent>
 
           {/* Icons Tab */}
