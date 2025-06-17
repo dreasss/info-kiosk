@@ -146,7 +146,7 @@ export default function HomePage() {
                 >
                   {getText(
                     "Joint Institute for Nuclear Research",
-                    "Объединенный Институт Ядерных Исследований",
+                    "Объединенный Инст��тут Ядерных Исследований",
                   )}
                 </h1>
               </div>
@@ -353,9 +353,7 @@ export default function HomePage() {
                   suppressHydrationWarning={true}
                 >
                   <Newspaper className="h-6 w-6 mr-3 text-green-600" />
-                  {isClient && language === "en"
-                    ? "Latest News"
-                    : "Последние новости"}
+                  {getText("Latest News", "Последние новости")}
                 </h3>
                 <NewsCarousel news={news} />
               </div>
