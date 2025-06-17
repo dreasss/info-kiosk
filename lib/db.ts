@@ -1,7 +1,7 @@
 // Модуль для работы с локальной базой данных через IndexedDB
 import type { POI } from "@/types/poi";
 import type { NewsItem } from "@/types/news";
-import type { MediaItem } from "@/types/media";
+import type { MediaItem, Album } from "@/types/media";
 import type { SystemSettings } from "@/types/settings";
 
 // Имя базы данных
