@@ -173,20 +173,29 @@ export default function AdminPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [poisData, newsData, settingsData, mediaData, rssData, iconsData] =
-        await Promise.all([
-          fetchPOIs(),
-          fetchNews(),
-          fetchSettings(),
-          fetchMedia(),
-          fetchRssFeeds(),
-          fetchIcons(),
-        ]);
+      const [
+        poisData,
+        newsData,
+        settingsData,
+        mediaData,
+        albumsData,
+        rssData,
+        iconsData,
+      ] = await Promise.all([
+        fetchPOIs(),
+        fetchNews(),
+        fetchSettings(),
+        fetchMedia(),
+        fetchAlbums(),
+        fetchRssFeeds(),
+        fetchIcons(),
+      ]);
 
       setPois(poisData);
       setNews(newsData);
       setSettings(settingsData);
       setMedia(mediaData);
+      setAlbums(albumsData);
       setRssFeeds(rssData);
       setIcons(iconsData);
     } catch (error) {
@@ -381,7 +390,7 @@ export default function AdminPage() {
   const handleDeleteMedia = async (id: string) => {
     try {
       await removeMedia(id);
-      toast({ title: "Медиаф��йл удален" });
+      toast({ title: "Медиафайл удален" });
       loadData();
     } catch (error) {
       toast({ title: "Ошибка удаления", variant: "destructive" });
@@ -543,7 +552,7 @@ export default function AdminPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="poi-short">Краткое описание</Label>
+                    <Label htmlFor="poi-short">Кратк��е описание</Label>
                     <Textarea
                       id="poi-short"
                       value={poiForm.shortDescription}
@@ -1041,7 +1050,7 @@ export default function AdminPage() {
                     onChange={(e) =>
                       setIconForm({ ...iconForm, name: e.target.value })
                     }
-                    placeholder="Название иконки"
+                    placeholder="Назван��е иконки"
                   />
                 </div>
                 <div>
