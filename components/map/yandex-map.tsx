@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
 import {
   YMaps,
   Map,
@@ -10,176 +10,166 @@ import {
   GeolocationControl,
   FullscreenControl,
   Polyline,
-} from "@pbe/react-yandex-maps";
-import type { POI, POICategory } from "@/types/poi";
-import { fetchPOIs, fetchPOIsByCategory, getRoute } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
-import dynamic from "next/dynamic";
-import { YANDEX_MAPS_API_KEY, MAP_CONFIG } from "@/lib/config";
-import { createEnhancedBalloonContent } from "./enhanced-balloon";
-import { DraggableFilter } from "./draggable-filter";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { TouchButton } from "@/components/ui/touch-button";
-import { useLanguage } from "@/lib/language-context";
-import { CATEGORIES } from "@/types/poi";
-import { Home } from "lucide-react";
-import Link from "next/link";
+} from "@pbe/react-yandex-maps"
+import type { POI, POICategory } from "@/types/poi"
+import { fetchPOIs, fetchPOIsByCategory, getRoute } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
+import dynamic from "next/dynamic"
+import { YANDEX_MAPS_API_KEY, MAP_CONFIG } from "@/lib/config"
+import { createEnhancedBalloonContent } from "./enhanced-balloon"
+import { DraggableFilter } from "./draggable-filter"
+import { LanguageSwitcher } from "@/components/ui/language-switcher"
+import { TouchButton } from "@/components/ui/touch-button"
+import { useLanguage } from "@/lib/language-context"
+import { CATEGORIES } from "@/types/poi"
+import { Home } from "lucide-react"
+import Link from "next/link"
 
 export default function YandexMap() {
-  const [pois, setPois] = useState<POI[]>([]);
-  const [filteredPois, setFilteredPois] = useState<POI[]>([]);
-  const [selectedPoi, setSelectedPoi] = useState<POI | null>(null);
-  const [showRoute, setShowRoute] = useState(false);
-  const [showDetail, setShowDetail] = useState(false);
-  const [routeData, setRouteData] = useState<any>(null);
-  const [loadingRoute, setLoadingRoute] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<POICategory | "all">(
-    "all",
-  );
-  const mapRef = useRef<any>(null);
-  const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const [pois, setPois] = useState<POI[]>([])
+  const [filteredPois, setFilteredPois] = useState<POI[]>([])
+  const [selectedPoi, setSelectedPoi] = useState<POI | null>(null)
+  const [showRoute, setShowRoute] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
+  const [routeData, setRouteData] = useState<any>(null)
+  const [loadingRoute, setLoadingRoute] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<POICategory | "all">("all")
+  const mapRef = useRef<any>(null)
+  const { toast } = useToast()
+  const { t, language } = useLanguage()
 
   // Load POIs on component mount
   useEffect(() => {
     const loadPOIs = async () => {
       try {
-        const data = await fetchPOIs();
-        setPois(data);
-        setFilteredPois(data);
+        const data = await fetchPOIs()
+        setPois(data)
+        setFilteredPois(data)
       } catch (error) {
         toast({
           title: "Ошибка загрузки",
           description: "Не удалось загрузить объекты на карте",
           variant: "destructive",
-        });
+        })
       }
-    };
+    }
 
-    loadPOIs();
-  }, [toast]);
+    loadPOIs()
+  }, [toast])
 
   // Filter POIs by category
   const handleFilterChange = async (category: string) => {
-    setActiveCategory(category as POICategory | "all");
+    setActiveCategory(category as POICategory | "all")
     try {
-      const filtered = await fetchPOIsByCategory(
-        category as POICategory | "all",
-      );
-      setFilteredPois(filtered);
+      const filtered = await fetchPOIsByCategory(category as POICategory | "all")
+      setFilteredPois(filtered)
     } catch (error) {
       toast({
         title: "Ошибка фильтрации",
         description: "Не удалось отфильтровать объекты",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const handleShowRoute = async (poi: POI) => {
-    console.log("🗺️ Построение маршрута для:", poi.name);
-    setSelectedPoi(poi);
-    setLoadingRoute(true);
+    console.log("🗺️ Построение маршрута для:", poi.name)
+    setSelectedPoi(poi)
+    setLoadingRoute(true)
 
     try {
       // Получаем маршрут с учетом пешеходных дорог
-      const route = await getRoute([56.742278, 37.191899], poi.coordinates);
-      setRouteData(route);
-      setShowRoute(true);
+      const route = await getRoute([56.742278, 37.191899], poi.coordinates)
+      setRouteData(route)
+      setShowRoute(true)
 
       // Показываем уведомление
       toast({
         title: "✅ Маршрут построен",
         description: `Расстояние: ${(route.distance / 1000).toFixed(1)} км, Время: ${Math.round(route.duration / 60)} мин`,
-      });
+      })
 
       // Масштабируем карту для показа маршрута
       if (mapRef.current && route.coordinates.length > 0) {
         const bounds = route.coordinates.reduce(
           (bounds, coord) => {
             return [
-              [
-                Math.min(bounds[0][0], coord[0]),
-                Math.min(bounds[0][1], coord[1]),
-              ],
-              [
-                Math.max(bounds[1][0], coord[0]),
-                Math.max(bounds[1][1], coord[1]),
-              ],
-            ];
+              [Math.min(bounds[0][0], coord[0]), Math.min(bounds[0][1], coord[1])],
+              [Math.max(bounds[1][0], coord[0]), Math.max(bounds[1][1], coord[1])],
+            ]
           },
           [
             [route.coordinates[0][0], route.coordinates[0][1]],
             [route.coordinates[0][0], route.coordinates[0][1]],
           ],
-        );
+        )
 
-        const padding = 0.002;
+        const padding = 0.002
         const extendedBounds = [
           [bounds[0][0] - padding, bounds[0][1] - padding],
           [bounds[1][0] + padding, bounds[1][1] + padding],
-        ];
+        ]
 
-        mapRef.current.setBounds(extendedBounds, { checkZoomRange: true });
+        mapRef.current.setBounds(extendedBounds, { checkZoomRange: true })
       }
     } catch (error) {
-      console.error("❌ Ошибка построения маршрута:", error);
+      console.error("❌ Ошибка построения маршрута:", error)
       toast({
         title: "Ошибка маршрута",
         description: "Не удалось построить маршрут",
         variant: "destructive",
-      });
+      })
     } finally {
-      setLoadingRoute(false);
+      setLoadingRoute(false)
     }
-  };
+  }
 
   const handleCloseRoute = () => {
-    setShowRoute(false);
-    setSelectedPoi(null);
-    setRouteData(null);
+    setShowRoute(false)
+    setSelectedPoi(null)
+    setRouteData(null)
 
     if (mapRef.current) {
-      mapRef.current.setCenter([56.742278, 37.191899], MAP_CONFIG.DEFAULT_ZOOM);
+      mapRef.current.setCenter([56.742278, 37.191899], MAP_CONFIG.DEFAULT_ZOOM)
     }
-  };
+  }
 
   const handleShowDetail = (poi: POI) => {
-    console.log("ℹ️ Показать детали для:", poi.name);
-    setSelectedPoi(poi);
-    setShowDetail(true);
-  };
+    console.log("ℹ️ Показать детали для:", poi.name)
+    setSelectedPoi(poi)
+    setShowDetail(true)
+  }
 
   const handleCloseDetail = () => {
-    setShowDetail(false);
-  };
+    setShowDetail(false)
+  }
 
   // Dynamically import components
-  const RouteModal = dynamic(() => import("./route-modal"), { ssr: false });
-  const POIDetail = dynamic(() => import("./poi-detail"), { ssr: false });
+  const RouteModal = dynamic(() => import("./route-modal"), { ssr: false })
+  const POIDetail = dynamic(() => import("./poi-detail"), { ssr: false })
 
   // Глобальные обработчики для кнопок в балунах
   useEffect(() => {
-    (window as any).handleRouteClick = (poiId: string) => {
-      console.log("🔄 Глобальный обработчик маршрута для POI:", poiId);
-      const poi = pois.find((p) => p.id === poiId);
+    ;(window as any).handleRouteClick = (poiId: string) => {
+      console.log("🔄 Глобальный обработчик маршрута для POI:", poiId)
+      const poi = pois.find((p) => p.id === poiId)
       if (poi) {
-        handleShowRoute(poi);
+        handleShowRoute(poi)
       }
-    };
-    (window as any).handleDetailClick = (poiId: string) => {
-      console.log("🔄 Глобальный обработчик деталей для POI:", poiId);
-      const poi = pois.find((p) => p.id === poiId);
+    }
+    ;(window as any).handleDetailClick = (poiId: string) => {
+      console.log("🔄 Глобальный обработчик деталей для POI:", poiId)
+      const poi = pois.find((p) => p.id === poiId)
       if (poi) {
-        handleShowDetail(poi);
+        handleShowDetail(poi)
       }
-    };
+    }
 
     return () => {
-      delete (window as any).handleRouteClick;
-      delete (window as any).handleDetailClick;
-    };
-  }, [pois]);
+      delete (window as any).handleRouteClick
+      delete (window as any).handleDetailClick
+    }
+  }, [pois])
 
   return (
     <div className="w-full h-screen relative">
@@ -207,7 +197,7 @@ export default function YandexMap() {
           ]}
           instanceRef={(ref) => {
             if (ref) {
-              mapRef.current = ref;
+              mapRef.current = ref
             }
           }}
           options={{
@@ -299,12 +289,7 @@ export default function YandexMap() {
         >
           <Link href="/">
             <Home className="h-6 w-6 mr-2 text-gray-700" />
-            <span
-              className="font-semibold text-gray-800"
-              suppressHydrationWarning={true}
-            >
-              На главную
-            </span>
+            <span className="font-semibold text-gray-800" suppressHydrationWarning={true}>На главную</span>
           </Link>
         </TouchButton>
         <LanguageSwitcher />
@@ -319,12 +304,8 @@ export default function YandexMap() {
           <div className="flex items-center gap-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">
-                🗺️ Построение маршрута...
-              </p>
-              <p className="text-xs text-gray-600">
-                Расчет пешеходного пути с учетом дорог
-              </p>
+              <p className="text-sm font-semibold text-gray-800">🗺️ Построение маршрута...</p>
+              <p className="text-xs text-gray-600">Расчет пешеходного пути с учетом дорог</p>
             </div>
           </div>
         </div>
@@ -338,9 +319,7 @@ export default function YandexMap() {
             touchSize="lg"
             className="bg-white/95 backdrop-blur-sm shadow-xl border border-white/20 text-gray-700 hover:text-gray-900"
           >
-            <span className="text-lg mr-2" suppressHydrationWarning={true}>
-              ←
-            </span>
+            <span className="text-lg mr-2" suppressHydrationWarning={true}>←</span>
             Сбросить маршрут
           </TouchButton>
         </div>
@@ -352,24 +331,16 @@ export default function YandexMap() {
           <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl p-4 border border-white/20">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-800">
-                  ✅ Маршрут построен
-                </h3>
+                <h3 className="font-semibold text-gray-800">✅ Маршрут построен</h3>
                 <p className="text-sm text-gray-600">
                   Расстояние:{" "}
-                  <span className="font-medium">
+                  <span className="font-medium" suppressHydrationWarning={true}>
                     {(routeData.distance / 1000).toFixed(1)} км
                   </span>{" "}
                   • Время:{" "}
-                  <span className="font-medium">
+                  <span className="font-medium" suppressHydrationWarning={true}>
                     {Math.round(routeData.duration / 60)} мин
                   </span>
-                </p>
-              </div>
-              <TouchButton
-                onClick={() => setShowRoute(true)}
-                touchSize="sm"
-                className="bg-blue-600 text-white hover:bg-blue-700"
               >
                 QR-код
               </TouchButton>
@@ -380,22 +351,13 @@ export default function YandexMap() {
 
       {/* Route modal с QR-кодом */}
       {showRoute && selectedPoi && (
-        <RouteModal
-          poi={selectedPoi}
-          start={[56.742278, 37.191899]}
-          onClose={handleCloseRoute}
-          routeData={routeData}
-        />
+        <RouteModal poi={selectedPoi} start={[56.742278, 37.191899]} onClose={handleCloseRoute} routeData={routeData} />
       )}
 
       {/* POI detail modal */}
       {showDetail && selectedPoi && (
-        <POIDetail
-          poi={selectedPoi}
-          onClose={handleCloseDetail}
-          onShowRoute={handleShowRoute}
-        />
+        <POIDetail poi={selectedPoi} onClose={handleCloseDetail} onShowRoute={handleShowRoute} />
       )}
     </div>
-  );
+  )
 }
