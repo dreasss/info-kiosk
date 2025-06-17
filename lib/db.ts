@@ -163,6 +163,11 @@ function createDBInitPromise(): Promise<IDBDatabase> {
             dbCache = null; // Сбрасываем кеш при закрытии
           };
 
+          // Проверяем, нужно ли добавить демо-данные после открытия
+          ensureDemoData(db).catch((error) => {
+            console.warn("Не удалось обеспечить демо-данные:", error);
+          });
+
           safeResolve(db);
         } catch (error) {
           console.error("Ошибка при обработке успешного открытия БД:", error);
@@ -486,7 +491,7 @@ export async function getPOIById(id: string): Promise<POI | null> {
 
     request.onerror = (event) => {
       console.error("Ошибка получения POI по ID:", event);
-      reject(new Error("Н�� удалось получить POI по ID"));
+      reject(new Error("Не удалось получить POI по ID"));
     };
   });
 }
@@ -696,7 +701,7 @@ export async function deleteMedia(id: string): Promise<boolean> {
   });
 }
 
-// Фун��ции для работы с настройками
+// Функции для работы с настройками
 export async function getSettings(): Promise<SystemSettings | null> {
   const db = await initDB();
   return new Promise((resolve, reject) => {
@@ -734,7 +739,7 @@ export async function saveSettings(
 
     request.onerror = (event) => {
       console.error("Ошибка сохранения настроек:", event);
-      reject(new Error("Не удалось сох��анить настройки"));
+      reject(new Error("Не удалось сохранить настройки"));
     };
   });
 }
