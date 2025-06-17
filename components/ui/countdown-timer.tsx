@@ -73,11 +73,13 @@ export function CountdownTimer({ timer }: CountdownTimerProps) {
           <div className="grid md:grid-cols-2 gap-6 items-center">
             {timer.image && (
               <div className="relative">
-                <img
-                  src={timer.image}
-                  alt={timer.title}
-                  className="w-full h-48 object-cover rounded-xl shadow-lg"
-                />
+                <div className="w-full aspect-square max-w-sm mx-auto">
+                  <img
+                    src={timer.image}
+                    alt={timer.title}
+                    className="w-full h-full object-contain rounded-xl shadow-lg bg-white/10"
+                  />
+                </div>
               </div>
             )}
             <div className={timer.image ? "" : "md:col-span-2"}>
